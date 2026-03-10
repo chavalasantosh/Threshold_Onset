@@ -1,0 +1,32 @@
+{
+  "phase5": {
+    "k": 5,
+    "num_rollouts": 100,
+    "max_steps": 50
+  },
+  "phase6": {
+    "num_clusters": null,
+    "similarity_threshold": 0.7
+  },
+  "phase7": {
+    "percentile_high": 75,
+    "percentile_low": 25
+  },
+  "phase8": {
+    "min_frequency": 3,
+    "max_pattern_length": 4
+  },
+  "phase9": {
+    "stability_weight": 0.4,
+    "template_weight": 0.3,
+    "bias_weight": 0.2,
+    "novelty_weight": 0.1,
+    "novelty_window": 10
+  },
+  "validation": {
+    "phase_b_num_runs": 50,
+    "entropy_threshold": 2.0,
+    "stability_threshold": 0.7,
+    "refusal_quality_threshold": 0.6
+  }
+}

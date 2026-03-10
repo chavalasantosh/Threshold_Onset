@@ -1,0 +1,3118 @@
+================================================================================
+THRESHOLD_ONSET - COMPREHENSIVE PROJECT VIEW
+================================================================================
+
+Excludes: main.py
+Total Python files: 149
+
+================================================================================
+PROJECT STRUCTURE (all .py files, main.py excluded)
+================================================================================
+  integration\baselines.py
+  integration\benchmark.py
+  integration\compare_topologies.py
+  integration\continuation_observer.py
+  integration\escape_topology.py
+  integration\example_unified.py
+  integration\external_validation.py
+  integration\fluency_text_generator.py
+  integration\generate.py
+  integration\identity_permissions.py
+  integration\main_complete.py
+  integration\main_end_to_end.py
+  integration\near_refusal_observer.py
+  integration\observe_refusals.py
+  integration\preference_learner.py
+  integration\refusal_signatures.py
+  integration\run_complete.py
+  integration\run_user_input.py
+  integration\run_user_result.py
+  integration\scoring.py
+  integration\stability_experiments.py
+  integration\stability_mode.py
+  integration\stress_test.py
+  integration\structural_scaling.py
+  integration\surface.py
+  integration\test_continuation.py
+  integration\test_decoder.py
+  integration\test_invariant.py
+  integration\test_permuted.py
+  integration\topology_clusters.py
+  integration\train.py
+  integration\transition_matrix.py
+  integration\unified_system.py
+  integration\validate_pipeline.py
+  project_viewer.py
+  run_all.py
+  run_semantic_discovery.py
+  santok_complete\__init__.py
+  santok_complete\core\__init__.py
+  santok_complete\core\base_tokenizer.py
+  santok_complete\core\core_tokenizer.py
+  santok_complete\core\parallel_tokenizer.py
+  santok_complete\core\santok_engine.py
+  santok_complete\examples\advanced_usage.py
+  santok_complete\examples\basic_usage.py
+  santok_complete\santok\__init__.py
+  santok_complete\santok\cli.py
+  santok_complete\santok\santok.py
+  santok_complete\santok\utils\__init__.py
+  santok_complete\santok\utils\config.py
+  santok_complete\santok\utils\logging_config.py
+  santok_complete\santok\utils\validation.py
+  santok_complete\setup.py
+  santok_complete\tests\__init__.py
+  santok_complete\tests\test_basic_tokenization.py
+  santok_complete\tests\test_core_tokenizers.py
+  setup.py
+  test_large_context.py
+  tests\__init__.py
+  tests\test_phase3_convergence.py
+  tests\test_phase4_freeze.py
+  threshold_onset\__init__.py
+  threshold_onset\phase0\__init__.py
+  threshold_onset\phase0\action.py
+  threshold_onset\phase0\actions.py
+  threshold_onset\phase0\phase0.py
+  threshold_onset\phase0\repetition.py
+  threshold_onset\phase0\trace.py
+  threshold_onset\phase1\__init__.py
+  threshold_onset\phase1\boundary.py
+  threshold_onset\phase1\cluster.py
+  threshold_onset\phase1\distance.py
+  threshold_onset\phase1\pattern.py
+  threshold_onset\phase1\phase1.py
+  threshold_onset\phase2\__init__.py
+  threshold_onset\phase2\identity.py
+  threshold_onset\phase2\persistence.py
+  threshold_onset\phase2\phase2.py
+  threshold_onset\phase2\repeatable.py
+  threshold_onset\phase2\stability.py
+  threshold_onset\phase3\__init__.py
+  threshold_onset\phase3\dependency.py
+  threshold_onset\phase3\graph.py
+  threshold_onset\phase3\influence.py
+  threshold_onset\phase3\interaction.py
+  threshold_onset\phase3\persistence.py
+  threshold_onset\phase3\phase3.py
+  threshold_onset\phase3\relation.py
+  threshold_onset\phase3\stability.py
+  threshold_onset\phase4\__init__.py
+  threshold_onset\phase4\alias.py
+  threshold_onset\phase4\phase4.py
+  threshold_onset\semantic\__init__.py
+  threshold_onset\semantic\common\__init__.py
+  threshold_onset\semantic\common\exceptions.py
+  threshold_onset\semantic\common\types.py
+  threshold_onset\semantic\common\utils.py
+  threshold_onset\semantic\common\validators.py
+  threshold_onset\semantic\config\__init__.py
+  threshold_onset\semantic\config\defaults.py
+  threshold_onset\semantic\config\validation.py
+  threshold_onset\semantic\example_complete_workflow.py
+  threshold_onset\semantic\large_context.py
+  threshold_onset\semantic\phase5\__init__.py
+  threshold_onset\semantic\phase5\consequence_field.py
+  threshold_onset\semantic\phase5\metrics.py
+  threshold_onset\semantic\phase5\policies.py
+  threshold_onset\semantic\phase5\rollout.py
+  threshold_onset\semantic\phase6\__init__.py
+  threshold_onset\semantic\phase6\clustering.py
+  threshold_onset\semantic\phase6\meaning_discovery.py
+  threshold_onset\semantic\phase6\normalization.py
+  threshold_onset\semantic\phase7\__init__.py
+  threshold_onset\semantic\phase7\properties.py
+  threshold_onset\semantic\phase7\role_assigner.py
+  threshold_onset\semantic\phase7\role_emergence.py
+  threshold_onset\semantic\phase8\__init__.py
+  threshold_onset\semantic\phase8\constraint_discovery.py
+  threshold_onset\semantic\phase8\pattern_miner.py
+  threshold_onset\semantic\phase8\sequences.py
+  threshold_onset\semantic\phase9\__init__.py
+  threshold_onset\semantic\phase9\fluency_generator.py
+  threshold_onset\semantic\phase9\scoring.py
+  threshold_onset\semantic\phase9\symbol_decoder.py
+  threshold_onset\semantic\tests\__init__.py
+  threshold_onset\semantic\tests\test_integration.py
+  threshold_onset\semantic\tests\test_phase5.py
+  threshold_onset\semantic\tests\test_phase6.py
+  threshold_onset\semantic\tests\test_phase7.py
+  threshold_onset\semantic\tests\test_phase8.py
+  threshold_onset\semantic\tests\test_phase9.py
+  threshold_onset\tools\version_control.py
+  threshold_onset\tools\watch_version.py
+  validation_crush\crush_protocol.py
+  validation_crush\decision_framework.py
+  validation_crush\intrinsic_logger.py
+  validation_crush\tests\__init__.py
+  validation_crush\tests\phase_a_baseline.py
+  validation_crush\tests\phase_b_perturbation.py
+  validation_crush\tests\phase_c_consistency.py
+  validation_crush\tests\phase_d_causal.py
+  validation_crush\tests\phase_e_role_collapse.py
+  validation_crush\tests\phase_f_constraint_inversion.py
+  validation_crush\tests\phase_g_streaming.py
+  validation_crush\tests\phase_h_red_team.py
+  validation_crush\tests\phase_i_kill_switch.py
+  validation_crush\utils\__init__.py
+  validation_crush\utils\metrics_computer.py
+  validation_crush\utils\test_helpers.py
+
+================================================================================
+PIPELINE FLOW (text -> structure -> text)
+================================================================================
+  1. integration/run_complete.py     - Full end-to-end pipeline
+  2. integration/run_user_result.py - User-facing output only
+  3. integration/benchmark.py      - Metrics, run_pipeline()
+  4. threshold_onset/phase0-4       - Structure emergence
+  5. threshold_onset/semantic/phase9 - Symbol decoder, fluency
+  6. integration/generate.py        - Constraint-aware generation
+  7. integration/scoring.py       - Path scoring, input-order boost
+  8. integration/surface.py       - Symbol->token mapping
+
+================================================================================
+MODULE INDEX (by directory)
+================================================================================
+
+--- (root) ---
+  ## project_viewer.py
+
+    THRESHOLD_ONSET - Comprehensive Project Viewer
+
+Scans the entire project (excluding main.py) and generates a highly comprehensive
+report: structure, modules, docstrings, classes, functions, dependencies.
+
+Usage:
+    python project_viewer.py              # Print to console
+    python project_viewer.py --out FILE   # Write to file
+    python project_viewer.py --full      # Include full source code of every file
+    python project_viewer.py --json       # Output as JSON
+
+    Lines: 344
+    Imports: ast, json, sys, pathlib.Path, typing.Any, typing.Dict, typing.List, typing.Optional, typing.Set, typing.Tuple
+    def _should_include(path): 
+    def _collect_python_files(): 
+    def _truncate(text, max_len): 
+    def _extract_docstring(node): 
+    def _get_signature(node): 
+    def _parse_file(path): 
+    def _format_module(data, indent): 
+    def _tree_to_str(files): 
+    def _generate_full_report(): Report with full source code of every file.
+    def _generate_report(): 
+    def main(): 
+
+  ## run_all.py
+
+    Run the entire project - everything we built.
+
+Modes:
+  python run_all.py              Run full suite (10 steps, default text)
+  python run_all.py --user       Run entire project with your input (prompted)
+  python run_all.py --user "text"  Run entire project (all 10 steps) with your text
+  python run_all.py --check "text" Quick check (full pipeline, user-facing output)
+
+Note: main.py is the primary entry point. run_all.py is equivalent.
+
+    Lines: 133
+    Imports: sys, subprocess, pathlib.Path
+    def run(name, script, args): Run a script, print outcome.
+    def main(): 
+
+  ## run_semantic_discovery.py
+
+    Complete Semantic Discovery Workflow
+Execute all phases from Phase 5 to Phase 9
+
+USAGE:
+    python run_semantic_discovery.py
+
+    Lines: 292
+    Imports: sys, logging, pathlib.Path, threshold_onset.semantic.ConsequenceFieldEngine, threshold_onset.semantic.MeaningDiscoveryEngine, threshold_onset.semantic.RoleEmergenceEngine, threshold_onset.semantic.ConstraintDiscoveryEngine, threshold_onset.semantic.FluencyGenerator
+    def execute_complete_workflow(): Execute complete semantic discovery workflow.
+
+REPLACE the placeholder data with your actual Phase 2
+
+  ## setup.py
+
+    Setup script for THRESHOLD_ONSET package.
+
+    Lines: 64
+    Imports: setuptools.setup, setuptools.find_packages, pathlib.Path
+
+  ## test_large_context.py
+
+    Test and Benchmark Large Context Capabilities
+
+Tests GPT-5.2-like features:
+- 1M token context windows
+- 512K token output capacity
+- Chunked processing
+- Streaming generation
+- Memory optimizations
+
+    Lines: 231
+    Imports: sys, time, gc, pathlib.Path, threshold_onset.semantic.large_context.LargeContextProcessor, threshold_onset.semantic.large_context.StreamingGenerator, threshold_onset.semantic.large_context.MAX_CONTEXT_TOKENS, threshold_onset.semantic.large_context.MAX_OUTPUT_TOKENS
+    def generate_large_text(size_mb): Generate a large text for testing.
+    def test_context_processing(): Test large context processing.
+    def test_streaming_generation(): Test streaming generation.
+    def test_memory_efficiency(): Test memory efficiency.
+    def benchmark_performance(): Benchmark performance metrics.
+    def main(): Run all tests.
+
+
+--- integration ---
+  ## integration\baselines.py
+
+    THRESHOLD_ONSET Baselines
+
+Simple alternatives for comparison on structure emergence metrics:
+- Random: uniform random token selection from vocab
+- Markov-1: first-order Markov (token -> next token)
+- Echo: identity-preserving (echo input tokens)
+- Uniform: repeat first token only (minimal structure)
+
+    Lines: 215
+    Imports: random, hashlib, pathlib.Path, typing.Dict, typing.List, typing.Tuple, typing.Any, collections.defaultdict, sys
+    def tokenize_simple(text): 
+    def token_to_residue(token): 
+    def baseline_random(tokens, length, seed): Generate by uniformly sampling tokens from vocab.
+    def baseline_markov1(tokens, length, seed): First-order Markov: P(next|current) from empirical bigram counts.
+    def baseline_echo(tokens, length, _seed): Echo input tokens cyclically. Identity-preserving.
+    def baseline_uniform(tokens, length, _seed): Repeat first token only. Minimal structure.
+    def count_self_transitions(seq): Count consecutive identical tokens (self-transitions).
+    def decoder_consistency(tokens, vocab): Fraction of tokens in vocab.
+    def compute_baseline_metrics(tokens, generated): 
+    def get_benchmark_corpus(): Import and return the 39-sample benchmark corpus for fair comparison.
+    def run_baselines(seed, gen_length, corpus): Run all baselines; return {baseline_name: {metric: value}}.
+    def main(): 
+
+  ## integration\benchmark.py
+
+    THRESHOLD_ONSET Benchmark
+
+Structured evaluation suite for structure emergence, constraint adherence,
+and decoder consistency. Metrics: pipeline success rate, constraint violation
+rate, structural consistency (decoder accuracy), self-transition rate.
+
+    Lines: 224
+    Imports: sys, time, hashlib, pathlib.Path, typing.Dict, typing.List, typing.Tuple, typing.Any, typing.Optional
+    def tokenize_simple(text): 
+    def token_to_residue(token): 
+    def run_pipeline(text, num_runs): Run full pipeline; return (success, metrics_dict or None).
+    def run_benchmark(verbose): Run full benchmark across corpus. Return summary metrics.
+    def main(): 
+
+  ## integration\compare_topologies.py
+
+    Compare Escape Topologies Across Inputs
+
+Measures escape topology for different texts and compares:
+- Which features remain invariant
+- Which features vary
+
+Mechanical comparison only - no interpretation.
+
+    Lines: 235
+    Imports: sys, pathlib.Path, collections.defaultdict, collections.Counter, unified_system.process_text_through_phases, unified_system.tokenize_text_to_actions, escape_topology.measure_escape_topology
+    def compare_topologies(): Compare escape topologies across different inputs.
+
+  ## integration\continuation_observer.py
+
+    Continuation Observer
+
+A recorder of failed continuations under existing constraints.
+
+This does NOT:
+- Add meaning
+- Interpret anything
+- Create new structure
+- Add a new phase
+
+This DOES:
+- Continue tokenization after Phase 4
+- Check if continuations are possible given existing structure
+- Record refusals when continuations fail
+- Record facts only (no interpretation)
+
+कार्य (kārya) happens before ज्ञान (jñāna)
+
+    Lines: 279
+    Imports: sys, pathlib.Path, hashlib
+    Class: ContinuationRefusal
+      Records a single refusal event.
+
+No interpretation. Just facts.
+      Methods: 2
+    Class: ContinuationObserver
+      Observes continuation after Phase 4 and records refusals.
+
+Minimal. Mechanical. Honest.
+      Methods: 8
+    def observe_continuation_refusals(phase4_output, phase3_metrics, phase2_metrics, continuation_tokens, max_steps): Main function to observe continuation refusals.
+
+Args:
+    phase4_output: Phase 4 symbol mappings
+  
+
+  ## integration\escape_topology.py
+
+    Escape Topology Measurement
+
+For each symbol i:
+- How often does it attempt self-transition?
+- How often does it get near refusal?
+- How many distinct escape paths does it have?
+- How concentrated are those paths?
+
+Measures degrees of freedom under constraint.
+Mechanical measurement only - no interpretation.
+
+    Lines: 244
+    Imports: sys, pathlib.Path, collections.defaultdict, collections.Counter, math, unified_system.process_text_through_phases, unified_system.tokenize_text_to_actions, continuation_observer.ContinuationObserver
+    def measure_escape_topology(phase4_output, phase3_metrics, phase2_metrics, continuation_tokens, max_steps): Measure escape topology for each symbol.
+
+For each symbol i:
+- self_transition_attempts: count of i 
+    def main(): Measure and report escape topology.
+
+  ## integration\example_unified.py
+
+    Example: Unified System Usage
+
+Demonstrates how to use the unified threshold_onset <-> santok system.
+
+    Lines: 82
+    Imports: unified_system.process_text_through_phases
+
+  ## integration\external_validation.py
+
+    Quantitative External Validation
+
+Runs THRESHOLD_ONSET on external text samples for quantitative validation.
+Uses a fixed corpus of 100+ sentences from diverse domains.
+Outputs: success rate, constraint violation rate, decoder consistency, timing.
+
+    Lines: 276
+    Imports: sys, time, hashlib, pathlib.Path, typing.Dict, typing.List, typing.Tuple, typing.Any, typing.Optional
+    def tokenize_simple(text): 
+    def token_to_residue(token): 
+    def run_pipeline(text, num_runs): Run full pipeline; return (success, metrics_dict or None).
+    def run_external_validation(verbose): Run external validation across corpus.
+    def main(): 
+
+  ## integration\fluency_text_generator.py
+
+    Fluency-based Text Generator
+
+Wires FluencyGenerator (Phases 5-9) into text output.
+Uses consequence field, roles, constraints for generation.
+Then decodes symbols to text via structural decoder.
+
+    Lines: 128
+    Imports: sys, pathlib.Path, typing.Dict, typing.Any, typing.List, typing.Optional
+    def generate_text_via_fluency(tokens, residue_sequences, phase2_metrics, phase3_metrics, phase4_metrics...): Generate text using FluencyGenerator (consequence + roles + constraints).
+
+Pipeline: Phase 5-9 → Flu
+    def _hash_segment(segment): 
+
+  ## integration\generate.py
+
+    Generation Module
+
+Generates symbol sequences using constraint-aware decoding.
+
+This is the core generation loop:
+- Use constraint graph (Phase 3 relations)
+- Score allowed paths (frequency + pressure)
+- Select next symbol deterministically or probabilistically
+- Generate sequences without self-repetition
+
+    Lines: 252
+    Imports: sys, pathlib.Path, continuation_observer.ContinuationObserver
+    def generate_sequence(start_symbol, steps, phase4_output, phase3_metrics, phase2_metrics...): Generate a symbol sequence using constraint-aware decoding.
+
+Args:
+    start_symbol: Starting symbol
+    def _choose_next_from_allowed(from_symbol, allowed_symbols, path_scores, method, temperature...): Choose next symbol using scoring with temperature, context, and repetition penalty.
+    def generate_multiple_seeds(seed_symbols, steps_per_seed, phase4_output, phase3_metrics, phase2_metrics...): Generate sequences from multiple starting symbols.
+
+  ## integration\identity_permissions.py
+
+    Identity Permission Profile
+
+Counts allowed vs refused self-transitions for each identity symbol.
+Mechanical counting only - no interpretation.
+
+    Lines: 182
+    Imports: sys, pathlib.Path, collections.defaultdict, unified_system.process_text_through_phases, unified_system.tokenize_text_to_actions, continuation_observer.ContinuationObserver
+    def compute_permission_profile(phase4_output, phase3_metrics, phase2_metrics): Compute permission profile for each identity symbol.
+
+For each symbol, count:
+- allowed self-transit
+    def count_observed_refusals_per_symbol(): Count observed refusals per symbol from all tests.
+    def main(): Compute and report permission profiles.
+
+  ## integration\main_complete.py
+
+    Complete Unified System: threshold_onset <-> santok
+
+End-to-end pipeline:
+1. Tokenization (santok)
+2. Structure Emergence (threshold_onset Phases 0-4)
+3. Continuation Observation
+4. Escape Topology Measurement
+5. Topology Clustering
+
+कार्य (kārya) happens before ज्ञान (jñāna)
+
+    Lines: 284
+    Imports: sys, pathlib.Path, collections.defaultdict, collections.Counter, math, unified_system.process_text_through_phases, unified_system.tokenize_text_to_actions, unified_system.TokenAction, continuation_observer.ContinuationObserver, continuation_observer.observe_continuation_refusals, escape_topology.measure_escape_topology
+    def run_complete_pipeline(text, continuation_text, tokenization_method, num_runs): Run complete end-to-end pipeline.
+
+Args:
+    text: Input text for structure emergence
+    continuati
+    def cluster_by_topology(topology): Cluster identities by escape topology characteristics.
+    def main(): Main entry point for complete system.
+
+  ## integration\main_end_to_end.py
+
+    Complete End-to-End Unified System
+
+threshold_onset <-> santok
+
+Full pipeline:
+1. Tokenization (santok) - ACTION
+2. Structure Emergence (threshold_onset Phases 0-4) - STRUCTURE
+3. Continuation Observation - REFUSAL
+4. Escape Topology Measurement - NECESSITY
+5. Topology Clustering - ORGANIZATION
+
+कार्य (kārya) happens before ज्ञान (jñāna)
+
+This is the complete system. Everything in one place.
+
+    Lines: 584
+    Imports: sys, pathlib.Path, hashlib, collections.defaultdict, collections.Counter, math
+    Class: TokenAction
+      Converts text tokens into Phase 0 actions.
+      Methods: 2
+    Class: ContinuationRefusal
+      Records a single refusal event.
+      Methods: 2
+    Class: ContinuationObserver
+      Observes continuation after Phase 4 and records refusals.
+      Methods: 6
+    def tokenize_text(text, tokenization_method): Tokenize text using santok.
+    def run_structure_emergence(text, tokenization_method, num_runs): Run threshold_onset Phases 0-4.
+    def measure_escape_topology(phase4_output, phase3_metrics, phase2_metrics, continuation_tokens, max_steps): Measure escape topology for each symbol.
+    def cluster_by_topology(topology): Cluster identities by escape topology characteristics.
+    def run_complete_system(text, continuation_text, tokenization_method, num_runs): Run complete end-to-end unified system.
+
+Args:
+    text: Input text for structure emergence
+    cont
+
+  ## integration\near_refusal_observer.py
+
+    Near-Refusal Observer
+
+Measures distance from violation:
+- Which identities approach self-continuation?
+- How often does system approach i → i before diverting?
+- What sequences hover near refusal without triggering?
+
+Mechanical observation only - no interpretation.
+
+    Lines: 236
+    Imports: sys, pathlib.Path, collections.defaultdict, collections.Counter, unified_system.process_text_through_phases, unified_system.tokenize_text_to_actions, continuation_observer.observe_continuation_refusals
+    def observe_near_refusals(phase4_output, phase3_metrics, phase2_metrics, continuation_tokens): Observe sequences that approach self-transition but don't trigger it.
+
+Tracks:
+- Symbols that appear
+    def main(): Observe near-refusals across continuation tests.
+
+  ## integration\observe_refusals.py
+
+    Observe Refusals - Multiple Variations
+
+Records raw refusals only. No interpretation.
+
+    Lines: 129
+    Imports: sys, pathlib.Path, unified_system.process_text_through_phases, unified_system.tokenize_text_to_actions, continuation_observer.observe_continuation_refusals
+    def record_refusals(test_name, text, continuation_text, tokenization_method): Process text, continue, record refusals. Facts only.
+    def main(): Run multiple tests, record refusals only.
+
+  ## integration\preference_learner.py
+
+    Preference Learner
+
+Minimal learning component that adjusts preference within immutable constraints.
+
+Learning = persistent preference adjustment within valid space only.
+
+    Lines: 99
+    Imports: collections.defaultdict
+    Class: PreferenceLearner
+      Learns preference adjustments for allowed transitions only.
+
+Hard guarantees:
+- Never changes structure
+- Never allows forbidden paths
+- Only adjusts preference within E_allowed
+      Methods: 5
+
+  ## integration\refusal_signatures.py
+
+    Refusal Signature Aggregation
+
+Counts distinct refusal signatures across all tests.
+Mechanical counting only - no interpretation.
+
+    Lines: 194
+    Imports: sys, pathlib.Path, collections.Counter, collections.defaultdict, unified_system.process_text_through_phases, unified_system.tokenize_text_to_actions, continuation_observer.observe_continuation_refusals, test_permuted.record_refusal_test, test_permuted.permute_tokens, observe_refusals.record_refusals
+    def compute_refusal_signature(refusal): Compute refusal signature.
+
+Returns tuple: (current_symbol, attempted_next_symbol, relation_exists)
+
+    def aggregate_refusals_from_tests(): Collect refusals from all tests and aggregate signatures.
+    def main(): Aggregate refusal signatures and report counts.
+
+  ## integration\run_complete.py
+
+    Complete End-to-End Unified System
+===================================
+
+threshold_onset <-> santok
+
+Single file that runs the complete pipeline with visible step-by-step output.
+
+कार्य (kārya) happens before ज्ञान (jñāna)
+
+Run this file to see the entire system in action.
+
+    Lines: 1045
+    Imports: sys, pathlib.Path, hashlib, collections.defaultdict, collections.Counter, math, scoring.score_allowed_paths, scoring.rank_paths_from_symbol
+    Class: TokenAction
+      Converts text tokens into Phase 0 actions.
+      Methods: 2
+    Class: ContinuationRefusal
+      Records a single refusal event.
+      Methods: 2
+    Class: ContinuationObserver
+      Observes continuation after Phase 4 and records refusals.
+      Methods: 6
+    def tokenize_text(text, tokenization_method): Tokenize text using internal pip-installed modules: santok, santek, somaya.
+
+These are our own proje
+    def measure_escape_topology(phase4_output, phase3_metrics, phase2_metrics, continuation_tokens, max_steps): Measure escape topology for each symbol.
+    def choose_next_path(from_symbol, path_scores, method): Choose next path from a symbol based on scoring.
+    def cluster_by_topology(topology): Cluster identities by escape topology characteristics.
+    def _print_end_user_result(input_text, outputs, width, max_preview_words): Print end-user result in a clean, readable block.
+    def main(learner, return_result): Main execution with visible step-by-step flow.
+
+Args:
+    learner: Optional PreferenceLearner instan
+
+  ## integration\run_user_input.py
+
+    Run THRESHOLD_ONSET on user-provided input.
+
+Usage:
+  python integration/run_user_input.py
+  python integration/run_user_input.py "Your text here"
+  echo "Your text" | python integration/run_user_input.py
+
+    Lines: 77
+    Imports: sys, importlib.util, pathlib.Path
+    def main(): 
+
+  ## integration\run_user_result.py
+
+    End-user result only: run pipeline and show INPUT + OUTPUT.
+
+Usage:
+  py integration/run_user_result.py "I am Eating"
+  py integration/run_user_result.py
+  echo "Your text" | py integration/run_user_result.py
+
+Shows only the end-user outcome, without technical steps.
+
+    Lines: 49
+    Imports: sys, contextlib, io, pathlib.Path, importlib.util
+
+  ## integration\scoring.py
+
+    Scoring System
+
+Adds frequency-based and pressure-based scoring to rank allowed paths.
+Mechanical scoring only - no semantics, no learning.
+
+Scores allowed transitions, ranks them, enables selection.
+
+    Lines: 384
+    Imports: sys, pathlib.Path, collections.Counter, collections.defaultdict, continuation_observer.ContinuationObserver, unified_system.TokenAction
+    def compute_transition_frequencies(phase4_output, phase3_metrics, phase2_metrics, token_sequences): Compute frequency of allowed transitions from token sequences.
+
+Observes which transitions actually 
+    def compute_pressure_scores(topology): Compute pressure-based scores for symbols.
+
+Higher pressure (more self-transition attempts) = higher
+    def compute_input_order_boost(tokens, symbol_to_token): Boost transitions that match consecutive pairs (and trigrams) in the input.
+Pure input structure - n
+    def score_allowed_paths(phase4_output, phase3_metrics, phase2_metrics, topology, token_sequences...): Score all allowed paths using frequency, pressure, context, and input-order boost.
+
+CONTRACT: path_s
+    def rank_paths_from_symbol(from_symbol, path_scores): Rank all allowed paths from a given symbol.
+
+CONTRACT: Filters out metadata keys (strings starting w
+    def choose_next_path(from_symbol, path_scores, method): Choose next path from a symbol based on scoring.
+
+Args:
+    from_symbol: Current symbol
+    path_sco
+    def main(): Test scoring system.
+
+  ## integration\stability_experiments.py
+
+    THRESHOLD_ONSET Stability Experiments
+
+Parameter sweeps: drop_prob, K, theta.
+Distribution over recurrence counts.
+Stability curves for publication.
+
+    Lines: 137
+    Imports: sys, random, hashlib, pathlib.Path, typing.Dict, typing.List, typing.Tuple, collections.defaultdict
+    def tokenize_simple(text): 
+    def subsample_tokens(tokens, drop_prob, seed): 
+    def token_pair_hash(t_i, t_j): 
+    def run_stability_sweep(text, drop_probs, K_values, theta_values, seed): Run stability mode across parameter grid. Return full metrics.
+    def main(): 
+
+  ## integration\stability_mode.py
+
+    THRESHOLD_ONSET Stability Mode
+
+Identity by recurrence under structural perturbation.
+Each run receives a perturbed token sequence (subsampling).
+Segment identity is token-grounded: hash((t_i, t_{i+1})).
+Persistence = recurrence across perturbed observations.
+
+    Lines: 137
+    Imports: sys, random, hashlib, pathlib.Path, typing.Dict, typing.List, typing.Tuple, typing.Set, collections.defaultdict
+    def tokenize_simple(text): 
+    def subsample_tokens(tokens, drop_prob, seed): Subsample: randomly drop drop_prob fraction of positions, preserve order.
+    def token_pair_hash(t_i, t_j): Canonical segment identity: hash of token pair.
+    def run_stability_mode(text, num_runs, drop_prob, theta, seed...): Run stability mode: perturbed runs, token-level persistence.
+
+output_mode: "pair" -> identity maps t
+    def main(): 
+
+  ## integration\stress_test.py
+
+    Stress test: scale and timing.
+
+Run on varied corpus sizes, measure time and memory.
+
+    Lines: 73
+    Imports: sys, time, pathlib.Path
+    def tokenize_simple(text): 
+    def token_to_residue(token): 
+    def run_one(size_tokens, num_runs): Run pipeline for given token count. Return (seconds, success).
+    def main(): 
+
+  ## integration\structural_scaling.py
+
+    Structural Scaling Experiment
+
+Measures: Tokens | Identities | Relations | Avg escape paths | Under pressure | Diversity
+
+Law: Diversity increases with escape topology width.
+
+    Lines: 134
+    Imports: sys, hashlib, pathlib.Path
+    def tokenize_simple(text): 
+    def token_to_residue(token): 
+    def run_structure_and_topology(text, num_runs): Run phases 1-4 and measure escape topology. Return metrics or None.
+    def main(): 
+
+  ## integration\surface.py
+
+    Surface Realization Layer (Surface Adapter v0)
+
+Maps symbols back to text tokens for readable output.
+
+SURFACE ADAPTER v0 CONTRACT:
+- Deterministic: Same inputs → same outputs. Tie-breaking by sorted token string.
+- No smoothing: No grammar fixes, no fluency heuristics, no probabilistic adjustments.
+- Purpose: "Make paths readable, not intelligent."
+
+This is the surface layer that makes the system "talk".
+
+    Lines: 213
+    Imports: collections.Counter, collections.defaultdict
+    def is_valid_surface_token(tok): Check if token is valid for surface generation (content tokens only).
+    def build_symbol_to_token_mapping(tokens, phase4_output, phase2_metrics, phase0_residues_by_run, token_to_residue_map): Build mapping from symbols to the most frequent token(s) associated with that symbol.
+
+Process:
+1. T
+    def _is_sentence_end(token): Our own rule: token ends with sentence-ending punctuation.
+    def symbols_to_text(symbol_sequence, symbol_to_token, insert_sentence_breaks): Convert symbol sequence to space-joined text.
+
+No smoothing. No grammar. Skip <UNK> only.
+When inser
+    def generate_text_sequence(start_symbol, steps, phase4_output, phase3_metrics, phase2_metrics...): Generate a text sequence (not just symbols).
+
+Uses generate_sequence internally, then converts symbo
+
+  ## integration\test_continuation.py
+
+    Test Continuation Observer
+
+Minimal test: one input, observe one refusal.
+
+No theory. Just observation.
+
+    Lines: 111
+    Imports: sys, pathlib.Path, sys, unified_system.process_text_through_phases, continuation_observer.observe_continuation_refusals
+    def main(): Run one test: process text, continue, observe refusal.
+
+  ## integration\test_decoder.py
+
+    Quick test for structural symbol decoder.
+
+    Lines: 69
+    Imports: sys, pathlib.Path, hashlib, threshold_onset.phase1.phase1.phase1, threshold_onset.phase2.phase2.phase2_multi_run, threshold_onset.phase3.phase3.phase3_multi_run, threshold_onset.phase4.phase4.phase4, threshold_onset.semantic.phase9.symbol_decoder.build_structural_decoder, threshold_onset.semantic.phase9.symbol_decoder.decode_symbol_sequence
+    def token_to_residue(token): 
+
+  ## integration\test_invariant.py
+
+    Test Invariant: No Self-Transition Law
+
+Test if "no self-transition" law holds across:
+- Different texts
+- Different domains
+- Different tokenization granularities
+
+Mechanical checking only - no interpretation.
+
+    Lines: 210
+    Imports: sys, pathlib.Path, unified_system.process_text_through_phases, transition_matrix.build_transition_matrix
+    def test_no_self_transition_law(phase4_output, phase3_metrics): Check if no self-transition law holds.
+
+Returns:
+    - all_self_forbidden: True if all self-transiti
+    def main(): Test invariant across different inputs.
+
+  ## integration\test_permuted.py
+
+    Test Permuted Continuation
+
+Same input, same tokenization, slightly permuted continuation order.
+Observe how refusals change (appear/disappear/shift).
+
+    Lines: 156
+    Imports: sys, pathlib.Path, random, unified_system.process_text_through_phases, unified_system.tokenize_text_to_actions, continuation_observer.observe_continuation_refusals
+    def permute_tokens(tokens, seed): Slightly permute token order - mechanical only.
+    def record_refusal_test(test_name, base_text, continuation_text, tokenization_method, permute...): Process, continue, record refusals. Facts only.
+    def main(): Run permuted continuation tests.
+
+  ## integration\topology_clusters.py
+
+    Cluster Identities by Escape Topology
+
+Groups identities by their escape topology characteristics:
+- Pressure (self-transition attempts, near-refusal events)
+- Freedom (distinct escape paths, escape concentration)
+- Escape patterns (where they escape to)
+
+Mechanical clustering only - no interpretation.
+
+    Lines: 179
+    Imports: sys, pathlib.Path, collections.defaultdict, unified_system.process_text_through_phases, unified_system.tokenize_text_to_actions, escape_topology.measure_escape_topology
+    def cluster_by_topology(topology): Cluster identities by escape topology characteristics.
+
+Groups by:
+- Pressure level (high/medium/low
+    def main(): Cluster identities by escape topology.
+
+  ## integration\train.py
+
+    Training loop for Constraint-First LLM (SFLM)
+Runs multiple epochs to observe learning over time.
+
+Expected observations:
+- avg_bias increases
+- max_bias separates
+- dominant paths stabilize
+- output length increases
+- repetition decreases naturally
+
+    Lines: 182
+    Imports: sys, pathlib.Path, preference_learner.PreferenceLearner
+    def run_training(epochs, print_interval, verbose): Run training loop with persistent learner across epochs.
+
+Args:
+    epochs: Number of training epoch
+    def run_single_epoch(learner): Run a single epoch of the complete pipeline with persistent learner.
+
+Args:
+    learner: PreferenceL
+
+  ## integration\transition_matrix.py
+
+    Transition Permission Matrix
+
+For all identity pairs (i → j):
+- allowed (relation exists in graph)
+- forbidden (no relation)
+- observed (count from continuation tests)
+
+Mechanical counting only - no interpretation.
+
+    Lines: 213
+    Imports: sys, pathlib.Path, collections.defaultdict, unified_system.process_text_through_phases, continuation_observer.ContinuationObserver, refusal_signatures.aggregate_refusals_from_tests
+    def build_transition_matrix(phase4_output, phase3_metrics): Build transition permission matrix.
+
+For each pair (i → j), record:
+- allowed: relation exists in gr
+    def count_observed_transitions(matrix, symbols): Count observed transitions and refusals from all tests.
+    def main(): Build and output transition permission matrix.
+
+  ## integration\unified_system.py
+
+    UNIFIED SYSTEM: threshold_onset <-> santok
+
+कार्य (kārya) happens before ज्ञान (jñāna)
+
+This system unifies:
+- santok: Text tokenization (action)
+- threshold_onset: Structure emergence (knowledge)
+
+Text tokens become actions.
+Token patterns become residues.
+Structure emerges naturally.
+Semantics emerge automatically.
+
+NO embeddings.
+NO transformers.
+NO neural networks.
+NO BERT.
+NO sentence piece.
+NO backpropagation.
+
+Just: Tokenization → Structure → Semantics (emergent)
+
+    Lines: 336
+    Imports: sys, pathlib.Path, hashlib
+    Class: TokenAction
+      Converts text tokens into Phase 0 actions.
+
+Tokens become numeric residues (hash-based, opaque, no meaning).
+Phase 0 compliant: numeric, opaque, no labels, no interpretation.
+      Methods: 2
+    def tokenize_text_to_actions(text, tokenization_method): Tokenize text using santok, then convert tokens to Phase 0 actions.
+
+Args:
+    text: Input text stri
+    def process_text_through_phases(text, tokenization_method, num_runs): Process text through unified system:
+1. Tokenize text (santok) - ACTION
+2. Convert tokens to residue
+
+  ## integration\validate_pipeline.py
+
+    Validation script: run pipeline on varied inputs, detect edge cases.
+
+Tests: short text, long text, repeated tokens, punctuation, empty, single token.
+
+    Lines: 114
+    Imports: sys, pathlib.Path
+    def safe_print(msg): 
+    def tokenize_simple(text): Simple tokenization (no santok dependency).
+    def token_to_residue(token): 
+    def run_phases_and_decode(text, num_runs): Run full pipeline and return (success, decoded_text, error).
+    def main(): 
+
+
+--- santok_complete ---
+  ## santok_complete\__init__.py
+
+    SanTOK - Text Tokenization System
+A comprehensive text tokenization system with mathematical analysis and statistical features
+
+    Lines: 55
+
+  ## santok_complete\setup.py
+
+    Setup script for SanTOK - Text Tokenization System
+
+    Lines: 65
+    Imports: setuptools.setup, setuptools.find_packages, pathlib.Path
+
+
+--- santok_complete\core ---
+  ## santok_complete\core\__init__.py
+
+    Lines: 0
+
+  ## santok_complete\core\base_tokenizer.py
+
+    Pure-Python tokenizer core built from scratch.
+
+Constraints:
+- Python 3.13.7
+- No imports from stdlib or third-party. Only language primitives.
+
+This module implements:
+- Space, word, character, byte, subword (fixed len=3), grammar tokenizers
+- Basic helpers for string length, slicing, and ASCII checks without imports
+
+Note: Without stdlib, Unicode normalization is not available. We treat the
+string as-is; character tokenization uses Python's native indexing which is
+codepoint-based.
+
+    Lines: 182
+    def _len(s): 
+    def _is_space(ch): 
+    def _is_alpha(ch): 
+    def _is_digit(ch): 
+    def _is_word_char(ch): 
+    def tokenize_space(text): 
+    def tokenize_char(text): 
+    def tokenize_word(text): 
+    def tokenize_grammar(text): 
+    def tokenize_subword(text, chunk_len): 
+    def tokenize_bytes(text): 
+    def all_tokenizations(text): 
+
+  ## santok_complete\core\core_tokenizer.py
+
+    Self-contained Text Tokenization System (no imports, no third-party).
+
+Run: python SanTOK_tokenizer.py
+
+Features:
+- Tokenizers: space, word, char, grammar, subword(3), byte-like (ord digits)
+- Alphabetic mapping and weighted sums
+- Backend number composition with neighbor awareness and embedding bit
+- 9-centric digital-root folding to 1..9
+- Deterministic UID via xorshift64*
+
+    Lines: 3174
+    Class: XorShift64Star
+      Methods: 2
+    Class: TokenRecord
+      Methods: 2
+    Class: TokenStream
+      Methods: 5
+    Class: TextTokenizer
+      Methods: 3
+    def _len(s): 
+    def _is_space(ch): 
+    def _is_alpha(ch): 
+    def _is_cjk(ch): Check if character is Chinese, Japanese, or Korean
+    def _is_arabic(ch): Check if character is Arabic
+    def _is_cyrillic(ch): Check if character is Cyrillic
+    def _is_hebrew(ch): Check if character is Hebrew
+    def _is_thai(ch): Check if character is Thai
+    def _is_devanagari(ch): Check if character is Devanagari (Hindi, Sanskrit)
+    def detect_language(text): Detect the primary language of the text
+    def _is_digit(ch): 
+    def _is_word_char(ch): 
+    def _is_word_char_multilang(char, language): Check if character is part of a word based on language
+    def tokenize_space(text): STABLE & REVERSIBLE space tokenization with unique IDs by design.
+Perfect reconstruction guaranteed.
+    def _classify_space_type(space_text): Classify the type of whitespace sequence
+    def tokenize_char(text): FULLY REVERSIBLE character tokenization with unique IDs by design.
+NO OOV issues - every character i
+    def tokenize_word(text): FULLY REVERSIBLE word tokenization with unique IDs by design.
+NO OOV issues - preserves all non-word
+    def tokenize_grammar(text): FULLY REVERSIBLE grammar tokenization with unique IDs by design.
+NO OOV issues - preserves words and
+    def tokenize_subword(text, chunk_len, strategy): STABLE & REVERSIBLE sub-word tokenization with unique IDs by design.
+Perfect reconstruction guarante
+    def _fixed_length_chunks(word, chunk_len): Original fixed-length chunking
+    def _bpe_like_split(word): Optimized BPE-like algorithm:
+Simple and fast pattern matching for common English patterns
+    def _syllable_split(word): Simple syllable-based splitting using vowel patterns
+    def _frequency_based_split(word): Optimized frequency-based splitting using hash lookup
+    def tokenize_bytes(text): STABLE & REVERSIBLE byte tokenization with unique IDs by design.
+Perfect reconstruction guaranteed w
+    def tokenize_text(text, tokenizer_type, language, use_parallel, source_tag): Main tokenization function with multi-language and parallel processing support.
+
+Args:
+    text: Tex
+
+  ## santok_complete\core\parallel_tokenizer.py
+
+    Parallel Processing Module for SanTOK
+Supports multi-threading and multi-processing for large text tokenization
+
+    Lines: 163
+    Imports: threading, multiprocessing, concurrent.futures.ThreadPoolExecutor, concurrent.futures.ProcessPoolExecutor, time, typing.List, typing.Dict, typing.Any, typing.Callable
+    def chunk_text(text, chunk_size): Split text into chunks for parallel processing
+    def process_chunk_sequential(chunk_data): Process a single chunk sequentially
+    def tokenize_parallel_threaded(text, tokenizer_type, max_workers, chunk_size): Tokenize text using multiple threads
+    def tokenize_parallel_multiprocess(text, tokenizer_type, max_workers, chunk_size): Tokenize text using multiple processes
+    def benchmark_parallel_performance(text, tokenizer_type, chunk_size): Benchmark parallel vs sequential performance
+    def auto_parallel_tokenize(text, tokenizer_type, threshold): Automatically choose between sequential and parallel processing based on text size
+    def tokenize_multilang_parallel(text, tokenizer_type, language, max_workers): Tokenize multilingual text with parallel processing
+
+  ## santok_complete\core\santok_engine.py
+
+    SanTOK Tokenization Engine - A Complete Text Tokenization Module
+Convert your tokenizer into a reusable Python module
+
+    Lines: 557
+    Imports: typing.Dict, typing.List, typing.Optional, typing.Any, typing.Union
+    Class: TextTokenizationEngine
+      A complete text tokenization system with mathematical analysis
+      Methods: 18
+    def tokenize_text(text, tokenization_method): Convenience function for text tokenization
+
+Args:
+    text: Input text to tokenize
+    tokenization_
+    def analyze_text_comprehensive(text): Convenience function for comprehensive text analysis
+
+Args:
+    text: Input text for analysis
+    
+R
+    def generate_text_summary(text): Convenience function for text summary generation
+
+Args:
+    text: Input text for summary generation
+
+
+
+--- santok_complete\examples ---
+  ## santok_complete\examples\advanced_usage.py
+
+    Advanced Usage Examples for SanTOK Tokenization System
+
+    Lines: 108
+    Imports: santok_complete.tokenize_text, santok_complete.tokenize_space, santok_complete.tokenize_word, santok_complete.core.parallel_tokenizer.tokenize_parallel_threaded, santok_complete.TextTokenizer
+    def example_direct_functions(): Example using direct tokenization functions
+    def example_text_tokenizer_class(): Example using TextTokenizer class
+    def example_parallel_tokenization(): Example of parallel tokenization for large texts
+    def example_multi_language(): Example of multi-language tokenization
+    def example_all_tokenizers(): Example using all available tokenizers
+
+  ## santok_complete\examples\basic_usage.py
+
+    Basic Usage Examples for SanTOK Tokenization System
+
+    Lines: 100
+    Imports: santok_complete.TextTokenizationEngine
+    def example_basic_tokenization(): Basic tokenization example
+    def example_all_methods(): Example using all tokenization methods
+    def example_analyze_text(): Example of comprehensive text analysis
+    def example_custom_config(): Example with custom configuration
+    def example_generate_summary(): Example of generating text summary
+
+
+--- santok_complete\santok ---
+  ## santok_complete\santok\__init__.py
+
+    SanTOK Package
+A comprehensive text tokenization system with mathematical analysis and statistical features
+
+    Lines: 23
+    Imports: santok.TextTokenizationEngine, santok.tokenize_text, santok.analyze_text_comprehensive, santok.generate_text_summary
+
+  ## santok_complete\santok\cli.py
+
+    Command Line Interface for TextTokenizationEngine
+
+    Lines: 159
+    Imports: argparse, json, sys, typing.Dict, typing.Any, typing.List, santok.TextTokenizationEngine
+    def main(): Main CLI function
+    def format_results(results, quiet): Format results for pretty printing
+
+Args:
+    results: Dictionary containing tokenization results
+  
+
+  ## santok_complete\santok\santok.py
+
+    SanTOK Tokenization Engine - A Complete Text Tokenization Module
+Convert your tokenizer into a reusable Python module
+
+    Lines: 557
+    Imports: typing.Dict, typing.List, typing.Optional, typing.Any, typing.Union
+    Class: TextTokenizationEngine
+      A complete text tokenization system with mathematical analysis
+      Methods: 18
+    def tokenize_text(text, tokenization_method): Convenience function for text tokenization
+
+Args:
+    text: Input text to tokenize
+    tokenization_
+    def analyze_text_comprehensive(text): Convenience function for comprehensive text analysis
+
+Args:
+    text: Input text for analysis
+    
+R
+    def generate_text_summary(text): Convenience function for text summary generation
+
+Args:
+    text: Input text for summary generation
+
+
+
+--- santok_complete\santok\utils ---
+  ## santok_complete\santok\utils\__init__.py
+
+    SanTOK Utility Modules
+
+    Lines: 28
+    Imports: logging_config.setup_logging, logging_config.get_logger, config.get_config, config.Config, validation.validate_text_input, validation.validate_file_path, validation.validate_positive_int, validation.validate_port, validation.validate_choice, validation.ValidationError
+
+  ## santok_complete\santok\utils\config.py
+
+    Configuration Management for SanTOK
+Handles environment variables and configuration
+
+    Lines: 149
+    Imports: os, typing.Optional, pathlib.Path
+    Class: Config
+      Configuration class for SanTOK
+      Methods: 7
+    def get_config(): Get configuration instance
+
+Returns:
+    Config instance
+
+  ## santok_complete\santok\utils\logging_config.py
+
+    Logging Configuration for SanTOK
+Provides structured logging instead of print statements
+
+    Lines: 66
+    Imports: logging, sys, typing.Optional, pathlib.Path
+    def setup_logging(level, log_file, format_string): Set up logging configuration for SanTOK
+
+Args:
+    level: Logging level (DEBUG, INFO, WARNING, ERROR
+    def get_logger(name): Get a logger instance for a module
+
+Args:
+    name: Logger name (typically __name__)
+    
+Returns:
+ 
+
+  ## santok_complete\santok\utils\validation.py
+
+    Input Validation Utilities for SanTOK
+
+    Lines: 154
+    Imports: typing.Any, typing.Union, typing.List, pathlib.Path
+    Class: ValidationError
+      Custom exception for validation errors
+      Methods: 0
+    def validate_text_input(text, param_name): Validate text input
+
+Args:
+    text: Text input to validate
+    param_name: Parameter name for error
+    def validate_file_path(file_path, must_exist, param_name): Validate file path
+
+Args:
+    file_path: File path to validate
+    must_exist: If True, file must ex
+    def validate_positive_int(value, param_name, min_value): Validate positive integer
+
+Args:
+    value: Value to validate
+    param_name: Parameter name for err
+    def validate_port(port, param_name): Validate port number (1-65535)
+
+Args:
+    port: Port number to validate
+    param_name: Parameter na
+    def validate_choice(value, choices, param_name): Validate value is in choices list
+
+Args:
+    value: Value to validate
+    choices: List of valid cho
+
+
+--- santok_complete\tests ---
+  ## santok_complete\tests\__init__.py
+
+    Tests for SanTOK Tokenization System
+
+    Lines: 3
+
+  ## santok_complete\tests\test_basic_tokenization.py
+
+    Basic tokenization tests
+
+    Lines: 75
+    Imports: pytest, santok_complete.TextTokenizationEngine, santok_complete.tokenize_space, santok_complete.tokenize_word, santok_complete.tokenize_char
+    Class: TestBasicTokenization
+      Test basic tokenization functionality
+      Methods: 7
+
+  ## santok_complete\tests\test_core_tokenizers.py
+
+    Tests for core tokenization functions
+
+    Lines: 85
+    Imports: pytest, santok_complete.tokenize_space, santok_complete.tokenize_word, santok_complete.tokenize_char, santok_complete.tokenize_grammar, santok_complete.tokenize_subword, santok_complete.tokenize_text, santok_complete.TextTokenizer
+    Class: TestCoreTokenizers
+      Test core tokenization functions
+      Methods: 7
+
+
+--- tests ---
+  ## tests\__init__.py
+
+    THRESHOLD_ONSET Test Suite
+
+All tests for the THRESHOLD_ONSET project are located in this directory.
+
+    Lines: 5
+
+  ## tests\test_phase3_convergence.py
+
+    THRESHOLD_ONSET — Phase 3 Convergence Validation Test
+
+Tests Phase 3 stability and convergence across multiple run counts.
+Proves that Phase 3 results are not accidental and can be frozen.
+
+CRITICAL: This test must pass before Phase 3 can be frozen.
+
+    Lines: 179
+    Imports: sys, os, main.run_phase0_finite, main.run_phase1, main.run_phase2_multi_run, main.run_phase3_multi_run
+    def run_convergence_test(): Run Phase 3 convergence validation test.
+
+Tests:
+1. Gate passes consistently across all run counts
+2
+
+  ## tests\test_phase4_freeze.py
+
+    THRESHOLD_ONSET — Phase 4 Freeze Validation Test
+
+Tests Phase 4 (SYMBOL) for freeze-worthiness:
+1. Determinism: Same inputs → same alias tables
+2. Reversibility: Removing Phase 4 → Phase 3 restored bit-for-bit
+3. Immutability: Aliases never change once assigned
+4. Gate determinism: Gate never flakes
+
+CRITICAL: Output shows only counts, never symbol values.
+
+    Lines: 480
+    Imports: sys, os, subprocess, json
+    def run_main_capture_output(): Run integration pipeline and capture Phase 2, Phase 3, and Phase 4 metrics.
+Uses integration/run_com
+    def test_determinism(num_iterations): Test 1: Determinism
+Same inputs → same alias tables
+
+CRITICAL: Phase 4 determinism must be tested wi
+    def test_gate_determinism(num_iterations): Test 2: Gate Determinism
+Gate never flakes - always passes when Phase 3 frozen, always fails when no
+    def test_reversibility(): Test 3: Reversibility
+Removing Phase 4 → Phase 3 restored bit-for-bit
+
+This test verifies that Phase
+    def test_immutability(num_iterations): Test 4: Immutability
+Aliases never change once assigned.
+
+This test verifies that Phase 4 produces i
+    def run_freeze_validation(): Run all Phase 4 freeze validation tests.
+
+
+--- threshold_onset ---
+  ## threshold_onset\__init__.py
+
+    THRESHOLD_ONSET - Foundational System for Structure Emergence
+
+A system that proves structure emerges before language exists.
+
+    Lines: 7
+
+
+--- threshold_onset\phase0 ---
+  ## threshold_onset\phase0\__init__.py
+
+    Phase 0: THRESHOLD_ONSET
+
+Action before Knowledge.
+
+    Lines: 9
+    Imports: phase0.phase0.phase0
+
+  ## threshold_onset\phase0\action.py
+
+    Phase 0: ACTION
+
+Only action, interaction, trace, repetition, persistence, stabilization.
+
+NO symbols, letters, meaning, tokens, embeddings, plots, coordinates.
+
+कार्य (kārya) happens before ज्ञान (jñāna)
+
+    Lines: 33
+    def execute(): Action without interpretation.
+Returns: trace of what happened, not what it means.
+    def interact(): Interaction between actions.
+Returns: pattern of interaction, not identity.
+    def persist(): Persistence of action over time.
+Returns: what survives, not why it survives.
+
+  ## threshold_onset\phase0\actions.py
+
+    THRESHOLD_ONSET — Phase 0 Action Variants
+
+Structured but meaningless actions for Phase 0.
+All actions are Phase 0 compliant: numeric, opaque, no meaning, no labels.
+
+Internal state is allowed as long as:
+- It's not named externally
+- It's not interpreted
+- It's not displayed
+- It's mechanical only
+
+    Lines: 114
+    Imports: random, math
+    Class: InertiaAction
+      Random with Inertia.
+
+Action(t+1) depends slightly on Action(t).
+Stateful action with carry-over (internal state, no naming).
+      Methods: 2
+    Class: BoundedWalk
+      Bounded Random Walk.
+
+Action drifts within bounds.
+Position is internal state, not named.
+      Methods: 2
+    Class: DecayNoise
+      Decay + Noise.
+
+Action decays with added noise.
+Decay is mechanical, not interpreted.
+      Methods: 2
+    Class: WeakOscillator
+      Weak Oscillator.
+
+Action oscillates with noise.
+Oscillation is mechanical, not interpreted.
+      Methods: 2
+    Class: FiniteAction
+      Finite Action.
+
+Action outputs from a small finite set.
+Discreteness is mechanical, not interpreted.
+No labels, no meaning, just finite outputs.
+
+Phase 0 compliant: discrete but meaningless.
+      Methods: 2
+
+  ## threshold_onset\phase0\phase0.py
+
+    THRESHOLD_ONSET — Phase 0
+
+Action happens.
+Traces remain.
+Repetition reveals survival.
+
+No meaning.
+No identity.
+
+    Lines: 30
+    def phase0(actions, steps): actions: raw callable behaviors (no labels)
+steps: number of repetitions
+
+Yields:
+    trace, count, 
+
+  ## threshold_onset\phase0\repetition.py
+
+    Phase 0: REPETITION
+
+Only repetition, persistence, stabilization.
+
+NO segmentation, identity, repeatable units (those are Phase 1+).
+
+कार्य (kārya) happens before ज्ञान (jñāna)
+
+    Lines: 33
+    def repeat(): Repetition without assuming units.
+Returns: repetition pattern, not repeated units.
+    def stabilize(): Stabilization through repetition.
+Returns: what stabilizes, not what it stabilizes into.
+    def survive(): What survives repetition.
+Returns: survival pattern, not identity of what survives.
+
+  ## threshold_onset\phase0\trace.py
+
+    Phase 0: TRACE
+
+Only traces, patterns of survival, invariants under repetition.
+
+NO symbols, IDs, names, interpretations.
+
+If this returns anything interpretable → it's wrong.
+
+    Lines: 33
+    def record(): Record a trace of action.
+Returns: raw trace data, not labeled or named.
+    def pattern(): Extract pattern from traces.
+Returns: pattern structure, not meaning.
+    def invariant(): Find what remains constant under repetition.
+Returns: invariant structure, not explanation.
+
+
+--- threshold_onset\phase1 ---
+  ## threshold_onset\phase1\__init__.py
+
+    Phase 1: SEGMENTATION
+
+Segmentation without naming.
+
+    Lines: 9
+    Imports: phase1.phase1.phase1
+
+  ## threshold_onset\phase1\boundary.py
+
+    THRESHOLD_ONSET — Phase 1: BOUNDARY
+
+Boundary detection without naming.
+Detects separation points where residues differ.
+Returns indices only. No labels, no interpretation.
+
+CONSTRAINT: Thresholds must be FIXED, EXTERNAL, and NON-ADAPTIVE.
+No learning, tuning, or optimization allowed.
+
+    Lines: 39
+    def detect_boundaries(residues, threshold): Detect boundaries where consecutive residues differ significantly.
+
+Args:
+    residues: list of opaq
+
+  ## threshold_onset\phase1\cluster.py
+
+    THRESHOLD_ONSET — Phase 1: CLUSTER
+
+Clustering without naming or labeling.
+Groups residues by proximity.
+Returns counts only. No group names, no interpretation.
+
+CONSTRAINT: Clustering thresholds must be FIXED and EXTERNAL.
+No adaptive clustering or optimization.
+
+    Lines: 60
+    def cluster_residues(residues, threshold): Group residues by proximity using fixed threshold.
+
+Args:
+    residues: list of opaque residues (flo
+
+  ## threshold_onset\phase1\distance.py
+
+    THRESHOLD_ONSET — Phase 1: DISTANCE
+
+Difference measurement between residues.
+Returns raw numbers only. No interpretation.
+
+CONSTRAINT: Distance metrics must be mechanically defined.
+No adaptive or learned metrics.
+
+    Lines: 44
+    def absolute_difference(a, b): Compute absolute difference between two residues.
+
+Args:
+    a: residue (float)
+    b: residue (floa
+    def pairwise_distances(residues): Compute pairwise distances between consecutive residues.
+
+Args:
+    residues: list of opaque residue
+
+  ## threshold_onset\phase1\pattern.py
+
+    THRESHOLD_ONSET — Phase 1: PATTERN
+
+Pattern detection without naming or interpretation.
+Detects repetition using exact equality only.
+Returns counts only. No pattern names, no abstraction.
+
+CONSTRAINT: Pattern detection limited to EXACT EQUALITY or FIXED-WINDOW comparison.
+No abstraction, compression, or symbolic patterning allowed.
+
+    Lines: 76
+    def detect_repetition(residues, window_size): Detect exact repetition in residue sequences.
+
+Uses EXACT EQUALITY only. No approximate matching.
+
+A
+    def detect_survival(residue_sequences): Detect sequences that survive across iterations using exact equality.
+
+Uses EXACT EQUALITY only. No 
+
+  ## threshold_onset\phase1\phase1.py
+
+    THRESHOLD_ONSET — Phase 1: SEGMENTATION
+
+Segmentation without naming.
+Boundary detection, clustering, pattern detection.
+Returns structural metrics only. No interpretation.
+
+Phase 1 operates as separate layer from Phase 0.
+Reads Phase 0 output only. Does not modify Phase 0.
+
+    Lines: 57
+    def phase1(residues): Phase 1 segmentation pipeline.
+
+Operates on opaque residues from Phase 0.
+Performs segmentation with
+
+
+--- threshold_onset\phase2 ---
+  ## threshold_onset\phase2\__init__.py
+
+    Phase 2: IDENTITY
+
+Identity without naming.
+
+    Lines: 9
+    Imports: phase2.phase2.phase2, phase2.phase2.phase2_multi_run
+
+  ## threshold_onset\phase2\identity.py
+
+    THRESHOLD_ONSET — Phase 2: IDENTITY
+
+Identity hash generation without naming.
+Generates internal identity hashes for persistent segments.
+Hashes are INTERNAL ONLY - not names, not symbols, not labels.
+
+CONSTRAINT: Identity hashes are mechanical identifiers only.
+They are NOT to be displayed as names or used as symbols.
+
+    Lines: 106
+    Imports: hashlib
+    def assign_identity_hashes(residue_sequences, threshold): Assign internal identity hashes to persistent segments.
+
+Creates identity mappings using hash-based 
+    def _hash_segment(segment): Generate hash for a segment (internal tracking only).
+
+Args:
+    segment: tuple of residues (fixed w
+    def _generate_identity_hash(segment_hash, persistence_count): Generate identity hash for a persistent segment.
+
+Identity hash is INTERNAL ONLY - not a name, not a
+
+  ## threshold_onset\phase2\persistence.py
+
+    THRESHOLD_ONSET — Phase 2: PERSISTENCE
+
+Persistence measurement without naming.
+Tracks how long segments persist across iterations.
+Returns counts only. No names, no labels, no interpretation.
+
+CONSTRAINT: Thresholds must be FIXED, EXTERNAL, and NON-ADAPTIVE.
+No learning, tuning, or optimization allowed.
+
+    Lines: 87
+    Imports: hashlib
+    def measure_persistence(residue_sequences, threshold): Measure persistence of segments across multiple Phase 0 iterations.
+
+Tracks segments that appear in 
+    def _hash_segment(segment): Generate internal identity hash for a segment.
+
+Hash is for internal tracking only, not a name or sy
+
+  ## threshold_onset\phase2\phase2.py
+
+    THRESHOLD_ONSET — Phase 2: IDENTITY
+
+Identity without naming.
+Persistence measurement without meaning.
+Repeatable units without symbols.
+Identity hashes (internal only, not symbolic).
+
+Phase 2 operates as separate layer from Phase 0 and Phase 1.
+Reads Phase 0 and Phase 1 output only. Does not modify them.
+
+    Lines: 184
+    def phase2(residues, phase1_metrics): Phase 2 identity pipeline.
+
+Operates on opaque residues from Phase 0 and metrics from Phase 1.
+Perfo
+    def _reconstruct_clusters(residues, phase1_metrics): Reconstruct clusters from residues using Phase 1 clustering logic.
+
+This is necessary because Phase 
+    def phase2_multi_run(residue_sequences, phase1_metrics_list): Phase 2 identity pipeline with multiple runs.
+
+Tests persistence across multiple independent Phase 0
+
+  ## threshold_onset\phase2\repeatable.py
+
+    THRESHOLD_ONSET — Phase 2: REPEATABLE
+
+Repeatable unit detection without naming.
+Identifies segments that repeat across different contexts.
+Returns counts only. No unit names, no labels, no interpretation.
+
+CONSTRAINT: Uses EXACT EQUALITY only.
+No approximate matching or abstraction allowed.
+
+    Lines: 82
+    Imports: hashlib
+    def detect_repeatable_units(residues, threshold): Detect units that repeat consistently across different contexts.
+
+Uses EXACT EQUALITY for unit compa
+    def _hash_unit(unit): Generate internal identity hash for a unit.
+
+Hash is for internal tracking only, not a name or symbo
+
+  ## threshold_onset\phase2\stability.py
+
+    THRESHOLD_ONSET — Phase 2: STABILITY
+
+Stability metrics without naming.
+Measures cluster stability across iterations.
+Returns counts only. No cluster names, no labels, no interpretation.
+
+CONSTRAINT: Uses EXACT EQUALITY only.
+No approximate matching or abstraction allowed.
+
+    Lines: 86
+    Imports: hashlib
+    def measure_stability(cluster_sequences, threshold): Measure stability of clusters across iterations.
+
+Tracks which clusters persist across different ite
+    def _hash_cluster(cluster): Generate internal identity hash for a cluster.
+
+Hash is for internal tracking only, not a name or sy
+
+
+--- threshold_onset\phase3 ---
+  ## threshold_onset\phase3\__init__.py
+
+    Phase 3: RELATION
+
+Relation without naming.
+
+    Lines: 9
+    Imports: phase3.phase3.phase3, phase3.phase3.phase3_multi_run
+
+  ## threshold_onset\phase3\dependency.py
+
+    THRESHOLD_ONSET — Phase 3: RELATION
+
+Dependency measurement without naming.
+Measures dependencies between identity hashes (which identities depend on others).
+
+CONSTRAINT: Only EXACT EQUALITY allowed.
+Hash pairs only (no names, no labels).
+Fixed window size (non-adaptive).
+Temporal ordering only (no interpretation).
+
+    Lines: 160
+    Imports: hashlib
+    def measure_dependencies(residues, phase2_metrics, threshold, window): Measure dependencies between identity hashes.
+
+Detects when one identity hash appears before another
+    def _map_residues_to_identities(residues, phase2_metrics, segment_window): Map residue indices to identity hashes.
+
+Creates segments from residues, hashes them, and looks up i
+    def _hash_segment(segment): Generate hash for a segment (internal tracking only).
+
+Uses same hashing method as Phase 2 for consi
+
+  ## threshold_onset\phase3\graph.py
+
+    THRESHOLD_ONSET — Phase 3: RELATION
+
+Graph structure construction without naming.
+Builds graph structures from identity hashes (nodes and edges as hash pairs only).
+
+CONSTRAINT: Graph structures are INTERNAL ONLY.
+Nodes are identity hashes (internal identifiers only).
+Edges are hash pairs (internal identifiers only).
+No node names, no edge labels, no graph visualization.
+
+    Lines: 108
+    Imports: hashlib
+    def build_graph(phase2_metrics, threshold): Build graph structure from identity hashes.
+
+Creates nodes from identity hashes and edges from co-oc
+
+  ## threshold_onset\phase3\influence.py
+
+    THRESHOLD_ONSET — Phase 3: RELATION
+
+Influence metrics without naming.
+Measures how identity hashes influence each other (influence strength and frequency).
+
+CONSTRAINT: Only EXACT EQUALITY allowed.
+Raw numbers only (no interpretation).
+Fixed window size (non-adaptive).
+Influence strength is raw count (no normalization, no semantics).
+
+    Lines: 168
+    Imports: hashlib
+    def measure_influence(residues, phase2_metrics, threshold, window): Measure how identity hashes influence each other.
+
+Measures influence strength: Count how often hash
+    def _map_residues_to_identities(residues, phase2_metrics, segment_window): Map residue indices to identity hashes.
+
+Creates segments from residues, hashes them, and looks up i
+    def _hash_segment(segment): Generate hash for a segment (internal tracking only).
+
+Uses same hashing method as Phase 2 for consi
+
+  ## threshold_onset\phase3\interaction.py
+
+    THRESHOLD_ONSET — Phase 3: RELATION
+
+Interaction detection without naming.
+Detects when identity hashes appear together (co-occurrence patterns).
+
+CONSTRAINT: Only EXACT EQUALITY allowed.
+Hash pairs only (no names, no labels).
+Fixed window size (non-adaptive).
+
+    Lines: 156
+    Imports: hashlib
+    def detect_interactions(residues, phase2_metrics, threshold, window): Detect when identity hashes appear together (co-occurrence patterns).
+
+Uses EXACT EQUALITY for hash 
+    def _map_residues_to_identities(residues, phase2_metrics, segment_window): Map residue indices to identity hashes.
+
+Creates segments from residues, hashes them, and looks up i
+    def _hash_segment(segment): Generate hash for a segment (internal tracking only).
+
+Uses same hashing method as Phase 2 for consi
+
+  ## threshold_onset\phase3\persistence.py
+
+    THRESHOLD_ONSET — Phase 3: RELATION
+
+Relation persistence measurement without naming.
+Measures which relations persist across multiple runs.
+
+CONSTRAINT: Uses EXACT EQUALITY only.
+Fixed threshold (non-adaptive).
+
+    Lines: 74
+    def measure_relation_persistence(relation_hashes_per_run, threshold): Measure which relations persist across multiple runs.
+
+A relation is persistent if it appears in ≥ t
+
+  ## threshold_onset\phase3\phase3.py
+
+    THRESHOLD_ONSET — Phase 3: RELATION
+
+Relation without naming.
+Graph structures without symbolic labels.
+Interactions without meaning.
+Dependencies without interpretation.
+Influence measurement without semantics.
+
+Phase 3 operates as separate layer from Phase 0, Phase 1, and Phase 2.
+Reads Phase 0, Phase 1, and Phase 2 output only. Does not modify them.
+
+    Lines: 329
+    Imports: collections.deque
+    def phase3(residues, phase1_metrics, phase2_metrics): Phase 3 relation pipeline.
+
+Operates on opaque residues from Phase 0, metrics from Phase 1, and iden
+    def _compute_degree_counts(nodes, edges): Compute degree counts for each node in graph.
+
+Degree = number of edges connected to node.
+Uses exac
+    def _compute_path_lengths(nodes, edges): Compute shortest path lengths between nodes using BFS.
+
+Path length = number of edges in path.
+Only 
+    def phase3_multi_run(residue_sequences, phase1_metrics_list, phase2_metrics): Phase 3 relation pipeline with multiple runs.
+
+Tests persistence and stability across multiple indep
+    def _check_phase3_gate(phase2_metrics, persistent_relations, stability_ratio): Check if Phase 3 gate criteria are met.
+
+Phase 3 must refuse execution unless ALL three criteria are
+
+  ## threshold_onset\phase3\relation.py
+
+    THRESHOLD_ONSET — Phase 3: RELATION
+
+Relation hash generation without naming.
+Generates structural relation signatures (hash-only, no names).
+
+CONSTRAINT: Relation type hashes must be FIXED and GLOBAL.
+Computed once at module level, not derived dynamically.
+
+    Lines: 101
+    Imports: hashlib
+    def generate_relation_hash(source_hash, target_hash, relation_type_hash): Generate hash-based relation identifier.
+
+Creates a structural relation signature from source, targe
+    def extract_relations(phase3_metrics): Extract all relations from Phase 3 metrics and generate relation_hashes.
+
+Processes interaction_pair
+
+  ## threshold_onset\phase3\stability.py
+
+    THRESHOLD_ONSET — Phase 3: RELATION
+
+Relation stability measurement without naming.
+Measures numerical stability of relations across runs.
+
+CONSTRAINT: Stability is SECONDARY to persistence.
+Only measures stability on persistent relations, not transient relations.
+Uses EXACT EQUALITY only.
+Fixed thresholds (non-adaptive).
+
+    Lines: 139
+    def measure_relation_stability(relation_hashes_per_run, relation_counts_per_run, graph_metrics_per_run, persistent_relation_hashes): Measure numerical stability of relations across runs.
+
+CRITICAL: Stability is secondary to persisten
+
+
+--- threshold_onset\phase4 ---
+  ## threshold_onset\phase4\__init__.py
+
+    THRESHOLD_ONSET — Phase 4: SYMBOL
+
+Pure aliasing phase.
+Creates reversible symbol mappings for persistent identities and relations.
+
+Phase 4 adds ZERO new structure.
+Removing all symbols must restore Phase 3 bit-for-bit, without recomputation.
+
+    Lines: 9
+
+  ## threshold_onset\phase4\alias.py
+
+    THRESHOLD_ONSET — Phase 4: SYMBOL
+
+Symbol assignment (pure aliasing).
+Creates deterministic, reversible symbol mappings.
+
+CONSTRAINT: Symbols are integers only (0, 1, 2, 3, ...).
+No meaning, no ordering, no semantics.
+Pure one-to-one mapping.
+
+    Lines: 100
+    def assign_identity_aliases(identity_hashes): Assign integer symbols to identity hashes.
+
+Creates deterministic, reversible mappings.
+Symbols are 
+    def assign_relation_aliases(relation_hashes): Assign integer symbols to relation hashes.
+
+Creates deterministic, reversible mappings.
+Symbols are 
+
+  ## threshold_onset\phase4\phase4.py
+
+    THRESHOLD_ONSET — Phase 4: SYMBOL
+
+Pure aliasing phase.
+Creates reversible symbol mappings for persistent identities and relations.
+
+Phase 4 adds ZERO new structure.
+Removing all symbols must restore Phase 3 bit-for-bit, without recomputation.
+
+    Lines: 108
+    Imports: phase4.alias.assign_identity_aliases, phase4.alias.assign_relation_aliases
+    def phase4(phase2_metrics, phase3_metrics): Phase 4 symbol pipeline (pure aliasing).
+
+Creates reversible symbol mappings for persistent identiti
+    def _check_phase4_gate(phase2_metrics, phase3_metrics): Check if Phase 4 gate criteria are met.
+
+Phase 4 must refuse execution unless ALL criteria are met:
+
+
+
+--- threshold_onset\semantic ---
+  ## threshold_onset\semantic\__init__.py
+
+    Semantic Discovery Module (Phases 5-9)
+
+Enterprise-grade semantic understanding system built on structure foundation.
+
+This module implements:
+- Phase 5: Consequence Field Engine
+- Phase 6: Meaning Discovery (Clustering)
+- Phase 7: Role Emergence (Functional Roles)
+- Phase 8: Constraint & Template Discovery
+- Phase 9: Fluency Generator
+
+All implementations are from first principles, no external AI/ML dependencies.
+
+Copyright (c) 2025 THRESHOLD_ONSET Project
+License: MIT
+
+    Lines: 36
+    Imports: threshold_onset.semantic.phase5.consequence_field.ConsequenceFieldEngine, threshold_onset.semantic.phase6.meaning_discovery.MeaningDiscoveryEngine, threshold_onset.semantic.phase7.role_emergence.RoleEmergenceEngine, threshold_onset.semantic.phase8.constraint_discovery.ConstraintDiscoveryEngine, threshold_onset.semantic.phase9.fluency_generator.FluencyGenerator
+
+  ## threshold_onset\semantic\example_complete_workflow.py
+
+    Complete Semantic Discovery Workflow Example
+
+Enterprise-grade example demonstrating all 5 phases.
+
+    Lines: 277
+    Imports: sys, logging, pathlib.Path, threshold_onset.semantic.ConsequenceFieldEngine, threshold_onset.semantic.MeaningDiscoveryEngine, threshold_onset.semantic.RoleEmergenceEngine, threshold_onset.semantic.ConstraintDiscoveryEngine, threshold_onset.semantic.FluencyGenerator
+    def example_complete_workflow(): Complete workflow example for semantic discovery.
+
+This is a template - you need to provide your Pha
+
+  ## threshold_onset\semantic\large_context.py
+
+    Large Context Processing Module - GPT-5.2-like Capabilities
+
+Supports:
+- 1000,000 token context windows
+- 512,000 token output capacity
+- Chunked processing for memory efficiency
+- Streaming for long outputs
+- Multi-step workflow support
+
+    Lines: 336
+    Imports: typing.List, typing.Iterator, typing.Optional, typing.Dict, typing.Any, logging, pathlib.Path
+    Class: LargeContextProcessor
+      Processes large text inputs with GPT-5.2-like capabilities.
+
+Features:
+- Handles up to 400K token contexts
+- Generates up to 128K token outputs
+- Memory-efficient chunked processing
+- Streaming suppor
+      Methods: 5
+    Class: StreamingGenerator
+      Generates long outputs in streaming fashion (up to 128K tokens).
+
+Features:
+- Memory-efficient generation
+- Streaming output
+- Progress tracking
+      Methods: 2
+    Class: MultiStepWorkflow
+      Manages multi-step workflows with state preservation.
+
+Features:
+- Step-by-step execution
+- State management
+- Error recovery
+- Progress tracking
+      Methods: 3
+    def enhance_main_with_large_context(): Enhancement guide for adding large context support to main.py.
+
+Returns:
+    Dictionary with enhance
+
+
+--- threshold_onset\semantic\common ---
+  ## threshold_onset\semantic\common\__init__.py
+
+    Common utilities and shared components for semantic discovery module.
+
+Enterprise-grade shared utilities.
+
+    Lines: 57
+    Imports: threshold_onset.semantic.common.types.ConsequenceVector, threshold_onset.semantic.common.types.ConsequenceDelta, threshold_onset.semantic.common.types.MeaningSignature, threshold_onset.semantic.common.types.RoleMap, threshold_onset.semantic.common.types.ConstraintMap, threshold_onset.semantic.common.exceptions.SemanticDiscoveryError, threshold_onset.semantic.common.exceptions.ConsequenceFieldError, threshold_onset.semantic.common.exceptions.MeaningDiscoveryError, threshold_onset.semantic.common.exceptions.RoleEmergenceError, threshold_onset.semantic.common.exceptions.ConstraintDiscoveryError, threshold_onset.semantic.common.exceptions.FluencyGenerationError, threshold_onset.semantic.common.validators.validate_identity_hash, threshold_onset.semantic.common.validators.validate_symbol, threshold_onset.semantic.common.validators.validate_transition, threshold_onset.semantic.common.utils.calculate_entropy (+3 more)
+
+  ## threshold_onset\semantic\common\exceptions.py
+
+    Custom exceptions for semantic discovery module.
+
+Enterprise-grade exception hierarchy.
+
+    Lines: 59
+    Class: SemanticDiscoveryError
+      Base exception for semantic discovery module.
+      Methods: 2
+    Class: ConsequenceFieldError
+      Error in consequence field computation.
+      Methods: 1
+    Class: MeaningDiscoveryError
+      Error in meaning discovery.
+      Methods: 1
+    Class: RoleEmergenceError
+      Error in role emergence.
+      Methods: 1
+    Class: ConstraintDiscoveryError
+      Error in constraint discovery.
+      Methods: 1
+    Class: FluencyGenerationError
+      Error in fluency generation.
+      Methods: 1
+
+  ## threshold_onset\semantic\common\types.py
+
+    Type definitions for semantic discovery module.
+
+Enterprise-grade type definitions with full type hints.
+
+    Lines: 75
+    Imports: typing.TypedDict, typing.Dict, typing.List, typing.Tuple, typing.Optional, typing.Set, typing.Any, dataclasses.dataclass
+    Class: ConsequenceVector
+      Consequence vector for an identity.
+      Methods: 0
+    Class: ConsequenceDelta
+      Counterfactual delta for a transition.
+      Methods: 0
+    Class: MeaningSignature
+      Meaning signature for a cluster.
+      Methods: 0
+    Class: RoleMap
+      Role mapping for symbols.
+      Methods: 0
+    Class: ConstraintMap
+      Constraint and template map.
+      Methods: 0
+    Class: ConsequenceField
+      Consequence field container.
+      Methods: 0
+    Class: MeaningMap
+      Meaning map container.
+      Methods: 0
+    Class: RolloutResult
+      Result of a single rollout.
+      Methods: 0
+
+  ## threshold_onset\semantic\common\utils.py
+
+    Utility functions for semantic discovery module.
+
+Enterprise-grade utility functions with full type hints.
+
+    Lines: 187
+    Imports: math, typing.List, typing.Dict, typing.Any, collections.Counter
+    def calculate_entropy(values): Calculate entropy of a distribution.
+
+Args:
+    values: List of values (can be any hashable type)
+  
+    def calculate_entropy_from_options(num_options): Calculate entropy from number of options (uniform distribution).
+
+Args:
+    num_options: Number of o
+    def calculate_entropy_from_counts(counts): Calculate Shannon entropy from transition counts (empirical distribution).
+
+This is the CORRECTED ve
+    def calculate_percentile(values, percentile): Calculate percentile value from list.
+
+Args:
+    values: List of numeric values
+    percentile: Perc
+    def normalize_vector(vector, ranges): Normalize vector components to [0, 1] range.
+
+Args:
+    vector: Vector to normalize
+    ranges: Min/
+    def calculate_similarity(vec1, vec2): Calculate cosine similarity between two vectors.
+
+Args:
+    vec1: First vector
+    vec2: Second vect
+    def mean(values): Calculate mean of values.
+    def variance(values): Calculate variance of values.
+
+  ## threshold_onset\semantic\common\validators.py
+
+    Input validation utilities.
+
+Enterprise-grade validation with clear error messages.
+
+    Lines: 118
+    Imports: re, typing.Tuple, threshold_onset.semantic.common.exceptions.ConsequenceFieldError, threshold_onset.semantic.common.exceptions.FluencyGenerationError
+    def validate_identity_hash(identity_hash): Validate identity hash format.
+
+Accepts any non-empty string as valid identity hash.
+(Phase 2 identi
+    def validate_symbol(symbol): Validate symbol ID.
+
+Args:
+    symbol: Symbol ID integer
+    
+Raises:
+    TypeError: If not an integ
+    def validate_transition(transition): Validate transition tuple.
+
+Args:
+    transition: (source_hash, target_hash) tuple
+    
+Raises:
+    
+    def validate_k(k): Validate k-step horizon parameter.
+
+Args:
+    k: k-step horizon
+    
+Raises:
+    TypeError: If not a
+    def validate_num_rollouts(num_rollouts): Validate number of rollouts parameter.
+
+Args:
+    num_rollouts: Number of rollouts
+    
+Raises:
+    
+
+
+--- threshold_onset\semantic\config ---
+  ## threshold_onset\semantic\config\__init__.py
+
+    Configuration management for semantic discovery module.
+
+Enterprise-grade configuration with validation.
+
+    Lines: 29
+    Imports: threshold_onset.semantic.config.defaults.DEFAULT_K, threshold_onset.semantic.config.defaults.DEFAULT_NUM_ROLLOUTS, threshold_onset.semantic.config.defaults.DEFAULT_MIN_FREQUENCY, threshold_onset.semantic.config.defaults.DEFAULT_NOVELTY_WINDOW, threshold_onset.semantic.config.defaults.DEFAULT_NUM_CLUSTERS, threshold_onset.semantic.config.defaults.get_default_config, threshold_onset.semantic.config.validation.validate_config, threshold_onset.semantic.config.validation.ConfigError
+
+  ## threshold_onset\semantic\config\defaults.py
+
+    Default configuration values.
+
+Enterprise-grade configuration management.
+
+    Lines: 67
+    Imports: typing.Dict, typing.Any
+    def get_default_config(): Get default configuration dictionary.
+
+Returns:
+    Default configuration dict
+
+  ## threshold_onset\semantic\config\validation.py
+
+    Configuration validation.
+
+Enterprise-grade config validation.
+
+    Lines: 67
+    Imports: typing.Dict, typing.Any, threshold_onset.semantic.common.exceptions.SemanticDiscoveryError
+    Class: ConfigError
+      Configuration error.
+      Methods: 0
+    def validate_config(config): Validate configuration dictionary.
+
+Args:
+    config: Configuration dict
+    
+Raises:
+    ConfigErro
+
+
+--- threshold_onset\semantic\phase5 ---
+  ## threshold_onset\semantic\phase5\__init__.py
+
+    Phase 5: Consequence Field Engine
+
+Enterprise-grade consequence measurement system.
+
+All corrections applied:
+- Multiple probe policies
+- Observer-based refusal checking
+- Empirical entropy from rollout counts
+- Counterfactual edge deltas
+- Near-refusal tracking from rollout logs
+
+    Lines: 46
+    Imports: threshold_onset.semantic.phase5.consequence_field.ConsequenceFieldEngine, threshold_onset.semantic.phase5.policies.policy_greedy, threshold_onset.semantic.phase5.policies.policy_stochastic_topk, threshold_onset.semantic.phase5.policies.policy_pressure_minimizing, threshold_onset.semantic.phase5.policies.policy_novelty_seeking, threshold_onset.semantic.phase5.policies.get_policy, threshold_onset.semantic.phase5.rollout.rollout_from_identity, threshold_onset.semantic.phase5.rollout.rollout_from_identity_forced_first, threshold_onset.semantic.phase5.metrics.compute_k_reach, threshold_onset.semantic.phase5.metrics.compute_k_reach_from_path, threshold_onset.semantic.phase5.metrics.get_escape_concentration, threshold_onset.semantic.phase5.metrics.compute_near_refusal_rate_from_rollouts
+
+  ## threshold_onset\semantic\phase5\consequence_field.py
+
+    Consequence Field Engine
+
+Enterprise-grade consequence field computation with all corrections applied.
+
+Implements:
+- Multiple probe policies
+- Observer-based refusal checking
+- Empirical entropy from rollout counts
+- Counterfactual edge deltas
+- Near-refusal tracking from rollout logs
+
+    Lines: 570
+    Imports: logging, json, typing.Dict, typing.Any, typing.Optional, typing.List, typing.Tuple, pathlib.Path, threshold_onset.semantic.common.types.ConsequenceVector, threshold_onset.semantic.common.types.ConsequenceDelta, threshold_onset.semantic.common.types.ConsequenceField, threshold_onset.semantic.common.exceptions.ConsequenceFieldError, threshold_onset.semantic.common.validators.validate_identity_hash, threshold_onset.semantic.common.validators.validate_k, threshold_onset.semantic.common.validators.validate_num_rollouts (+9 more)
+    Class: ConsequenceFieldEngine
+      Consequence Field Engine
+
+Computes consequence vectors for all identities using multiple probe policies.
+All corrections applied:
+- Multiple policies (not just greedy)
+- Observer-based refusal
+- Empir
+      Methods: 8
+
+  ## threshold_onset\semantic\phase5\metrics.py
+
+    Consequence Metrics Computation
+
+Enterprise-grade metric computation for consequence vectors.
+
+    Lines: 132
+    Imports: math, logging, typing.List, typing.Dict, typing.Any, typing.Set, typing.Optional, threshold_onset.semantic.common.utils.mean
+    def compute_k_reach_from_path(path, k): Compute k-step reachable set size from path.
+
+Args:
+    path: List of identity hashes in path
+    k:
+    def compute_k_reach(identity_hash, continuation_observer, k): Compute k-step reachable set size using BFS.
+
+Args:
+    identity_hash: Starting identity hash
+    co
+    def get_escape_concentration(symbol, topology_data): Get escape concentration from topology data (if available).
+
+Args:
+    symbol: Symbol ID
+    topolog
+    def compute_near_refusal_rate_from_rollouts(identity_hash, rollout_results): Compute near-refusal rate from rollout logs.
+
+CORRECTED: Computes from actual rollout logs, not exte
+
+  ## threshold_onset\semantic\phase5\policies.py
+
+    Probe Policies for Consequence Field Measurement
+
+Enterprise-grade policy implementations for rollout-based measurement.
+
+Multiple policies ensure policy-invariant consequence measurement.
+
+    Lines: 228
+    Imports: random, typing.Optional, typing.Set, typing.List, typing.Dict, typing.Any, logging
+    def policy_greedy(current_identity, observer, seed): Policy A: Greedy Continuation
+
+Select next identity that maximizes continuation options.
+Determinist
+    def policy_stochastic_topk(current_identity, observer, k, seed): Policy B: Stochastic Top-K
+
+Select randomly from top-k options (seeded for determinism).
+
+Args:
+    
+    def policy_pressure_minimizing(current_identity, observer, topology_data, seed): Policy C: Pressure-Minimizing
+
+Select next identity that minimizes pressure (if topology data availa
+    def policy_novelty_seeking(current_identity, observer, recent_path, seed): Policy D: Novelty-Seeking
+
+Select next identity that avoids recent path (anti-loop).
+
+Args:
+    curr
+    def get_policy(policy_name): Get policy function by name.
+
+Args:
+    policy_name: One of 'greedy', 'stochastic_topk', 'pressure_m
+
+  ## threshold_onset\semantic\phase5\rollout.py
+
+    Rollout System for Consequence Field Measurement
+
+Enterprise-grade rollout implementation with observer-based refusal checking
+and empirical entropy tracking.
+
+    Lines: 272
+    Imports: logging, typing.Optional, typing.List, typing.Dict, typing.Any, collections.Counter, threshold_onset.semantic.common.types.RolloutResult, threshold_onset.semantic.common.utils.calculate_entropy_from_counts, threshold_onset.semantic.phase5.policies.get_policy
+    def rollout_from_identity(identity_hash, phase3_relations, phase4_symbols, continuation_observer, policy...): Run rollout from identity using specified policy.
+
+CORRECTED: Uses observer-based refusal check, not
+    def rollout_from_identity_forced_first(source_hash, forced_target_hash, phase3_relations, phase4_symbols, continuation_observer...): Run rollout from source, but force first step to target.
+
+Used for counterfactual edge delta computa
+
+
+--- threshold_onset\semantic\phase6 ---
+  ## threshold_onset\semantic\phase6\__init__.py
+
+    Phase 6: Meaning Discovery
+
+Enterprise-grade meaning clustering system.
+
+CORRECTED: Stability-based cluster selection, not hand-chosen.
+
+    Lines: 25
+    Imports: threshold_onset.semantic.phase6.meaning_discovery.MeaningDiscoveryEngine, threshold_onset.semantic.phase6.normalization.normalize_vectors, threshold_onset.semantic.phase6.clustering.cluster_consequence_vectors, threshold_onset.semantic.phase6.clustering.k_medoids_pam, threshold_onset.semantic.phase6.clustering.select_optimal_k, threshold_onset.semantic.phase6.clustering.compute_cluster_stability
+
+  ## threshold_onset\semantic\phase6\clustering.py
+
+    Clustering Algorithms for Meaning Discovery
+
+Enterprise-grade k-medoids clustering with stability-based cluster selection.
+
+CORRECTED: Stability-based cluster count selection (not hand-chosen).
+
+    Lines: 352
+    Imports: logging, math, typing.List, typing.Dict, typing.Any, typing.Optional, typing.Tuple, collections.defaultdict, threshold_onset.semantic.common.utils.calculate_similarity, threshold_onset.semantic.common.utils.mean, threshold_onset.semantic.common.utils.variance
+    def calculate_distance(vec1, vec2): Calculate Euclidean distance between two vectors.
+
+Args:
+    vec1: First vector
+    vec2: Second vec
+    def k_medoids_pam(vectors, k, max_iterations): k-Medoids clustering using PAM (Partitioning Around Medoids) algorithm.
+
+Deterministic algorithm (no
+    def compute_intra_cluster_distance(cluster_indices, vectors): Compute average intra-cluster distance.
+
+Args:
+    cluster_indices: Indices of vectors in cluster
+  
+    def compute_cluster_stability(vectors, k, num_bootstrap, seed): Compute cluster assignment stability under bootstrap.
+
+CORRECTED: Stability-based cluster selection.
+    def select_optimal_k(vectors, k_min, k_max, seed): Select optimal k using stability vs complexity tradeoff.
+
+CORRECTED: Stability-based selection (not 
+    def cluster_consequence_vectors(normalized_vectors, num_clusters, seed): Cluster consequence vectors using k-medoids.
+
+CORRECTED: Uses stability-based cluster selection if n
+
+  ## threshold_onset\semantic\phase6\meaning_discovery.py
+
+    Meaning Discovery Engine
+
+Enterprise-grade meaning discovery through consequence vector clustering.
+
+CORRECTED: Stability-based cluster selection, not hand-chosen.
+
+    Lines: 271
+    Imports: logging, json, typing.Dict, typing.Any, typing.Optional, typing.List, pathlib.Path, threshold_onset.semantic.common.types.ConsequenceField, threshold_onset.semantic.common.types.MeaningMap, threshold_onset.semantic.common.types.MeaningSignature, threshold_onset.semantic.common.exceptions.MeaningDiscoveryError, threshold_onset.semantic.common.utils.mean, threshold_onset.semantic.phase6.normalization.normalize_vectors, threshold_onset.semantic.phase6.clustering.cluster_consequence_vectors
+    Class: MeaningDiscoveryEngine
+      Meaning Discovery Engine
+
+Discovers meaning clusters from consequence vectors using k-medoids clustering.
+All corrections applied:
+- Stability-based cluster selection
+- Deterministic clustering
+- Mean
+      Methods: 6
+
+  ## threshold_onset\semantic\phase6\normalization.py
+
+    Vector Normalization for Clustering
+
+Enterprise-grade normalization utilities.
+
+    Lines: 75
+    Imports: logging, typing.Dict, typing.Tuple
+    def normalize_vectors(identity_vectors): Normalize consequence vectors for clustering.
+
+Each component normalized to [0, 1] range.
+
+Args:
+   
+
+
+--- threshold_onset\semantic\phase7 ---
+  ## threshold_onset\semantic\phase7\__init__.py
+
+    Phase 7: Role Emergence
+
+Enterprise-grade functional role discovery.
+
+CORRECTED: Quantile-based assignment, binder derived from topology.
+
+    Lines: 21
+    Imports: threshold_onset.semantic.phase7.role_emergence.RoleEmergenceEngine, threshold_onset.semantic.phase7.role_assigner.assign_roles_from_properties, threshold_onset.semantic.phase7.role_assigner.compute_binder_properties, threshold_onset.semantic.phase7.properties.compute_cluster_properties
+
+  ## threshold_onset\semantic\phase7\properties.py
+
+    Cluster Property Computation
+
+Enterprise-grade property computation for role assignment.
+
+Computes properties of clusters to determine functional roles.
+
+    Lines: 60
+    Imports: logging, typing.Dict, typing.List, typing.Any, threshold_onset.semantic.common.utils.mean, threshold_onset.semantic.common.types.ConsequenceVector
+    def compute_cluster_properties(cluster_identities, identity_vectors): Compute properties of cluster to determine role.
+
+Properties:
+- avg_survival: Average survival proba
+
+  ## threshold_onset\semantic\phase7\role_assigner.py
+
+    Role Assignment from Cluster Properties
+
+Enterprise-grade role assignment using quantiles (not hand thresholds).
+
+CORRECTED: Uses quantiles for thresholds, derives binder from topology.
+
+    Lines: 291
+    Imports: logging, typing.Dict, typing.List, typing.Any, typing.Optional, typing.Set, threshold_onset.semantic.common.utils.calculate_percentile, threshold_onset.semantic.common.utils.mean, threshold_onset.semantic.phase7.properties.compute_cluster_properties
+    def compute_binder_properties(cluster_identities, identity_vectors, continuation_observer, edge_deltas): Compute binder-specific properties from topology.
+
+CORRECTED: Binder derived from topology, not defa
+    def assign_roles_from_properties(clusters, identity_vectors, continuation_observer, edge_deltas, percentile_high...): Assign functional roles from cluster properties.
+
+CORRECTED: Uses quantiles (not hand thresholds), d
+
+  ## threshold_onset\semantic\phase7\role_emergence.py
+
+    Role Emergence Engine
+
+Enterprise-grade functional role discovery from meaning clusters.
+
+CORRECTED: Quantile-based assignment, binder derived from topology.
+
+    Lines: 206
+    Imports: logging, json, typing.Dict, typing.Any, typing.Optional, threshold_onset.semantic.common.types.MeaningMap, threshold_onset.semantic.common.types.RoleMap, threshold_onset.semantic.common.exceptions.RoleEmergenceError, threshold_onset.semantic.phase7.role_assigner.assign_roles_from_properties, threshold_onset.semantic.phase7.properties.compute_cluster_properties
+    Class: RoleEmergenceEngine
+      Role Emergence Engine
+
+Emerges functional roles from meaning clusters using quantile-based assignment.
+All corrections applied:
+- Quantile-based thresholds (not hand-chosen)
+- Binder derived from topo
+      Methods: 5
+
+
+--- threshold_onset\semantic\phase8 ---
+  ## threshold_onset\semantic\phase8\__init__.py
+
+    Phase 8: Constraint Discovery
+
+Enterprise-grade constraint and template discovery.
+
+CORRECTED: Global forbidden comparison, prefix-match templates.
+
+    Lines: 25
+    Imports: threshold_onset.semantic.phase8.constraint_discovery.ConstraintDiscoveryEngine, threshold_onset.semantic.phase8.sequences.extract_role_sequences, threshold_onset.semantic.phase8.pattern_miner.discover_role_patterns, threshold_onset.semantic.phase8.pattern_miner.discover_forbidden_patterns, threshold_onset.semantic.phase8.pattern_miner.build_templates, threshold_onset.semantic.phase8.pattern_miner.compute_prefix_match_score
+
+  ## threshold_onset\semantic\phase8\constraint_discovery.py
+
+    Constraint Discovery Engine
+
+Enterprise-grade constraint and template discovery from role patterns.
+
+CORRECTED: Global forbidden comparison, prefix-match templates.
+
+    Lines: 262
+    Imports: logging, json, typing.Dict, typing.Any, typing.Optional, typing.List, typing.Tuple, typing.Set, threshold_onset.semantic.common.types.RoleMap, threshold_onset.semantic.common.types.ConstraintMap, threshold_onset.semantic.common.exceptions.ConstraintDiscoveryError, threshold_onset.semantic.phase8.sequences.extract_role_sequences, threshold_onset.semantic.phase8.pattern_miner.discover_role_patterns, threshold_onset.semantic.phase8.pattern_miner.discover_forbidden_patterns, threshold_onset.semantic.phase8.pattern_miner.build_templates (+1 more)
+    Class: ConstraintDiscoveryEngine
+      Constraint Discovery Engine
+
+Discovers constraints and templates from role patterns.
+All corrections applied:
+- Global forbidden pattern comparison
+- Prefix-match template scoring
+- Discovered pattern
+      Methods: 6
+
+  ## threshold_onset\semantic\phase8\pattern_miner.py
+
+    Pattern Mining for Constraint Discovery
+
+Enterprise-grade pattern mining from role sequences.
+
+CORRECTED: Global forbidden pattern comparison, prefix-match templates.
+
+    Lines: 231
+    Imports: logging, typing.List, typing.Dict, typing.Any, typing.Tuple, typing.Set, collections.Counter, threshold_onset.semantic.common.utils.calculate_percentile, threshold_onset.semantic.common.utils.mean
+    def discover_role_patterns(role_sequences, min_frequency, max_pattern_length): Discover frequent role n-grams.
+
+No imported rules. Just frequency.
+
+Args:
+    role_sequences: List 
+    def discover_forbidden_patterns(role_patterns, edge_deltas, symbol_to_role, identity_to_symbol, continuation_observer): Discover forbidden role transitions from outcome data.
+
+CORRECTED: Compare against global distributi
+    def build_templates(role_patterns, forbidden_patterns): Build templates from valid role patterns.
+
+Templates = frequent patterns that are not forbidden.
+
+Ar
+    def compute_prefix_match_score(current_role_sequence, template_pattern, window): Compute prefix-match score for template continuation.
+
+CORRECTED: Prefix-match scoring guides contin
+
+  ## threshold_onset\semantic\phase8\sequences.py
+
+    Role Sequence Extraction
+
+Enterprise-grade role sequence extraction from symbol sequences.
+
+    Lines: 37
+    Imports: logging, typing.List, typing.Dict, typing.Any
+    def extract_role_sequences(symbol_sequences, symbol_to_role): Convert symbol sequences to role sequences.
+
+No grammar rules. Just role sequences.
+
+Args:
+    symbo
+
+
+--- threshold_onset\semantic\phase9 ---
+  ## threshold_onset\semantic\phase9\__init__.py
+
+    Phase 9: Fluency Generator
+
+Enterprise-grade fluent text generation.
+
+CORRECTED: Experience table (not "learner"), prefix-match templates.
+
+    Lines: 29
+    Imports: threshold_onset.semantic.phase9.fluency_generator.FluencyGenerator, threshold_onset.semantic.phase9.scoring.calculate_stability_score, threshold_onset.semantic.phase9.scoring.calculate_novelty_penalty, threshold_onset.semantic.phase9.scoring.calculate_experience_bias, threshold_onset.semantic.phase9.symbol_decoder.build_structural_decoder, threshold_onset.semantic.phase9.symbol_decoder.decode_symbol_sequence, threshold_onset.semantic.phase9.symbol_decoder.get_decoder_stats
+
+  ## threshold_onset\semantic\phase9\fluency_generator.py
+
+    Fluency Generator
+
+Enterprise-grade fluent text generation using stability + novelty + templates.
+
+CORRECTED: Experience table (not "learner"), prefix-match templates.
+
+    Lines: 351
+    Imports: logging, typing.Dict, typing.Any, typing.Optional, typing.List, typing.Tuple, threshold_onset.semantic.common.exceptions.FluencyGenerationError, threshold_onset.semantic.common.validators.validate_symbol, threshold_onset.semantic.config.defaults.DEFAULT_STABILITY_WEIGHT, threshold_onset.semantic.config.defaults.DEFAULT_TEMPLATE_WEIGHT, threshold_onset.semantic.config.defaults.DEFAULT_BIAS_WEIGHT, threshold_onset.semantic.config.defaults.DEFAULT_NOVELTY_WEIGHT, threshold_onset.semantic.config.defaults.DEFAULT_NOVELTY_WINDOW, threshold_onset.semantic.phase9.scoring.calculate_stability_score, threshold_onset.semantic.phase9.scoring.calculate_novelty_penalty (+1 more)
+    Class: FluencyGenerator
+      Fluency Generator
+
+Generates fluent sequences by optimizing:
+- Consequence stability
+- Template progression
+- Novelty (anti-loop)
+- Refusal distance
+
+All corrections applied:
+- Experience table (not "
+      Methods: 5
+
+  ## threshold_onset\semantic\phase9\scoring.py
+
+    Scoring Functions for Fluency Generation
+
+Enterprise-grade scoring with stability, template, and novelty components.
+
+CORRECTED: Experience table (not "learner"), prefix-match templates.
+
+    Lines: 108
+    Imports: logging, typing.Dict, typing.Any, typing.Tuple, typing.List, typing.Optional, threshold_onset.semantic.common.types.ConsequenceVector, threshold_onset.semantic.common.utils.mean
+    def calculate_stability_score(transition, consequence_field): Calculate stability score from consequence field.
+
+Score = w1 * survival + w2 * (1/entropy) + w3 * (
+    def calculate_novelty_penalty(symbol, recent_sequence, window): Penalize repeating recent symbols.
+
+Prevents collapse into loops.
+
+Args:
+    symbol: Symbol to check
+    def calculate_experience_bias(transition, experience_table): Calculate experience-based bias from experience table.
+
+CORRECTED: Experience table (not "learner").
+
+  ## threshold_onset\semantic\phase9\symbol_decoder.py
+
+    Symbol Decoder
+
+Structural inversion: symbol → identity → residue → token.
+
+No heuristics. No probability. Pure backward walk through structure.
+Token → residue → identity → symbol (forward).
+Symbol → identity → residue → token (reverse).
+
+Space: O(|symbols| + |identity| + |vocab|)
+Time: O(n) build, O(1) decode per symbol.
+
+    Lines: 157
+    Imports: hashlib, logging, typing.Dict, typing.List, typing.Tuple, typing.Any
+    def _hash_segment(segment): Same as Phase 2 identity._hash_segment. Internal only.
+    def _token_to_residue(token): Same as TokenAction. Internal only.
+    def build_structural_decoder(tokens, residue_sequences, phase2_metrics, phase4_metrics): Build symbol → token map by structural inversion.
+
+Process:
+1. residue → token: from tokens and Toke
+    def decode_symbol_sequence(symbol_sequence, symbol_to_token, skip_unk, unk_placeholder): Decode symbol sequence to text.
+
+Args:
+    symbol_sequence: List of symbol IDs
+    symbol_to_token: 
+    def get_decoder_stats(symbol_to_token): Return decoder statistics (unk count, mapped count).
+
+Args:
+    symbol_to_token: Map from symbol → t
+
+
+--- threshold_onset\semantic\tests ---
+  ## threshold_onset\semantic\tests\__init__.py
+
+    Test suite for semantic discovery module.
+
+Enterprise-grade test organization.
+
+    Lines: 5
+
+  ## threshold_onset\semantic\tests\test_integration.py
+
+    Integration Tests for Semantic Discovery Module
+
+Enterprise-grade integration tests with real Phase 2-4 outputs.
+
+    Lines: 232
+    Imports: unittest, sys, pathlib.Path, threshold_onset.semantic.ConsequenceFieldEngine, threshold_onset.semantic.MeaningDiscoveryEngine, threshold_onset.semantic.RoleEmergenceEngine, threshold_onset.semantic.ConstraintDiscoveryEngine, threshold_onset.semantic.FluencyGenerator, threshold_onset.semantic.common.types.ConsequenceField
+    Class: TestIntegrationWorkflow
+      Integration test for complete semantic discovery workflow.
+
+Tests the full pipeline from Phase 5 to Phase 9.
+      Methods: 3
+    Class: TestErrorHandling
+      Test error handling across phases.
+      Methods: 2
+
+  ## threshold_onset\semantic\tests\test_phase5.py
+
+    Test Suite for Phase 5: Consequence Field Engine
+
+Enterprise-grade tests with >80% coverage target.
+
+    Lines: 351
+    Imports: unittest, tempfile, os, unittest.mock.Mock, unittest.mock.MagicMock, collections.Counter, threshold_onset.semantic.phase5.policies.policy_greedy, threshold_onset.semantic.phase5.policies.policy_stochastic_topk, threshold_onset.semantic.phase5.policies.policy_novelty_seeking, threshold_onset.semantic.phase5.policies.get_policy, threshold_onset.semantic.phase5.rollout.rollout_from_identity, threshold_onset.semantic.phase5.rollout.rollout_from_identity_forced_first, threshold_onset.semantic.phase5.metrics.compute_k_reach_from_path, threshold_onset.semantic.phase5.metrics.compute_near_refusal_rate_from_rollouts, threshold_onset.semantic.phase5.consequence_field.ConsequenceFieldEngine (+2 more)
+    Class: TestPolicies
+      Test probe policies.
+      Methods: 6
+    Class: TestRollout
+      Test rollout system.
+      Methods: 4
+    Class: TestMetrics
+      Test metric computation.
+      Methods: 2
+    Class: TestConsequenceFieldEngine
+      Test ConsequenceFieldEngine.
+      Methods: 10
+
+  ## threshold_onset\semantic\tests\test_phase6.py
+
+    Test Suite for Phase 6: Meaning Discovery
+
+Enterprise-grade tests with >80% coverage target.
+
+    Lines: 237
+    Imports: unittest, tempfile, os, unittest.mock.Mock, unittest.mock.MagicMock, threshold_onset.semantic.phase6.normalization.normalize_vectors, threshold_onset.semantic.phase6.clustering.k_medoids_pam, threshold_onset.semantic.phase6.clustering.select_optimal_k, threshold_onset.semantic.phase6.clustering.compute_cluster_stability, threshold_onset.semantic.phase6.meaning_discovery.MeaningDiscoveryEngine, threshold_onset.semantic.common.types.ConsequenceField, threshold_onset.semantic.common.types.ConsequenceVector, threshold_onset.semantic.common.exceptions.MeaningDiscoveryError
+    Class: TestNormalization
+      Test vector normalization.
+      Methods: 2
+    Class: TestClustering
+      Test clustering algorithms.
+      Methods: 4
+    Class: TestMeaningDiscoveryEngine
+      Test MeaningDiscoveryEngine.
+      Methods: 7
+
+  ## threshold_onset\semantic\tests\test_phase7.py
+
+    Test Suite for Phase 7: Role Emergence
+
+Enterprise-grade tests with >80% coverage target.
+
+    Lines: 259
+    Imports: unittest, tempfile, os, unittest.mock.Mock, threshold_onset.semantic.phase7.properties.compute_cluster_properties, threshold_onset.semantic.phase7.role_assigner.assign_roles_from_properties, threshold_onset.semantic.phase7.role_assigner.compute_binder_properties, threshold_onset.semantic.phase7.role_emergence.RoleEmergenceEngine, threshold_onset.semantic.common.types.MeaningMap, threshold_onset.semantic.common.types.MeaningSignature, threshold_onset.semantic.common.types.ConsequenceField, threshold_onset.semantic.common.exceptions.RoleEmergenceError
+    Class: TestProperties
+      Test cluster property computation.
+      Methods: 2
+    Class: TestRoleAssigner
+      Test role assignment.
+      Methods: 1
+    Class: TestRoleEmergenceEngine
+      Test RoleEmergenceEngine.
+      Methods: 6
+
+  ## threshold_onset\semantic\tests\test_phase8.py
+
+    Test Suite for Phase 8: Constraint Discovery
+
+Enterprise-grade tests with >80% coverage target.
+
+    Lines: 261
+    Imports: unittest, tempfile, os, unittest.mock.Mock, threshold_onset.semantic.phase8.sequences.extract_role_sequences, threshold_onset.semantic.phase8.pattern_miner.discover_role_patterns, threshold_onset.semantic.phase8.pattern_miner.discover_forbidden_patterns, threshold_onset.semantic.phase8.pattern_miner.build_templates, threshold_onset.semantic.phase8.pattern_miner.compute_prefix_match_score, threshold_onset.semantic.phase8.constraint_discovery.ConstraintDiscoveryEngine, threshold_onset.semantic.common.types.RoleMap, threshold_onset.semantic.common.exceptions.ConstraintDiscoveryError
+    Class: TestSequences
+      Test role sequence extraction.
+      Methods: 2
+    Class: TestPatternMiner
+      Test pattern mining.
+      Methods: 4
+    Class: TestConstraintDiscoveryEngine
+      Test ConstraintDiscoveryEngine.
+      Methods: 8
+
+  ## threshold_onset\semantic\tests\test_phase9.py
+
+    Test Suite for Phase 9: Fluency Generator
+
+Enterprise-grade tests with >80% coverage target.
+
+    Lines: 254
+    Imports: unittest, unittest.mock.Mock, threshold_onset.semantic.phase9.scoring.calculate_stability_score, threshold_onset.semantic.phase9.scoring.calculate_novelty_penalty, threshold_onset.semantic.phase9.scoring.calculate_experience_bias, threshold_onset.semantic.phase9.fluency_generator.FluencyGenerator, threshold_onset.semantic.common.types.ConsequenceField, threshold_onset.semantic.common.types.RoleMap, threshold_onset.semantic.common.types.ConstraintMap, threshold_onset.semantic.common.exceptions.FluencyGenerationError
+    Class: TestScoring
+      Test scoring functions.
+      Methods: 4
+    Class: TestFluencyGenerator
+      Test FluencyGenerator.
+      Methods: 8
+
+
+--- threshold_onset\tools ---
+  ## threshold_onset\tools\version_control.py
+
+    Local Version Control System
+
+Architecture:
+  watchfiles (file monitoring)
+    ↓
+  content hash (hashlib)
+    ↓
+  diff / snapshot
+    ↓
+  local version store (sqlite + files)
+
+    Lines: 304
+    Imports: hashlib, sqlite3, os, json, datetime.datetime, pathlib.Path, difflib.unified_diff, watchfiles.watch
+    Class: LocalVersionControl
+      Methods: 12
+
+  ## threshold_onset\tools\watch_version.py
+
+    Simple wrapper to start version control watching.
+
+Usage: python watch_version.py
+
+    Lines: 29
+    Imports: sys, pathlib.Path, version_control.LocalVersionControl
+
+
+--- validation_crush ---
+  ## validation_crush\crush_protocol.py
+
+    THRESHOLD_ONSET — CRUSH-TO-DEATH VALIDATION PROTOCOL
+
+Enterprise-grade validation orchestrator.
+Runs all test phases and generates intrinsic_eval_report.json.
+
+    Lines: 235
+    Imports: sys, argparse, logging, json, pathlib.Path, typing.Dict, typing.Any, typing.List, typing.Optional, typing.Tuple, validation_crush.intrinsic_logger.IntrinsicLogger, validation_crush.decision_framework.DecisionFramework, validation_crush.tests.phase_a_baseline.PhaseABaselineTest, validation_crush.tests.phase_b_perturbation.PhaseBPerturbationTest, validation_crush.tests.phase_c_consistency.PhaseCConsistencyTest (+6 more)
+    Class: CrushProtocol
+      Main validation orchestrator.
+      Methods: 5
+    def main(): Main entry point.
+
+  ## validation_crush\decision_framework.py
+
+    Decision Framework
+
+Automated abandon/pivot decision logic based on test results.
+
+    Lines: 180
+    Imports: logging, typing.Dict, typing.Any, typing.Optional, typing.List, validation_crush.intrinsic_logger.IntrinsicLogger
+    Class: DecisionFramework
+      Decision framework for abandon/pivot criteria.
+
+Rules:
+- Phase I failure → ABANDON (non-negotiable)
+- Multiple critical failures → ABANDON
+- Single non-critical failure → PIVOT
+- All pass → CONTINUE
+      Methods: 4
+
+  ## validation_crush\intrinsic_logger.py
+
+    Intrinsic Evaluation Logger
+
+Enterprise-grade logging system for THRESHOLD_ONSET validation.
+Generates intrinsic_eval_report.json with all required metrics.
+
+    Lines: 334
+    Imports: json, logging, pathlib.Path, typing.Dict, typing.Any, typing.List, typing.Optional, datetime.datetime, collections.defaultdict
+    Class: IntrinsicLogger
+      Logs intrinsic evaluation metrics for THRESHOLD_ONSET validation.
+
+Required outputs:
+- Threshold crossings per phase
+- Entropy curves (Phase 5)
+- Cluster stability (Phase 6)
+- Role variance (Phase 7)
+
+      Methods: 12
+
+
+--- validation_crush\tests ---
+  ## validation_crush\tests\__init__.py
+
+    Validation tests.
+
+    Lines: 1
+
+  ## validation_crush\tests\phase_a_baseline.py
+
+    Phase A: Baseline Deception Test
+
+Test A1: Fluent Nonsense Injection
+Kill "fluency illusion" first.
+
+Expected:
+- High consequence entropy
+- No stable roles
+- Constraint collapse
+
+Fail:
+- Fluent continuation
+
+    Lines: 204
+    Imports: logging, sys, pathlib.Path, typing.Dict, typing.Any, typing.Tuple, validation_crush.intrinsic_logger.IntrinsicLogger, validation_crush.utils.test_helpers.load_system_outputs, validation_crush.utils.test_helpers.initialize_system, validation_crush.utils.metrics_computer.MetricsComputer
+    Class: PhaseABaselineTest
+      Test A1: Fluent Nonsense Injection
+      Methods: 3
+
+  ## validation_crush\tests\phase_b_perturbation.py
+
+    Phase B: Adversarial Perturbation Test
+
+Test B1: Micro-perturbation invariance
+Semantic stability under attack.
+
+Expected:
+- Continuous deformation (not discrete changes)
+
+Fail:
+- Discrete structural changes
+
+    Lines: 247
+    Imports: logging, sys, random, pathlib.Path, typing.Dict, typing.Any, typing.Tuple, typing.List, validation_crush.intrinsic_logger.IntrinsicLogger, validation_crush.utils.test_helpers.load_system_outputs, validation_crush.utils.test_helpers.initialize_system, validation_crush.utils.test_helpers.compute_variance, validation_crush.utils.test_helpers.check_structural_isomorphism, validation_crush.utils.metrics_computer.MetricsComputer
+    Class: PhaseBPerturbationTest
+      Test B1: Micro-perturbation invariance
+      Methods: 3
+
+  ## validation_crush\tests\phase_c_consistency.py
+
+    Phase C: Time-Delayed Consistency Test
+
+Test C1: Temporal recall without memory
+Kills prompt-overfitting systems.
+
+Expected:
+- Structural isomorphism (not token similarity)
+
+Fail:
+- Reliance on surface similarity
+
+    Lines: 176
+    Imports: logging, sys, pathlib.Path, typing.Dict, typing.Any, typing.Tuple, validation_crush.intrinsic_logger.IntrinsicLogger, validation_crush.utils.test_helpers.load_system_outputs, validation_crush.utils.test_helpers.check_structural_isomorphism, validation_crush.utils.metrics_computer.MetricsComputer
+    Class: PhaseCConsistencyTest
+      Test C1: Temporal recall without memory
+      Methods: 3
+
+  ## validation_crush\tests\phase_d_causal.py
+
+    Phase D: Causal Contradiction Test
+
+Test D1: Impossible worlds
+This kills generators instantly.
+
+Expected:
+- Exploding entropy
+- Refusal to form meaning
+
+Fail:
+- Fluent explanation
+
+    Lines: 187
+    Imports: logging, sys, pathlib.Path, typing.Dict, typing.Any, typing.Tuple, validation_crush.intrinsic_logger.IntrinsicLogger, validation_crush.utils.test_helpers.load_system_outputs, validation_crush.utils.metrics_computer.MetricsComputer
+    Class: PhaseDCausalTest
+      Test D1: Impossible worlds
+      Methods: 3
+
+  ## validation_crush\tests\phase_e_role_collapse.py
+
+    Phase E: Role Collapse Stress Test
+
+Test E1: Role overload
+Attacks Phase 7 directly.
+
+Expected:
+- Role bifurcation OR rejection
+
+Fail:
+- Silent role merging
+
+    Lines: 170
+    Imports: logging, sys, pathlib.Path, typing.Dict, typing.Any, typing.Tuple, typing.List, validation_crush.intrinsic_logger.IntrinsicLogger, validation_crush.utils.test_helpers.load_system_outputs, validation_crush.utils.test_helpers.compute_variance, validation_crush.utils.metrics_computer.MetricsComputer
+    Class: PhaseERoleCollapseTest
+      Test E1: Role overload
+      Methods: 3
+
+  ## validation_crush\tests\phase_f_constraint_inversion.py
+
+    Phase F: Constraint Inversion Test
+
+Test F1: Reverse-grammar challenge
+Grammar emergence sanity check.
+
+Expected:
+- Constraint drift detection OR dual grammar regimes
+
+Fail:
+- Single averaged constraint
+
+    Lines: 167
+    Imports: logging, sys, pathlib.Path, typing.Dict, typing.Any, typing.Tuple, typing.List, validation_crush.intrinsic_logger.IntrinsicLogger, validation_crush.utils.test_helpers.load_system_outputs, validation_crush.utils.metrics_computer.MetricsComputer
+    Class: PhaseFConstraintInversionTest
+      Test F1: Reverse-grammar challenge
+      Methods: 3
+
+  ## validation_crush\tests\phase_g_streaming.py
+
+    Phase G: Live Streaming Failure Mode Test
+
+Test G1: Forced degradation
+Enterprise real-time test.
+
+Expected:
+- Adaptive batch resizing
+- Semantic continuity preserved
+- No hallucinated filler
+
+Fail:
+- "Let me continue..." style filler behavior
+
+    Lines: 220
+    Imports: logging, sys, time, random, pathlib.Path, typing.Dict, typing.Any, typing.Tuple, typing.List, validation_crush.intrinsic_logger.IntrinsicLogger, validation_crush.utils.test_helpers.load_system_outputs, validation_crush.utils.metrics_computer.MetricsComputer
+    Class: PhaseGStreamingTest
+      Test G1: Forced degradation
+      Methods: 5
+
+  ## validation_crush\tests\phase_h_red_team.py
+
+    Phase H: Red Team Mode Test
+
+Test H1: Human adversary
+Non-negotiable human adversary.
+
+Scoring:
+- Refusal quality
+- Internal instability signals
+
+Not:
+- Correctness
+
+    Lines: 233
+    Imports: logging, sys, pathlib.Path, typing.Dict, typing.Any, typing.Tuple, typing.List, validation_crush.intrinsic_logger.IntrinsicLogger, validation_crush.utils.test_helpers.load_system_outputs, validation_crush.utils.metrics_computer.MetricsComputer
+    Class: PhaseHRedTeamTest
+      Test H1: Human adversary
+      Methods: 4
+
+  ## validation_crush\tests\phase_i_kill_switch.py
+
+    Phase I: Kill Switch Test
+
+Test I1: Meaning denial
+Final boss.
+
+Expected:
+- Phase 6 never stabilizes
+- Phase 9 does NOT generate
+
+If it still talks → KILL THE PROJECT
+
+    Lines: 191
+    Imports: logging, sys, pathlib.Path, typing.Dict, typing.Any, typing.Tuple, validation_crush.intrinsic_logger.IntrinsicLogger, validation_crush.utils.test_helpers.load_system_outputs, validation_crush.utils.metrics_computer.MetricsComputer
+    Class: PhaseIKillSwitchTest
+      Test I1: Meaning denial
+      Methods: 3
+
+
+--- validation_crush\utils ---
+  ## validation_crush\utils\__init__.py
+
+    Validation utilities.
+
+    Lines: 1
+
+  ## validation_crush\utils\metrics_computer.py
+
+    Metrics Computer
+
+Computes validation metrics from system outputs.
+
+    Lines: 319
+    Imports: logging, typing.Dict, typing.Any, typing.List, typing.Optional, math
+    Class: MetricsComputer
+      Computes validation metrics.
+      Methods: 8
+
+  ## validation_crush\utils\test_helpers.py
+
+    Test Helper Utilities
+
+Shared utilities for validation tests.
+
+    Lines: 558
+    Imports: sys, logging, pathlib.Path, typing.Dict, typing.Any, typing.Optional, typing.List, typing.Tuple
+    def load_system_outputs(phase2_path, phase3_path, phase4_path, consequence_field_path, meaning_map_path...): Load system outputs from JSON files.
+
+Args:
+    phase2_path: Path to Phase 2 output JSON
+    phase3_
+    def initialize_system(outputs, config): Initialize THRESHOLD_ONSET system components.
+
+Args:
+    outputs: Loaded system outputs
+    config: 
+    def compute_entropy(probabilities): Compute Shannon entropy.
+
+Args:
+    probabilities: List of probabilities (should sum to 1)
+
+Returns:
+    def compute_variance(values): Compute variance of values.
+
+Args:
+    values: List of numeric values
+
+Returns:
+    Variance
+    def compute_stability_score(values, window_size): Compute stability score (inverse of variance in sliding windows).
+
+Args:
+    values: List of values
+
+    def check_structural_isomorphism(structure1, structure2): Check if two structures are isomorphic (same topology, different tokens).
+
+Args:
+    structure1: Fir
+    def process_text_through_system(text, tokenization_method, num_runs, run_semantic_phases, config): Process text input through complete THRESHOLD_ONSET pipeline (Phases 0-9).
+
+This is the CRITICAL fun
+
+================================================================================
+KEY ENTRY POINTS
+================================================================================
+  run_all.py                    - Orchestrator (legacy)
+  integration/run_complete.py    - Full pipeline, step-by-step
+  integration/run_user_result.py - Clean output for users
+  integration/run_user_input.py  - Quick pipeline (benchmark)
+  integration/benchmark.py       - 39-sample benchmark
+  integration/baselines.py       - Random, Markov, Echo, Uniform
+  integration/external_validation.py - 136 external samples
+  integration/validate_pipeline.py  - 7 input-type validation
+  integration/stress_test.py    - Scale 100-5000 tokens
+  integration/structural_scaling.py - Topology law experiment
+
+================================================================================
+THRESHOLD_ONSET PHASES (structure emergence)
+================================================================================
+  phase0 - Action, trace, repetition (no identity)
+  phase1 - Clustering, boundaries, patterns
+  phase2 - Identity detection, persistence
+  phase3 - Relations, graph, edges
+  phase4 - Symbol aliasing, identity->symbol
+  semantic/phase5-9 - Consequence, rollout, meaning, roles, decoder
+
+================================================================================
+INTEGRATION MODULE ROLES
+================================================================================
+  generate.py     - Constraint-aware symbol sequence generation
+  scoring.py      - Path scoring, input-order boost, pressure
+  surface.py      - Symbol->token mapping, sentence boundaries
+  escape_topology.py - Measure escape paths, pressure
+  continuation_observer.py - Refusal tracking, adjacency
+  preference_learner.py - Learned bias on edges
+  unified_system.py - process_text_through_phases, TokenAction

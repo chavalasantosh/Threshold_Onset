@@ -1,0 +1,54 @@
+INVARIANT TEST: NO SELF-TRANSITION LAW
+=======================================
+
+TEST SUMMARY
+------------
+Total tests: 6
+Successful tests: 6
+Invariant holds: 6
+Invariant breaks: 0
+
+RESULTS PER TEST
+----------------
+original_philosophy:
+  Total symbols: 26
+  Self-transitions: 26
+  Forbidden self-transitions: 26
+  All self-transitions forbidden: True
+
+technical_programming:
+  Total symbols: 28
+  Self-transitions: 28
+  Forbidden self-transitions: 28
+  All self-transitions forbidden: True
+
+literary_text:
+  Total symbols: 40
+  Self-transitions: 40
+  Forbidden self-transitions: 40
+  All self-transitions forbidden: True
+
+character_tokenization:
+  Total symbols: 50
+  Self-transitions: 50
+  Forbidden self-transitions: 50
+  All self-transitions forbidden: True
+
+grammar_tokenization:
+  Total symbols: 27
+  Self-transitions: 27
+  Forbidden self-transitions: 27
+  All self-transitions forbidden: True
+
+short_text:
+  Total symbols: 8
+  Self-transitions: 8
+  Forbidden self-transitions: 8
+  All self-transitions forbidden: True
+
+VERDICT
+-------
+INVARIANT HOLDS: All self-transitions are forbidden in all tests
+
+=======================================
+TEST COMPLETE

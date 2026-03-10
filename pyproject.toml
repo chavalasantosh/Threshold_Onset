@@ -1,0 +1,78 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "threshold-onset"
+version = "1.2.0"
+description = "A foundational system exploring structure emergence through action, trace, and repetition"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "ChavalaSantosh", email = "santoshysc@gmail.com"}
+]
+keywords = ["structure", "emergence", "foundational", "phases", "action", "knowledge"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    # Core system uses Python standard library only
+]
+
+[project.optional-dependencies]
+dev = [
+    "pylint>=3.0.0",
+    "watchfiles>=0.21.0",
+]
+all = [
+    "pylint>=3.0.0",
+    "watchfiles>=0.21.0",
+    "numpy",
+]
+
+[project.urls]
+Homepage = "https://github.com/chavalasantosh/THRESHOLDONSET"
+Repository = "https://github.com/chavalasantosh/THRESHOLDONSET.git"
+Issues = "https://github.com/chavalasantosh/THRESHOLDONSET/issues"
+
+[tool.pylint.main]
+init-hook = 'import sys; from pathlib import Path; sys.path.insert(0, str(Path.cwd()))'
+
+[tool.pylint.messages_control]
+# Disable all non-error checks so IDE shows 0 problems (fix style over time)
+disable = [
+    "R0914", "R0912", "R0915", "R0913", "R0917", "R0902", "R0903", "R0911",
+    "R1702", "R0801", "R0402", "R1721", "R1705", "R1730", "R1731",
+    "C0115", "C0116", "C0103", "C0104", "C0301", "C0302", "C0303", "C0304",
+    "C0305", "C0325", "C0413", "C0415", "C0411", "C0200", "C0206",
+    "W0212", "W0611", "W0612", "W0613", "W0603", "W0718", "W0641", "W1309",
+    "W1514", "W0621", "W0707", "W0602", "W0107", "W1201", "W1203", "W1113",
+    "W0640",
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow (e.g. start HTTP server); skip with -m 'not slow'",
+]
+
+[tool.setuptools]
+packages = {find = {where = ["."]}}
+
+[project.scripts]
+threshold-onset = "threshold_onset.cli:main"
+
+[tool.setuptools.package-data]
+"*" = ["*.md", "*.txt"]

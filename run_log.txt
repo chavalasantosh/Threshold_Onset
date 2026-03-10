@@ -1,0 +1,56 @@
+THRESHOLD_ONSET Execution Log
+2026-02-13T19:10:02.393310
+
+======================================================================
+python main.py --check "Your text"
+2026-02-13T19:10:02.399355
+======================================================================
+
+==========================================================================
+  END USER RESULT
+==========================================================================
+
+  INPUT:
+  ----------------------------------------------------------------------
+  Your text
+
+  STRUCTURAL WALK (your words, no consecutive repeats):
+  ----------------------------------------------------------------------
+  Your text your text your text your text your text your text your text
+  your...
+
+  Variations:
+    2. Text your text your text your text your text your text your text your text...
+
+  (Constraint demo: alternating your vocabulary. Longer input = more variety.)
+
+==========================================================================
+
+
+======================================================================
+RUNNING: Quick check
+======================================================================
+
+[Quick check] PASS (exit 0)
+
+--- stderr ---
+No role patterns discovered
+
+
+[Exit: 0]
+
+======================================================================
+python integration/run_complete.py
+2026-02-13T19:10:04.836633
+======================================================================
+
+======================================================================
+COMPLETE UNIFIED SYSTEM
+threshold_onset <-> santok
+Action before knowledge
+======================================================================
+
+Error: Empty input. Provide text via: py run_complete.py "Your text"
+
+
+[Exit: 0]

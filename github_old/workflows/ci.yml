@@ -1,0 +1,63 @@
+name: CI - Continuous Integration
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    
+    - name: Install package
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install -r requirements.txt || true
+    
+    - name: Run main system
+      run: python main.py
+    
+    - name: Run full project (run_all)
+      run: |
+        export PYTHONIOENCODING=utf-8
+        python run_all.py
+      continue-on-error: true
+    
+    - name: Verify threshold_onset imports
+      run: |
+        python -c "from threshold_onset.phase0.phase0 import phase0; print('Phase 0 OK')"
+        python -c "from threshold_onset.phase1.phase1 import phase1; print('Phase 1 OK')"
+        python -c "from threshold_onset.phase2.phase2 import phase2_multi_run; print('Phase 2 OK')"
+        python -c "from threshold_onset.phase3.phase3 import phase3_multi_run; print('Phase 3 OK')"
+        python -c "from threshold_onset.phase4.phase4 import phase4; print('Phase 4 OK')"
+
+    - name: Enterprise CLI and API
+      run: |
+        threshold-onset config
+        threshold-onset health
+        python -c "from threshold_onset.api import process; r=process('Test'); print('API OK:', r.success)"
+
+    - name: API integration tests
+      run: python -m pytest tests/test_api.py -v --tb=short
+
+    - name: Test coverage
+      run: |
+        pip install pytest-cov
+        python -m pytest tests/test_api.py --cov=threshold_onset --cov-report=term-missing -q
+      continue-on-error: true

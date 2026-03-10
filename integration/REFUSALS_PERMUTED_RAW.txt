@@ -1,0 +1,52 @@
+RAW REFUSALS - PERMUTED CONTINUATION
+=====================================
+
+Test: original (permuted: False)
+---------------------------------
+Total refusals: 1
+
+Refusal 1:
+  step_index: 11
+  current_symbol: 24
+  attempted_next_symbol: 24
+  reason_for_refusal: no_persistent_relation
+  relation_exists: False
+
+Test: permuted_seed42 (permuted: True)
+---------------------------------
+Total refusals: 2
+
+Refusal 1:
+  step_index: 10
+  current_symbol: 24
+  attempted_next_symbol: 24
+  reason_for_refusal: no_persistent_relation
+  relation_exists: False
+
+Refusal 2:
+  step_index: 10
+  current_symbol: 24
+  attempted_next_symbol: 24
+  reason_for_refusal: no_persistent_relation
+  relation_exists: False
+
+Test: permuted_seed123 (permuted: True)
+---------------------------------
+Total refusals: 2
+
+Refusal 1:
+  step_index: 10
+  current_symbol: 24
+  attempted_next_symbol: 24
+  reason_for_refusal: no_persistent_relation
+  relation_exists: False
+
+Refusal 2:
+  step_index: 10
+  current_symbol: 24
+  attempted_next_symbol: 24
+  reason_for_refusal: no_persistent_relation
+  relation_exists: False
+
+=====================================
+OBSERVATION COMPLETE

@@ -1,0 +1,68 @@
+TOPOLOGY CLUSTERING RESULTS
+============================
+
+CLUSTERS
+--------
+Cluster: high_pressure_high_freedom_distributed
+  Members: 1
+  Symbol 4:
+    Self-transition attempts: 3
+    Near-refusal events: 18
+    Escape paths: 4
+    Concentration: 0.0390
+    Escapes to: [2, 18, 25, 20]
+
+Cluster: low_pressure_low_freedom_concentrated
+  Members: 3
+  Symbol 5:
+    Self-transition attempts: 0
+    Near-refusal events: 3
+    Escape paths: 1
+    Concentration: 1.0000
+    Escapes to: [4]
+  
+  Symbol 18:
+    Self-transition attempts: 0
+    Near-refusal events: 3
+    Escape paths: 1
+    Concentration: 1.0000
+    Escapes to: [20]
+  
+  Symbol 25:
+    Self-transition attempts: 0
+    Near-refusal events: 3
+    Escape paths: 1
+    Concentration: 1.0000
+    Escapes to: [4]
+
+Cluster: low_pressure_medium_freedom_distributed
+  Members: 1
+  Symbol 20:
+    Self-transition attempts: 0
+    Near-refusal events: 5
+    Escape paths: 2
+    Concentration: 0.0290
+    Escapes to: [4, 5]
+
+Cluster: medium_pressure_low_freedom_concentrated
+  Members: 1
+  Symbol 2:
+    Self-transition attempts: 0
+    Near-refusal events: 6
+    Escape paths: 1
+    Concentration: 1.0000
+    Escapes to: [4]
+
+SUMMARY
+-------
+Total clusters: 4
+Total identities: 6
+
+Cluster sizes:
+  high_pressure_high_freedom_distributed: 1
+  low_pressure_low_freedom_concentrated: 3
+  low_pressure_medium_freedom_distributed: 1
+  medium_pressure_low_freedom_concentrated: 1
+
+============================
+CLUSTERING COMPLETE

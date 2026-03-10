@@ -1,0 +1,163 @@
+name: Documentation Check
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - '*.md'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - '*.md'
+
+jobs:
+  documentation-check:
+    name: Documentation Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Check README exists
+      run: |
+        if [ ! -f "README.md" ]; then
+          echo "ERROR: README.md not found"
+          exit 1
+        fi
+        echo "✓ README.md exists"
+    
+    - name: Check documentation structure
+      run: |
+        echo "Checking documentation structure..."
+        if [ -d "docs" ]; then
+          echo "✓ docs/ directory exists"
+        else
+          echo "ERROR: docs/ directory not found"
+          exit 1
+        fi
+        
+        # Check key documentation files
+        for file in "docs/PHASE_STATUS_CANONICAL.md" "docs/axioms/AXIOMS.md" "docs/architecture/ARCHITECTURE.md"; do
+          if [ -f "$file" ]; then
+            echo "✓ $file exists"
+          else
+            echo "⚠ $file missing"
+          fi
+        done
+    
+    - name: Check phase freeze declarations
+      run: |
+        echo "Checking phase freeze declarations..."
+        for phase in 0 1 2 3 4; do
+          FREEZE_FILE="threshold_onset/phase${phase}/phase${phase}/PHASE${phase}_FREEZE.md"
+          if [ -f "$FREEZE_FILE" ]; then
+            echo "✓ Phase ${phase} freeze declaration exists"
+          else
+            echo "⚠ Phase ${phase} freeze declaration missing: $FREEZE_FILE"
+          fi
+        done
+    
+    - name: Validate markdown syntax
+      run: |
+        python -c "
+        import os
+        import re
+        
+        def check_markdown(filepath):
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                # Basic checks
+                if len(content) == 0:
+                    print(f'⚠ Empty file: {filepath}')
+                    return False
+                if not content.strip().startswith('#'):
+                    print(f'⚠ No heading found: {filepath}')
+                return True
+            except Exception as e:
+                print(f'ERROR reading {filepath}: {e}')
+                return False
+        
+        # Check main README
+        check_markdown('README.md')
+        
+        # Check key docs
+        key_docs = [
+            'docs/PHASE_STATUS_CANONICAL.md',
+            'docs/axioms/AXIOMS.md',
+            'docs/architecture/ARCHITECTURE.md'
+        ]
+        
+        for doc in key_docs:
+            if os.path.exists(doc):
+                check_markdown(doc)
+        "
+    
+    - name: Check documentation links
+      run: |
+        python -c "
+        import os
+        import re
+        
+        def find_markdown_files(directory):
+            md_files = []
+            for root, dirs, files in os.walk(directory):
+                # Skip certain directories
+                dirs[:] = [d for d in dirs if d not in ['__pycache__', '.git']]
+                for file in files:
+                    if file.endswith('.md'):
+                        md_files.append(os.path.join(root, file))
+            return md_files
+        
+        # Check README.md for broken internal links
+        with open('README.md', 'r', encoding='utf-8') as f:
+            readme_content = f.read()
+        
+        # Find all markdown links
+        link_pattern = r'\[([^\]]+)\]\(([^)]+)\)'
+        links = re.findall(link_pattern, readme_content)
+        
+        print(f'Found {len(links)} links in README.md')
+        broken_links = []
+        
+        for text, link in links:
+            # Skip external links
+            if link.startswith('http'):
+                continue
+            # Skip anchor links
+            if link.startswith('#'):
+                continue
+            
+            # Check if file exists
+            if not os.path.exists(link):
+                broken_links.append((text, link))
+                print(f'⚠ Broken link: [{text}]({link})')
+        
+        if broken_links:
+            print(f'Found {len(broken_links)} broken links')
+        else:
+            print('✓ All internal links valid')
+        "
+      continue-on-error: true
+    
+    - name: Documentation summary
+      run: |
+        echo "## Documentation Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Files Checked" >> $GITHUB_STEP_SUMMARY
+        find docs -name "*.md" | wc -l | xargs echo "- Markdown files in docs/: " >> $GITHUB_STEP_SUMMARY
+        find threshold_onset -name "*.md" | wc -l | xargs echo "- Markdown files in threshold_onset/: " >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Phase Freeze Declarations" >> $GITHUB_STEP_SUMMARY
+        for phase in 0 1 2 3 4; do
+          if [ -f "threshold_onset/phase${phase}/phase${phase}/PHASE${phase}_FREEZE.md" ]; then
+            echo "- Phase ${phase}: ✓" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Phase ${phase}: ✗" >> $GITHUB_STEP_SUMMARY
+          fi
+        done
