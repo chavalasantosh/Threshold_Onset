@@ -499,6 +499,73 @@ _BUILTIN_CORPUS: List[str] = [
 ]
 
 
+def load_corpus_from_file(path: Path) -> List[str]:
+    """Load list of document texts from a JSON or JSONL corpus file."""
+    path = Path(path).resolve()
+    if not path.exists():
+        raise FileNotFoundError(f"Corpus file not found: {path}")
+    texts: List[str] = []
+    if path.suffix.lower() == ".jsonl":
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    obj = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(obj, str):
+                    texts.append(obj)
+                elif isinstance(obj, dict) and "text" in obj:
+                    texts.append(str(obj["text"]).strip())
+                elif isinstance(obj, dict):
+                    # fallback: first string value or repr
+                    for v in obj.values():
+                        if isinstance(v, str) and v.strip():
+                            texts.append(v.strip())
+                            break
+        log.info("Loaded %d docs from JSONL: %s", len(texts), path)
+        return texts
+    # .json
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    if isinstance(data, list):
+        for item in data:
+            if isinstance(item, str):
+                texts.append(item.strip())
+            elif isinstance(item, dict) and "text" in item:
+                texts.append(str(item["text"]).strip())
+            elif isinstance(item, dict):
+                for v in item.values():
+                    if isinstance(v, str) and v.strip():
+                        texts.append(v.strip())
+                        break
+    elif isinstance(data, dict):
+        raw = data.get("texts") or data.get("documents") or data.get("corpus")
+        if raw is None:
+            raise ValueError(
+                f"JSON object must have 'texts', 'documents', or 'corpus' key; got {list(data.keys())[:8]}"
+            )
+        if isinstance(raw, list):
+            for item in raw:
+                if isinstance(item, str):
+                    texts.append(item.strip())
+                elif isinstance(item, dict) and "text" in item:
+                    texts.append(str(item["text"]).strip())
+                else:
+                    s = str(item).strip()
+                    if s:
+                        texts.append(s)
+        else:
+            raise ValueError(f"Expected list under key; got {type(raw).__name__}")
+    else:
+        raise ValueError(f"Corpus JSON must be list or object; got {type(data).__name__}")
+    texts = [t for t in texts if t]
+    log.info("Loaded %d docs from JSON: %s", len(texts), path)
+    return texts
+
+
 def build_corpus(n_docs: int = 200) -> List[str]:
     texts: List[str] = []
 
@@ -870,12 +937,17 @@ def run_scale(
     max_retries:     int   = 2,
     doc_timeout:     float = 90.0,
     resume:          bool  = False,
+    corpus:          Optional[List[str]] = None,
 ) -> FinalReport:
 
     t_start = time.time()
-    corpus  = build_corpus(n_docs)
+    if corpus is not None:
+        n_docs = len(corpus)
+        log.info("Using provided corpus: %d docs", n_docs)
+    else:
+        corpus = build_corpus(n_docs)
     quality = score_corpus_quality(corpus)
-    log.info("Corpus built: %d docs, quality=%.3f", len(corpus), quality)
+    log.info("Corpus: %d docs, quality=%.3f", len(corpus), quality)
 
     if resume:
         existing_results, existing_snapshots = load_checkpoint()
@@ -1009,16 +1081,25 @@ def main() -> int:
     parser.add_argument("--retries", "-r", type=int, default=2)
     parser.add_argument("--timeout", "-t", type=float, default=90.0)
     parser.add_argument("--resume",        action="store_true")
+    parser.add_argument("--corpus",  "-c", type=Path,
+                        help="Path to corpus JSON/JSONL file; run scale on this corpus instead of building one")
     args     = parser.parse_args()
-    interval = args.interval or max(1, args.n_docs // 20)
+
+    corpus_list: Optional[List[str]] = None
+    n_docs = args.n_docs
+    if args.corpus is not None:
+        corpus_list = load_corpus_from_file(args.corpus)
+        n_docs = len(corpus_list)
+    interval = args.interval or max(1, n_docs // 20)
 
     log.info("Start: n=%d workers=%d interval=%d",
-             args.n_docs, args.workers, interval)
+             n_docs, args.workers, interval)
     try:
         run_scale(
             n_docs=args.n_docs, sample_interval=interval,
             n_workers=args.workers, max_retries=args.retries,
             doc_timeout=args.timeout, resume=args.resume,
+            corpus=corpus_list,
         )
     except KeyboardInterrupt:
         log.warning("Interrupted by user.")

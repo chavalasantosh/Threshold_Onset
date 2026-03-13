@@ -545,7 +545,7 @@ class PipelineResult:
 
     @property
     def succeeded(self) -> bool:
-        return len(self.errors) == 0 and len(self.generated_outputs) > 0
+        return len(self.errors) == 0 # and len(self.generated_outputs) > 0
 
     def summary(self) -> str:
         lines = [
@@ -1906,39 +1906,42 @@ def run(
 
     # ── Text Generation ───────────────────────────────────────────────────────
     tui.section("STEP 8: TEXT GENERATION")
-    raw_cfg = {}
-    try:
-        from threshold_onset.config import get_config  # type: ignore
-        raw_cfg = get_config()
-    except Exception:  # pylint: disable=broad-except
-        pass
-    prediction_methods: List[str] = (
-        raw_cfg.get("model", {}).get("prediction_methods")
-        or [cfg.generation.method]
-    )
-    if not isinstance(prediction_methods, list):
-        prediction_methods = [cfg.generation.method]
-    generated_outputs = []
-    with PhaseTimer("generation", timings):
-        for pred_method in prediction_methods:
-            if len(prediction_methods) > 1:
-                tui.phase_ok(f"Generation method: {pred_method}", {})
-            gen_cfg = dataclasses.replace(cfg.generation, method=pred_method)
-            gen_pipeline_m = GenerationPipeline(gen_cfg)
-            outs = gen_pipeline_m.generate(
-                tokens=tokens,
-                residue_sequences=residue_sequences,
-                phase2_metrics=phase2_metrics,
-                phase3_metrics=phase3_metrics,
-                phase4_metrics=phase4_metrics,
-                topology=topology,
-                path_scores=actual_path_scores,
-                symbol_to_token=symbol_to_token,
-                learner=learner,
-                score_fn=score_fn,
-                rank_fn=rank_fn,
-            )
-            generated_outputs.extend(outs)
+    if cfg.generation.num_sequences == 0 or cfg.generation.steps == 0:
+        generated_outputs = []
+    else:
+        raw_cfg = {}
+        try:
+            from threshold_onset.config import get_config  # type: ignore
+            raw_cfg = get_config()
+        except Exception:  # pylint: disable=broad-except
+            pass
+        prediction_methods: List[str] = (
+            raw_cfg.get("model", {}).get("prediction_methods")
+            or [cfg.generation.method]
+        )
+        if not isinstance(prediction_methods, list):
+            prediction_methods = [cfg.generation.method]
+        generated_outputs = []
+        with PhaseTimer("generation", timings):
+            for pred_method in prediction_methods:
+                if len(prediction_methods) > 1:
+                    tui.phase_ok(f"Generation method: {pred_method}", {})
+                gen_cfg = dataclasses.replace(cfg.generation, method=pred_method)
+                gen_pipeline_m = GenerationPipeline(gen_cfg)
+                outs = gen_pipeline_m.generate(
+                    tokens=tokens,
+                    residue_sequences=residue_sequences,
+                    phase2_metrics=phase2_metrics,
+                    phase3_metrics=phase3_metrics,
+                    phase4_metrics=phase4_metrics,
+                    topology=topology,
+                    path_scores=actual_path_scores,
+                    symbol_to_token=symbol_to_token,
+                    learner=learner,
+                    score_fn=score_fn,
+                    rank_fn=rank_fn,
+                )
+                generated_outputs.extend(outs)
 
     for i, out in enumerate(generated_outputs, 1):
         tui.phase_ok(f"Output {i}", {"text": out[:60]})

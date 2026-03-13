@@ -47,7 +47,7 @@ def save_base_model(
     source: str = "create_base_model",
 ) -> Path:
     """Write path_scores and metadata to JSON. Returns path written."""
-    from datetime import datetime
+    from datetime import datetime, timezone
     out_path = Path(path) if path is not None else DEFAULT_PATH
     out_path = out_path.resolve()
     payload = {
@@ -55,7 +55,7 @@ def save_base_model(
         "path_scores": _serialize_path_scores(path_scores),
         "learning_rate": learning_rate,
         "prediction_method": prediction_method,
-        "created_at": datetime.utcnow().isoformat() + "Z",
+        "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "source": source,
     }
     out_path.parent.mkdir(parents=True, exist_ok=True)

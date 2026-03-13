@@ -195,10 +195,17 @@ class CorpusState:
 
     @classmethod
     def load(cls, path: Path, **overrides) -> "CorpusState":
-        """Load state from JSON."""
+        """Load state from JSON. If file has trailing garbage (Extra data), use first JSON object only."""
         path = Path(path)
         with open(path, encoding="utf-8") as f:
-            data = json.load(f)
+            raw = f.read()
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError as e:
+            if "Extra data" in str(e):
+                data, _ = json.JSONDecoder().raw_decode(raw)
+            else:
+                raise
 
         state = cls(
             reinforcement=overrides.get("reinforcement", data["params"]["reinforcement"]),

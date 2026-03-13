@@ -111,3 +111,14 @@ backup_*/
 # OS files
 Thumbs.db
 Desktop.ini
+
+# Large/generated data artifacts (not for git)
+data/bulk/
+data/cache/
+data/raw/
+data/hindu_corpus*.jsonl
+
+# Local bundles and exports
+*.zip
+FULL.txt
+output.zip
