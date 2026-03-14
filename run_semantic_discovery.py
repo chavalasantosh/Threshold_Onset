@@ -10,9 +10,11 @@ USAGE:
     python run_semantic_discovery.py
 """
 
+import argparse
 import hashlib
 import sys
 import logging
+import os
 from pathlib import Path
 
 # Add project root to path
@@ -27,6 +29,7 @@ from threshold_onset.semantic import (
     ConstraintDiscoveryEngine,
     FluencyGenerator
 )
+from integration.runtime.cli import build_runtime_env
 
 # Configure logging
 logging.basicConfig(
@@ -319,4 +322,18 @@ def execute_complete_workflow():
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--workers", type=int, default=None)
+    parser.add_argument("--method-workers", type=int, default=None, dest="method_workers")
+    parser.add_argument("--profile", action="store_true")
+    args, _rest = parser.parse_known_args(sys.argv[1:])
+    runtime_env = build_runtime_env(
+        workers=args.workers,
+        method_workers=args.method_workers,
+        profile=args.profile,
+    )
+    for key in ("SANTEK_TEXT_WORKERS", "SANTEK_METHOD_WORKERS", "PIPELINE_PROFILE"):
+        val = runtime_env.get(key)
+        if val:
+            os.environ[key] = val
     execute_complete_workflow()

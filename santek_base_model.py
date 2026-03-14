@@ -95,6 +95,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import inspect
 import json
 import os
 import sys
@@ -102,8 +103,8 @@ import urllib.request
 from pathlib import Path
 from typing import List
 
-# Canonical model surface: integration.model.santek_base
-from integration.model.santek_base import (
+# Canonical model surface
+from integration.model import (
     SantekModel,
     eval_held_out,
     load_santek_model,
@@ -311,21 +312,45 @@ def cmd_train(
 
     repo_root = _find_repo_root()
     try:
-        model = santek_train(
-            corpus,
-            repo_root,
-            epochs=epochs,
-            eta=eta,
-            decay=decay,
-            max_streak=max_streak,
-            tension_threshold=tension_threshold,
-            patience=patience,
-        )
+        # Compatibility across API variants.
+        train_params = inspect.signature(santek_train).parameters
+        train_kwargs = {
+            "corpus": corpus,
+            "epochs": epochs,
+            "eta": eta,
+            "decay": decay,
+            "max_streak": max_streak,
+            "tension_threshold": tension_threshold,
+            "patience": patience,
+        }
+        if "repo_root" in train_params:
+            train_kwargs["repo_root"] = repo_root
+        train_out = santek_train(**train_kwargs)
     except ValueError as e:
         print(f"[ERROR] {e}", file=sys.stderr)
         sys.exit(1)
 
-    meta = dict(model.meta)
+    # Compatibility: training may return either a SantekModel or a
+    # SanTEKTrainingResult-like object. Normalize to SantekModel.
+    if hasattr(train_out, "path_scores") and hasattr(train_out, "vocab"):
+        model = train_out
+        meta = dict(getattr(model, "meta", {}) or {})
+    else:
+        meta = {
+            "converged": getattr(train_out, "converged", False),
+            "converged_at_epoch": getattr(train_out, "converged_at_epoch", None),
+            "epochs_run": getattr(train_out, "total_epochs_run", epochs),
+            "best_accuracy": float(getattr(train_out, "best_accuracy", 0.0) or 0.0),
+            "best_9centric": int(getattr(train_out, "best_9centric", 1) or 1),
+            "edge_count": len(getattr(train_out, "final_path_scores", {}) or {}),
+            "vocab_size": len(getattr(train_out, "global_vocab", {}) or {}),
+        }
+        model = SantekModel(
+            path_scores=dict(getattr(train_out, "final_path_scores", {}) or {}),
+            vocab=dict(getattr(train_out, "global_vocab", {}) or {}),
+            meta=meta,
+        )
+
     meta.setdefault("author", "Chavala Santosh")
     meta.setdefault("family", "THRESHOLD_ONSET / SanTOK / SanVerse / Sanformers")
     model = SantekModel(path_scores=model.path_scores, vocab=model.vocab, meta=meta)
@@ -473,7 +498,11 @@ def cmd_eval(
         print("[ERROR] No validation corpus. Set santek_base_model.corpus_jsonl (deterministic split) or .training_corpus_file_val.", file=sys.stderr)
         sys.exit(1)
 
-    result = eval_held_out(model_path, repo_root, train_docs, val_docs)
+    eval_params = inspect.signature(eval_held_out).parameters
+    if "repo_root" in eval_params:
+        result = eval_held_out(model_path, repo_root, train_docs, val_docs)
+    else:
+        result = eval_held_out(model_path, train_docs, val_docs)
 
     if result.error:
         print(f"  Error: {result.error}", file=sys.stderr)

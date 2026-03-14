@@ -19,6 +19,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 ROOT = Path(__file__).resolve().parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from integration.runtime.cli import build_runtime_env
 
 PIPELINE_STEPS = [
     ("Decoder test", "integration/test_decoder.py"),
@@ -53,7 +56,7 @@ def _collect_python_files() -> List[Path]:
     for p in ROOT.rglob("*.py"):
         if _should_include(p):
             files.append(p.relative_to(ROOT))
-    return sorted(files, key=lambda x: str(x))
+    return sorted(files, key=str)
 
 
 def _truncate(text: str, max_len: int) -> str:
@@ -200,7 +203,7 @@ def _generate_full_report() -> str:
     return "\n".join(sections)
 
 
-def _run_all() -> int:
+def _run_all(env: Optional[Dict[str, str]] = None) -> int:
     """Execute all 10 pipeline steps. Returns exit code."""
     sep = "=" * 70
     print(f"\n{sep}\nTHRESHOLD_ONSET — RUNNING ALL\n{sep}\n")
@@ -208,7 +211,7 @@ def _run_all() -> int:
     for name, script in PIPELINE_STEPS:
         print(f"\n{sep}\nRUNNING: {name}\n{sep}")
         cmd = [sys.executable, str(ROOT / script)]
-        result = subprocess.run(cmd, cwd=str(ROOT), capture_output=False, check=False)
+        result = subprocess.run(cmd, cwd=str(ROOT), env=env, capture_output=False, check=False)
         ok = result.returncode == 0
         results.append((name, ok))
         print(f"\n[{name}] {'PASS' if ok else 'FAIL'} (exit {result.returncode})")
@@ -377,6 +380,9 @@ def main() -> int:
     full_source = False
     verbose = False
     describe = False
+    workers = None
+    method_workers = None
+    profile = False
     argv = sys.argv[1:]
     i = 0
     while i < len(argv):
@@ -395,12 +401,33 @@ def main() -> int:
         elif argv[i] == "--describe":
             describe = True
             i += 1
+        elif argv[i] == "--workers" and i + 1 < len(argv):
+            try:
+                workers = int(argv[i + 1])
+            except ValueError:
+                workers = None
+            i += 2
+        elif argv[i] == "--method-workers" and i + 1 < len(argv):
+            try:
+                method_workers = int(argv[i + 1])
+            except ValueError:
+                method_workers = None
+            i += 2
+        elif argv[i] == "--profile":
+            profile = True
+            i += 1
         else:
             i += 1
 
+    runtime_env = build_runtime_env(
+        workers=workers,
+        method_workers=method_workers,
+        profile=profile,
+    )
+
     # Default: run everything
     if not (describe or verbose or full_source or as_json or out_file):
-        return _run_all()
+        return _run_all(env=runtime_env)
 
     files = _collect_python_files()
     parsed = [_parse_file(f) for f in files]

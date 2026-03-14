@@ -106,6 +106,47 @@ class TestPatternMiner(unittest.TestCase):
         )
         
         self.assertIsInstance(forbidden, set)
+
+    def test_discover_forbidden_patterns_with_ngrams(self):
+        """Test forbidden discovery scores n-grams via transition aggregation."""
+        role_patterns = {
+            ('anchor', 'driver'): {'frequency': 5, 'length': 2},
+            ('anchor', 'driver', 'terminator'): {'frequency': 4, 'length': 3},
+        }
+
+        edge_deltas = {
+            ('id1', 'id2'): {'refusal_delta': 0.8},
+            ('id2', 'id3'): {'refusal_delta': 0.9},
+            ('id4', 'id5'): {'refusal_delta': 0.1},
+        }
+
+        symbol_to_role = {
+            1: 'anchor',
+            2: 'driver',
+            3: 'terminator',
+            4: 'anchor',
+            5: 'anchor',
+        }
+        identity_to_symbol = {
+            'id1': 1,
+            'id2': 2,
+            'id3': 3,
+            'id4': 4,
+            'id5': 5,
+        }
+
+        observer = Mock()
+        observer.adjacency = {}
+
+        forbidden = discover_forbidden_patterns(
+            role_patterns,
+            edge_deltas,
+            symbol_to_role,
+            identity_to_symbol,
+            observer
+        )
+
+        self.assertIn(('anchor', 'driver', 'terminator'), forbidden)
     
     def test_build_templates(self):
         """Test template building."""

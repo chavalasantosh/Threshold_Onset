@@ -12,12 +12,16 @@ import subprocess
 import sys
 from pathlib import Path
 from datetime import datetime
+import argparse
 
 ROOT = Path(__file__).resolve().parent
 LOG_FILE = ROOT / "execution_log.txt"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from integration.runtime.cli import build_runtime_env
 
 
-def run_and_log(name: str, cmd: list, log_file: Path) -> bool:
+def run_and_log(name: str, cmd: list, log_file: Path, env: dict) -> bool:
     """Run command, append output to log. Returns True if exit 0."""
     sep = "=" * 70
     header = f"\n{sep}\n{name}\n{datetime.now().isoformat()}\n{sep}\n"
@@ -26,10 +30,12 @@ def run_and_log(name: str, cmd: list, log_file: Path) -> bool:
     result = subprocess.run(
         cmd,
         cwd=str(ROOT),
+        env=env,
         capture_output=True,
         text=True,
         encoding="utf-8",
         errors="replace",
+        check=False,
     )
     with open(log_file, "a", encoding="utf-8") as f:
         f.write(result.stdout or "")
@@ -41,6 +47,17 @@ def run_and_log(name: str, cmd: list, log_file: Path) -> bool:
 
 
 def main():
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--workers", type=int, default=None)
+    parser.add_argument("--method-workers", type=int, default=None, dest="method_workers")
+    parser.add_argument("--profile", action="store_true")
+    known, _rest = parser.parse_known_args(sys.argv[1:])
+    runtime_env = build_runtime_env(
+        workers=known.workers,
+        method_workers=known.method_workers,
+        profile=known.profile,
+    )
+
     argv = sys.argv[1:]
     out = LOG_FILE
     if "--out" in argv:
@@ -71,7 +88,7 @@ def main():
 
     for name, cmd in commands:
         print(f"Running: {name} ...")
-        run_and_log(name, cmd, out)
+        run_and_log(name, cmd, out, runtime_env)
 
     print(f"\nAll output saved to: {out}")
 

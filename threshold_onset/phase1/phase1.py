@@ -10,6 +10,16 @@ Reads Phase 0 output only. Does not modify Phase 0.
 """
 
 
+import os
+
+
+def _env_flag(name, default=False):
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return str(raw).strip().lower() in ("1", "true", "yes", "on")
+
+
 def phase1(residues):
     """
     Phase 1 segmentation pipeline.
@@ -42,7 +52,10 @@ def phase1(residues):
     cluster_result = cluster_residues(residues)
     
     # Distance measurement
-    distances = pairwise_distances(residues)
+    if _env_flag("PHASE1_SKIP_DISTANCES", default=False):
+        distances = []
+    else:
+        distances = pairwise_distances(residues)
     
     # Pattern detection
     pattern_result = detect_repetition(residues)

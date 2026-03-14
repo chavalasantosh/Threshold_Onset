@@ -9,7 +9,7 @@ CORRECTED: Uses quantiles for thresholds, derives binder from topology.
 import logging
 from typing import Dict, List, Any, Optional, Set
 
-from threshold_onset.semantic.common.utils import calculate_percentile, mean
+from threshold_onset.semantic.common.utils import calculate_percentile, mean, variance
 from threshold_onset.semantic.phase7.properties import compute_cluster_properties
 
 logger = logging.getLogger('threshold_onset.semantic.phase7')
@@ -42,6 +42,15 @@ def compute_binder_properties(
     """
     if not cluster_identities:
         return {'betweenness_like': 0.0, 'edge_delta_variance': 0.0, 'bridge_frequency': 0.0}
+
+    # Precompute incoming links and direct-edge lookup for bridge scoring.
+    adjacency = continuation_observer.adjacency
+    incoming_map: Dict[str, Set[str]] = {identity_hash: set() for identity_hash in adjacency}
+    direct_edges: Set[tuple] = set()
+    for src, targets in adjacency.items():
+        for dst in targets:
+            direct_edges.add((src, dst))
+            incoming_map.setdefault(dst, set()).add(src)
     
     # Compute edge_delta variance for identities in cluster
     delta_variances = []
@@ -61,7 +70,6 @@ def compute_binder_properties(
                 deltas.append(abs(delta.get('survival_delta', 0.0)))
         
         if deltas:
-            from threshold_onset.semantic.common.utils import variance
             delta_var = variance(deltas)
             delta_variances.append(delta_var)
     
@@ -74,11 +82,35 @@ def compute_binder_properties(
         neighbor_counts.append(len(outgoing))
     
     avg_neighbor_count = mean(neighbor_counts) if neighbor_counts else 0.0
+
+    # Bridge frequency: share of two-hop (incoming -> node -> outgoing) routes
+    # where direct incoming->outgoing edge is absent, so node acts as a bridge.
+    bridge_scores: List[float] = []
+    for identity_hash in cluster_identities:
+        incoming = incoming_map.get(identity_hash, set())
+        outgoing = adjacency.get(identity_hash, set())
+        if not incoming or not outgoing:
+            continue
+
+        possible_pairs = 0
+        bridge_pairs = 0
+        for src in incoming:
+            for dst in outgoing:
+                if src == dst or src == identity_hash or dst == identity_hash:
+                    continue
+                possible_pairs += 1
+                if (src, dst) not in direct_edges:
+                    bridge_pairs += 1
+
+        if possible_pairs > 0:
+            bridge_scores.append(bridge_pairs / possible_pairs)
+
+    bridge_frequency = mean(bridge_scores) if bridge_scores else 0.0
     
     return {
         'betweenness_like': avg_neighbor_count,
         'edge_delta_variance': avg_delta_variance,
-        'bridge_frequency': 0.0  # Simplified for now
+        'bridge_frequency': bridge_frequency
     }
 
 
@@ -189,10 +221,12 @@ def assign_roles_from_properties(
     # Collect binder metrics for quantiles
     all_betweenness = []
     all_delta_variance = []
+    all_bridge_frequency = []
     if binder_properties:
         for props in binder_properties.values():
             all_betweenness.append(props['betweenness_like'])
             all_delta_variance.append(props['edge_delta_variance'])
+            all_bridge_frequency.append(props['bridge_frequency'])
     
     if all_betweenness:
         quantiles['betweenness_high'] = calculate_percentile(all_betweenness, percentile_high)
@@ -203,6 +237,11 @@ def assign_roles_from_properties(
         quantiles['delta_variance_high'] = calculate_percentile(all_delta_variance, percentile_high)
     else:
         quantiles['delta_variance_high'] = 0.1
+
+    if all_bridge_frequency:
+        quantiles['bridge_frequency_high'] = calculate_percentile(all_bridge_frequency, percentile_high)
+    else:
+        quantiles['bridge_frequency_high'] = 0.5
     
     # Assign roles
     roles = {}
@@ -239,7 +278,8 @@ def assign_roles_from_properties(
         # Binder: derived from topology (CORRECTED)
         elif (cluster_id in binder_properties and
               binder_properties[cluster_id]['betweenness_like'] > quantiles['betweenness_high'] and
-              binder_properties[cluster_id]['edge_delta_variance'] > quantiles['delta_variance_high']):
+              binder_properties[cluster_id]['edge_delta_variance'] > quantiles['delta_variance_high'] and
+              binder_properties[cluster_id]['bridge_frequency'] > quantiles['bridge_frequency_high']):
             role = 'binder'
         
         # Unclassified (not default binder)

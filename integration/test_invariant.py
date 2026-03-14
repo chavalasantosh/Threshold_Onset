@@ -22,7 +22,7 @@ from integration.unified_system import process_text_through_phases
 from integration.transition_matrix import build_transition_matrix
 
 
-def test_no_self_transition_law(phase4_output, phase3_metrics):
+def check_no_self_transition_law(phase4_output, phase3_metrics):
     """
     Check if no self-transition law holds.
 
@@ -139,7 +139,7 @@ def main():
                 continue
 
             # Test invariant
-            invariant_result = test_no_self_transition_law(
+            invariant_result = check_no_self_transition_law(
                 phase_results['phase4'],
                 phase_results['phase3']
             )

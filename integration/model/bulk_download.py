@@ -35,6 +35,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import hashlib
 import json
 import os
@@ -56,6 +57,7 @@ BULK_DIR = Path("data/bulk")
 SHARD_SIZE = 1000_000          # records per shard file
 MIN_TEXT_LEN = 300             # skip texts shorter than this
 MAX_TEXT_LEN = 100_000         # truncate texts longer than this
+CHECKPOINT_PATH = BULK_DIR / "_download_checkpoint.json"
 
 LANG_CODES = {
     "tel": "Telugu",
@@ -64,6 +66,42 @@ LANG_CODES = {
     "san": "Sanskrit",
     "eng": "English",
 }
+
+
+def _lang_workers() -> int:
+    try:
+        return max(1, int(os.environ.get("BULK_LANG_WORKERS", "2")))
+    except ValueError:
+        return 2
+
+
+def _load_checkpoint() -> dict:
+    if not CHECKPOINT_PATH.exists():
+        return {}
+    try:
+        return json.loads(CHECKPOINT_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _save_checkpoint(data: dict) -> None:
+    CHECKPOINT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    CHECKPOINT_PATH.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def _is_completed(source: str) -> bool:
+    ck = _load_checkpoint()
+    return bool(ck.get(source, {}).get("completed"))
+
+
+def _mark_completed(source: str, total_written: int) -> None:
+    ck = _load_checkpoint()
+    ck[source] = {
+        "completed": True,
+        "records": int(total_written),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    _save_checkpoint(ck)
 
 
 def _agent_log(run_id: str, hypothesis_id: str, location: str, message: str, data: dict) -> None:
@@ -178,12 +216,16 @@ def download_wikipedia(languages: List[str] = None) -> None:
     if languages is None:
         languages = ["te", "hi", "ta", "sa", "en"]
 
-    for lang in languages:
+    def _download_one(lang: str) -> None:
         source = f"wikipedia_{lang}"
+        if _is_completed(source):
+            print(f"  [SKIP] {source} already marked complete in checkpoint")
+            return
         existing = _already_downloaded(source)
         if existing > 0:
             print(f"  [SKIP] {source} already has {existing:,} records")
-            continue
+            _mark_completed(source, existing)
+            return
 
         print(f"\n  Downloading Wikipedia ({lang} — {LANG_CODES.get(lang, lang)})...")
         try:
@@ -198,7 +240,6 @@ def download_wikipedia(languages: List[str] = None) -> None:
                 text = _clean(str(row.get("text", "")))
                 if len(text) < MIN_TEXT_LEN:
                     continue
-                # Split long articles into paragraphs
                 paragraphs = [p.strip() for p in text.split("\n\n") if len(p.strip()) >= MIN_TEXT_LEN]
                 if not paragraphs:
                     paragraphs = [text[:MAX_TEXT_LEN]]
@@ -213,9 +254,18 @@ def download_wikipedia(languages: List[str] = None) -> None:
                 if i % 10000 == 0 and i > 0:
                     print(f"    Articles processed: {i:,}")
             total = writer.close()
+            _mark_completed(source, total)
             print(f"  ✓ Wikipedia {lang}: {total:,} records")
         except Exception as e:
             print(f"  [ERROR] Wikipedia {lang}: {e}")
+
+    workers = min(_lang_workers(), len(languages))
+    if workers <= 1:
+        for lang in languages:
+            _download_one(lang)
+    else:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+            list(pool.map(_download_one, languages))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -236,9 +286,13 @@ def download_ai4bharat(languages: List[str] = None) -> None:
     for lang in languages:
         lang_3 = {"te": "tel", "hi": "hin", "ta": "tam", "sa": "san", "en": "eng"}.get(lang, lang)
         source = f"ai4bharat_{lang_3}"
+        if _is_completed(source):
+            print(f"  [SKIP] {source} already marked complete in checkpoint")
+            continue
         existing = _already_downloaded(source)
         if existing > 0:
             print(f"  [SKIP] {source} already has {existing:,} records")
+            _mark_completed(source, existing)
             continue
 
         print(f"\n  Downloading AI4Bharat Sangraha ({lang} -> {lang_3})...")
@@ -289,6 +343,7 @@ def download_ai4bharat(languages: List[str] = None) -> None:
                 if i % 100000 == 0 and i > 0:
                     print(f"    Records processed: {i:,}")
             total = writer.close()
+            _mark_completed(source, total)
             print(f"  ✓ AI4Bharat {lang_3}: {total:,} records")
         except Exception as e:
             # region agent log
@@ -337,6 +392,7 @@ def download_ai4bharat(languages: List[str] = None) -> None:
                         "domain": "ai4bharat_sangraha_unverified",
                     })
                 total = writer.close()
+                _mark_completed(source + "_unverified", total)
                 print(f"  ✓ AI4Bharat {lang_3} (unverified): {total:,} records")
             except Exception as e2:
                 # region agent log

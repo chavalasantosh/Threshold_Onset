@@ -58,12 +58,14 @@ from __future__ import annotations
 
 # ── stdlib ────────────────────────────────────────────────────────────────────
 import asyncio
+import argparse
 import dataclasses
 import functools
 import hashlib
 import logging
 import math
 import os
+import random
 import sys
 import textwrap
 import time
@@ -87,6 +89,17 @@ from typing import (
     Tuple,
     runtime_checkable,
 )
+try:
+    from integration.runtime.cli import build_runtime_env
+except Exception:  # pragma: no cover - optional runtime layer
+    def build_runtime_env(
+        workers: Optional[int] = None,
+        method_workers: Optional[int] = None,
+        profile: bool = False,
+    ) -> Dict[str, str]:
+        """Fallback when integration.runtime is unavailable."""
+        _ = workers, method_workers, profile
+        return {}
 
 # ── optional third-party ──────────────────────────────────────────────────────
 try:
@@ -327,6 +340,8 @@ class PipelineConfig:
     emit_flamegraph: bool = False
     show_tui: bool = True
     async_mode: bool = False
+    deterministic_mode: bool = False
+    deterministic_seed: int = 42
     corpus: CorpusConfig = field(default_factory=CorpusConfig)
     clustering: ClusteringConfig = field(default_factory=ClusteringConfig)
     generation: GenerationConfig = field(default_factory=GenerationConfig)
@@ -367,6 +382,8 @@ class PipelineConfig:
             errors.append("learner_alpha must be in (0, 1)")
         if self.topology_max_steps < 1:
             errors.append("topology_max_steps must be >= 1")
+        if self.deterministic_seed < 0:
+            errors.append("deterministic_seed must be >= 0")
         errors.extend(self.corpus.validate())
         return errors
 
@@ -405,6 +422,8 @@ class PipelineConfig:
             "PIPELINE_ASYNC": ("async_mode", lambda v: v.lower() in ("1", "true", "yes")),
             "PIPELINE_NO_TUI": ("show_tui", lambda v: v.lower() not in ("1", "true", "yes")),
             "PIPELINE_PROFILE": ("emit_flamegraph", lambda v: v.lower() in ("1", "true", "yes")),
+            "PIPELINE_DETERMINISTIC": ("deterministic_mode", lambda v: v.lower() in ("1", "true", "yes")),
+            "PIPELINE_DETERMINISTIC_SEED": ("deterministic_seed", int),
         }
         for env_key, (attr, cast) in env_map.items():
             val = os.environ.get(env_key)
@@ -1075,7 +1094,6 @@ def choose_next_path(
 
     v2: rank_fn is injected (testable), method validated.
     """
-    import random
     ranked = rank_fn(from_symbol, path_scores)
     if not ranked:
         return None
@@ -1671,6 +1689,20 @@ def _run_structure_emergence(
     )
 
 
+def _apply_deterministic_mode(cfg: PipelineConfig) -> None:
+    """
+    Enforce deterministic-friendly runtime behavior.
+    Keeps San-family logic intact while removing random generation paths.
+    """
+    if not cfg.deterministic_mode:
+        return
+
+    random.seed(int(cfg.deterministic_seed))
+    cfg.generation.method = "highest_score"
+    cfg.generation.temperature = 0.0
+    cfg.generation.fluency_seed = int(cfg.deterministic_seed)
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 20 — Public API: run() and async_run()
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1701,6 +1733,8 @@ def run(
 
     if cfg is None:
         cfg = PipelineConfig.from_project()
+
+    _apply_deterministic_mode(cfg)
 
     # Validate config
     errors = cfg.validate()
@@ -2005,7 +2039,6 @@ async def async_run(
     """
     Async wrapper for run().
     Allows pipeline to be awaited in async contexts.
-    Phase independence (phases 0-1 per run) could be parallelised here in future.
     """
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(
@@ -2040,8 +2073,6 @@ class _NullLearner:
 
 def _parse_cli() -> Tuple[Optional[str], PipelineConfig]:
     """Parse CLI arguments into (text_override, PipelineConfig)."""
-    import argparse
-
     parser = argparse.ArgumentParser(
         prog="run_complete",
         description="Complete End-to-End Unified Pipeline  v2.0",
@@ -2057,7 +2088,6 @@ def _parse_cli() -> Tuple[Optional[str], PipelineConfig]:
           PIPELINE_ASYNC=1 python run_complete.py "text"
         """),
     )
-    parser.add_argument("text", nargs="*", help="Input text (or file path). Omit for interactive prompt.")
     parser.add_argument("--default", action="store_true",
                         help="Use built-in default text instead of prompting when no text given")
     parser.add_argument("--config", type=Path, help="Config file override")
@@ -2067,8 +2097,17 @@ def _parse_cli() -> Tuple[Optional[str], PipelineConfig]:
     parser.add_argument("--no-tui", action="store_true", help="Disable Rich TUI")
     parser.add_argument("--async", dest="async_mode", action="store_true",
                         help="Run in async mode")
+    parser.add_argument("--deterministic", action="store_true",
+                        help="Enable deterministic mode (disables random generation paths)")
+    parser.add_argument("--seed", type=int,
+                        help="Deterministic seed (used when deterministic mode is enabled)")
+    parser.add_argument("--workers", type=int,
+                        help="Set SANTEK_TEXT_WORKERS for downstream execution")
+    parser.add_argument("--method-workers", type=int,
+                        help="Set SANTEK_METHOD_WORKERS for downstream execution")
     parser.add_argument("--log-level", default="WARNING",
                         choices=["DEBUG", "INFO", "WARNING", "ERROR"])
+    parser.add_argument("text", nargs="*", help="Input text (or file path). Omit for interactive prompt.")
 
     args = parser.parse_args()
 
@@ -2087,8 +2126,20 @@ def _parse_cli() -> Tuple[Optional[str], PipelineConfig]:
         cfg.show_tui = False
     if args.async_mode:
         cfg.async_mode = True
+    if args.deterministic:
+        cfg.deterministic_mode = True
+    if args.seed is not None:
+        cfg.deterministic_seed = args.seed
     if args.default:
         setattr(cfg, "_use_default_input", True)
+    runtime_env = build_runtime_env(
+        workers=args.workers,
+        method_workers=args.method_workers,
+        profile=args.profile,
+    )
+    for key in ("SANTEK_TEXT_WORKERS", "STRESS_WORKERS", "SANTEK_METHOD_WORKERS", "PIPELINE_PROFILE"):
+        if key in runtime_env:
+            os.environ[key] = runtime_env[key]
 
     text_override = " ".join(args.text).strip() if args.text else None
     return text_override, cfg
@@ -2103,6 +2154,23 @@ def main(
     Backwards-compatible entry point.
     Preserves v1 signature: main(learner, return_result, text_override).
     """
+    def _pipeline_error_code(exc: PipelineError) -> str:
+        if isinstance(exc, ConfigurationError):
+            return "configuration_error"
+        if isinstance(exc, TokenizationError):
+            return "tokenization_error"
+        if isinstance(exc, ImportRegistryError):
+            return "import_registry_error"
+        if isinstance(exc, EmptyInputError):
+            return "empty_input_error"
+        if isinstance(exc, FileInputError):
+            return "file_input_error"
+        if isinstance(exc, ScoringContractError):
+            return "scoring_contract_error"
+        if isinstance(exc, PhaseGateError):
+            return "phase_gate_error"
+        return "pipeline_error"
+
     try:
         cfg = PipelineConfig.from_project()
         result = run(
@@ -2130,12 +2198,13 @@ def main(
         return None
 
     except PipelineError as exc:
+        code = _pipeline_error_code(exc)
         log.error("Pipeline error: %s", exc)
-        _safe_print(f"\nPipeline error: {exc}")
+        _safe_print(f"\nPipeline error [{code}]: {exc}")
         return None
     except Exception as exc:  # pylint: disable=broad-exception-caught
         log.exception("Unhandled exception")
-        _safe_print(f"\nUnhandled error: {exc}")
+        _safe_print(f"\nUnhandled error [runtime_error]: {exc}")
         traceback.print_exc()
         return None
 

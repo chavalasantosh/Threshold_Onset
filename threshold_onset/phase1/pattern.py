@@ -31,16 +31,21 @@ def detect_repetition(residues, window_size=PATTERN_WINDOW_SIZE):
     if len(residues) < window_size * 2:
         return {'repetition_count': 0}
     
+    windows = [
+        tuple(residues[i:i + window_size])
+        for i in range(len(residues) - window_size + 1)
+    ]
     repetition_count = 0
-    
-    # Compare all pairs of windows using EXACT EQUALITY
-    for i in range(len(residues) - window_size + 1):
-        window1 = residues[i:i + window_size]
-        for j in range(i + window_size, len(residues) - window_size + 1):
-            window2 = residues[j:j + window_size]
-            # EXACT EQUALITY comparison only
-            if window1 == window2:
-                repetition_count += 1
+    eligible_counts = {}
+
+    # Count non-overlapping equal windows in O(n) by activating windows
+    # only after they are far enough (>= window_size) from current index.
+    for idx, window in enumerate(windows):
+        activate_idx = idx - window_size
+        if activate_idx >= 0:
+            prev_window = windows[activate_idx]
+            eligible_counts[prev_window] = eligible_counts.get(prev_window, 0) + 1
+        repetition_count += eligible_counts.get(window, 0)
     
     return {'repetition_count': repetition_count}
 
@@ -61,16 +66,13 @@ def detect_survival(residue_sequences):
     if len(residue_sequences) < 2:
         return {'survival_count': 0}
     
-    survival_count = 0
-    
-    # Compare sequences using EXACT EQUALITY
-    for i in range(len(residue_sequences)):
-        seq1 = residue_sequences[i]
-        for j in range(i + 1, len(residue_sequences)):
-            seq2 = residue_sequences[j]
-            # EXACT EQUALITY comparison only
-            if seq1 == seq2:
-                survival_count += 1
-                break  # Count each sequence only once
-    
+    counts = {}
+    for sequence in residue_sequences:
+        key = tuple(sequence)
+        counts[key] = counts.get(key, 0) + 1
+
+    # Match legacy behavior: count each sequence index that has at least one
+    # duplicate later, equivalent to sum(count - 1) per unique sequence.
+    survival_count = sum(max(0, count - 1) for count in counts.values())
+
     return {'survival_count': survival_count}

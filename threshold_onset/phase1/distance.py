@@ -36,9 +36,4 @@ def pairwise_distances(residues):
     if len(residues) < 2:
         return []
     
-    distances = []
-    for i in range(len(residues) - 1):
-        dist = absolute_difference(residues[i], residues[i + 1])
-        distances.append(dist)
-    
-    return distances
+    return [absolute_difference(a, b) for a, b in zip(residues, residues[1:])]

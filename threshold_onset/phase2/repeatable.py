@@ -43,12 +43,16 @@ def detect_repeatable_units(residues, threshold=REPEATABILITY_THRESHOLD):
     
     # Track all units and their repeat counts
     unit_counts = {}
+    hash_cache = {}
     
     # Extract all units of fixed window size
     for i in range(len(residues) - UNIT_WINDOW + 1):
         unit = tuple(residues[i:i + UNIT_WINDOW])
         # Generate internal hash for unit (mechanical identifier only)
-        unit_hash = _hash_unit(unit)
+        unit_hash = hash_cache.get(unit)
+        if unit_hash is None:
+            unit_hash = _hash_unit(unit)
+            hash_cache[unit] = unit_hash
         
         # Count occurrences using EXACT EQUALITY
         unit_counts[unit_hash] = unit_counts.get(unit_hash, 0) + 1

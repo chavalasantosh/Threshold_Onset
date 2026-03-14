@@ -14,11 +14,17 @@ Note: main.py is the primary entry point. run_all.py is equivalent.
 import sys
 import subprocess
 from pathlib import Path
+import argparse
+from typing import Dict, Optional
 
 ROOT = Path(__file__).parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from integration.runtime.cli import build_runtime_env
 
 
-def run(name, script, args=None):
+def run(name, script, args=None, env: Optional[Dict[str, str]] = None):
     """Run a script, print outcome."""
     print("\n" + "=" * 70)
     print(f"RUNNING: {name}")
@@ -29,6 +35,7 @@ def run(name, script, args=None):
     result = subprocess.run(
         cmd,
         cwd=str(ROOT),
+        env=env,
         capture_output=False,
         check=False,
     )
@@ -38,6 +45,17 @@ def run(name, script, args=None):
 
 
 def main():
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--workers", type=int, default=None)
+    parser.add_argument("--method-workers", type=int, default=None, dest="method_workers")
+    parser.add_argument("--profile", action="store_true")
+    known, _rest = parser.parse_known_args(sys.argv[1:])
+    runtime_env = build_runtime_env(
+        workers=known.workers,
+        method_workers=known.method_workers,
+        profile=known.profile,
+    )
+
     # User input mode: run ENTIRE project (all 10 steps) with your text at runtime
     if len(sys.argv) >= 2 and sys.argv[1] == "--user":
         text = " ".join(sys.argv[2:]).strip() if len(sys.argv) > 2 else None
@@ -55,16 +73,16 @@ def main():
                 return 1
         print("\nRunning entire project (10 steps) with your input...")
         results = []
-        results.append(("Decoder test", run("Decoder test", "integration/test_decoder.py")))
-        results.append(("Validation", run("Validation", "integration/validate_pipeline.py")))
-        results.append(("Stress test", run("Stress test", "integration/stress_test.py")))
-        results.append(("Benchmark", run("Benchmark", "integration/benchmark.py")))
-        results.append(("Baselines", run("Baselines", "integration/baselines.py")))
-        results.append(("External validation", run("External validation", "integration/external_validation.py")))
-        results.append(("Stability mode", run("Stability mode", "integration/stability_mode.py")))
-        results.append(("Stability experiments", run("Stability experiments", "integration/stability_experiments.py")))
-        results.append(("Structural scaling", run("Structural scaling", "integration/structural_scaling.py")))
-        results.append(("Full pipeline (your input)", run("Full pipeline (your input)", "integration/run_complete.py", [text])))
+        results.append(("Decoder test", run("Decoder test", "integration/test_decoder.py", env=runtime_env)))
+        results.append(("Validation", run("Validation", "integration/validate_pipeline.py", env=runtime_env)))
+        results.append(("Stress test", run("Stress test", "integration/stress_test.py", env=runtime_env)))
+        results.append(("Benchmark", run("Benchmark", "integration/benchmark.py", env=runtime_env)))
+        results.append(("Baselines", run("Baselines", "integration/baselines.py", env=runtime_env)))
+        results.append(("External validation", run("External validation", "integration/external_validation.py", env=runtime_env)))
+        results.append(("Stability mode", run("Stability mode", "integration/stability_mode.py", env=runtime_env)))
+        results.append(("Stability experiments", run("Stability experiments", "integration/stability_experiments.py", env=runtime_env)))
+        results.append(("Structural scaling", run("Structural scaling", "integration/structural_scaling.py", env=runtime_env)))
+        results.append(("Full pipeline (your input)", run("Full pipeline (your input)", "integration/run_complete.py", [text], env=runtime_env)))
         print("\n" + "=" * 70)
         print("SUMMARY")
         print("=" * 70)
@@ -83,7 +101,7 @@ def main():
         if not text:
             print("Usage: python run_all.py --check \"Your text here\"")
             return 1
-        ok = run("Quick check", "integration/run_user_result.py", [text])
+        ok = run("Quick check", "integration/run_user_result.py", [text], env=runtime_env)
         return 0 if ok else 1
 
     print("\n" + "=" * 70)
@@ -104,16 +122,16 @@ def main():
     print()
 
     results = []
-    results.append(("Decoder test", run("Decoder test", "integration/test_decoder.py")))
-    results.append(("Validation", run("Validation", "integration/validate_pipeline.py")))
-    results.append(("Stress test", run("Stress test", "integration/stress_test.py")))
-    results.append(("Benchmark", run("Benchmark", "integration/benchmark.py")))
-    results.append(("Baselines", run("Baselines", "integration/baselines.py")))
-    results.append(("External validation", run("External validation", "integration/external_validation.py")))
-    results.append(("Stability mode", run("Stability mode", "integration/stability_mode.py")))
-    results.append(("Stability experiments", run("Stability experiments", "integration/stability_experiments.py")))
-    results.append(("Structural scaling", run("Structural scaling", "integration/structural_scaling.py")))
-    results.append(("Full pipeline", run("Full pipeline", "integration/run_complete.py")))
+    results.append(("Decoder test", run("Decoder test", "integration/test_decoder.py", env=runtime_env)))
+    results.append(("Validation", run("Validation", "integration/validate_pipeline.py", env=runtime_env)))
+    results.append(("Stress test", run("Stress test", "integration/stress_test.py", env=runtime_env)))
+    results.append(("Benchmark", run("Benchmark", "integration/benchmark.py", env=runtime_env)))
+    results.append(("Baselines", run("Baselines", "integration/baselines.py", env=runtime_env)))
+    results.append(("External validation", run("External validation", "integration/external_validation.py", env=runtime_env)))
+    results.append(("Stability mode", run("Stability mode", "integration/stability_mode.py", env=runtime_env)))
+    results.append(("Stability experiments", run("Stability experiments", "integration/stability_experiments.py", env=runtime_env)))
+    results.append(("Structural scaling", run("Structural scaling", "integration/structural_scaling.py", env=runtime_env)))
+    results.append(("Full pipeline", run("Full pipeline", "integration/run_complete.py", env=runtime_env)))
 
     print("\n" + "=" * 70)
     print("SUMMARY")

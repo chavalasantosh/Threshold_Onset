@@ -351,7 +351,8 @@ class TextTokenizationEngine:
         self, 
         text: str, 
         tokenization_method: str = "whitespace", 
-        compute_features: bool = True
+        compute_features: bool = True,
+        method: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Main tokenization method for text processing
@@ -374,6 +375,10 @@ class TextTokenizationEngine:
             raise TypeError(f"tokenization_method must be str, got {type(tokenization_method).__name__}")
         if not isinstance(compute_features, bool):
             raise TypeError(f"compute_features must be bool, got {type(compute_features).__name__}")
+        if method is not None:
+            if not isinstance(method, str):
+                raise TypeError(f"method must be str when provided, got {type(method).__name__}")
+            tokenization_method = method
         
         # Preprocess input text
         preprocessed_text = self._preprocess_text(text)
@@ -482,7 +487,11 @@ class TextTokenizationEngine:
 
 
 # Convenience functions for simplified usage
-def tokenize_text(text: str, tokenization_method: str = "whitespace") -> Dict[str, Any]:
+def tokenize_text(
+    text: str,
+    tokenization_method: str = "whitespace",
+    tokenizer_type: Optional[str] = None,
+) -> Dict[str, Any]:
     """
     Convenience function for text tokenization
     
@@ -494,6 +503,8 @@ def tokenize_text(text: str, tokenization_method: str = "whitespace") -> Dict[st
         Tokenization results
     """
     tokenization_engine = TextTokenizationEngine()
+    if tokenizer_type is not None:
+        tokenization_method = tokenizer_type
     return tokenization_engine.tokenize(text, tokenization_method)
 
 def analyze_text_comprehensive(text: str) -> Dict[str, Dict[str, Any]]:

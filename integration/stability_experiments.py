@@ -15,15 +15,18 @@ Usage:
     python integration/stability_experiments.py           # Full sweep + phase table
     python integration/stability_experiments.py --csv     # CSV for plotting
     python integration/stability_experiments.py --plot   # Generate plot (if matplotlib)
+    python integration/stability_experiments.py --workers 8
 """
 
 import math
 import sys
 import random
 import hashlib
+import os
 from pathlib import Path
 from typing import Dict, List, Tuple
 from collections import defaultdict
+from integration.runtime import ExecutionConfig, JobSpec, RETRY_NONE, choose_workers, run_tasks
 
 project_root = Path(__file__).parent.parent
 if str(project_root) not in sys.path:
@@ -63,6 +66,58 @@ def token_pair_hash(t_i: str, t_j: str) -> str:
     return hashlib.md5(f"({t_i},{t_j})".encode()).hexdigest()
 
 
+def _evaluate_combo_worker(
+    payload: Tuple[float, int, List[str], List[int], int, int, List[str]]
+) -> List[Dict]:
+    """Worker for one (drop_prob, K) parameter combo."""
+    drop_prob, K, tokens, theta_values, seed, total_pairs_uniques, original_pair_ids_list = payload
+    if K < 2:
+        return []
+    original_pair_ids = set(original_pair_ids_list)
+    pair_counts = defaultdict(int)
+    for k in range(K):
+        run_seed = seed + k * 1000
+        perturbed = subsample_tokens(tokens, drop_prob, run_seed)
+        seen = set()
+        for i in range(len(perturbed) - 1):
+            pair_id = token_pair_hash(perturbed[i], perturbed[i + 1])
+            if pair_id not in seen:
+                pair_counts[pair_id] += 1
+                seen.add(pair_id)
+
+    count_dist = defaultdict(int)
+    for _pid, c in pair_counts.items():
+        count_dist[c] += 1
+
+    rows: List[Dict] = []
+    for theta in theta_values:
+        if theta > K:
+            continue
+        n_persistent = sum(
+            1 for pid, c in pair_counts.items()
+            if c >= theta and pid in original_pair_ids
+        )
+        frac_persistent = n_persistent / max(1, total_pairs_uniques)
+        pct_observed = 100.0 * n_persistent / max(1, len(pair_counts))
+        q = (1 - drop_prob) ** 2
+        theory_p_survival = binomial_survival_prob(K, q, theta)
+        p_star = mean_field_boundary(theta, K)
+        rows.append({
+            'drop_prob': drop_prob,
+            'K': K,
+            'theta': theta,
+            'n_persistent': n_persistent,
+            'total_pairs': len(pair_counts),
+            'total_unique_pairs': total_pairs_uniques,
+            'frac_persistent': frac_persistent,
+            'pct_persistent': pct_observed,
+            'theory_p_survival': theory_p_survival,
+            'p_star': p_star,
+            'count_dist': dict(count_dist),
+        })
+    return rows
+
+
 def run_stability_sweep(
     text: str,
     drop_probs: List[float],
@@ -81,57 +136,38 @@ def run_stability_sweep(
     )
     total_pairs_uniques = len(original_pair_ids)
 
-    results = []
+    combos = [(drop_prob, K) for drop_prob in drop_probs for K in K_values if K >= 2]
+    requested_workers = int(os.environ.get("STABILITY_WORKERS", "0") or "0")
+    max_workers = choose_workers(
+        submitted=len(combos),
+        backend="process",
+        max_workers=(requested_workers if requested_workers > 0 else None),
+    )
 
-    for drop_prob in drop_probs:
-        for K in K_values:
-            if K < 2:
-                continue
-            pair_counts = defaultdict(int)
-            for k in range(K):
-                run_seed = seed + k * 1000
-                perturbed = subsample_tokens(tokens, drop_prob, run_seed)
-                seen = set()
-                for i in range(len(perturbed) - 1):
-                    pair_id = token_pair_hash(perturbed[i], perturbed[i + 1])
-                    if pair_id not in seen:
-                        pair_counts[pair_id] += 1
-                        seen.add(pair_id)
+    jobs = [
+        JobSpec(
+            job_id=f"combo-{idx}",
+            fn=_evaluate_combo_worker,
+            args=((combo[0], combo[1], tokens, theta_values, seed, total_pairs_uniques, list(original_pair_ids)),),
+            retries=0,
+        )
+        for idx, combo in enumerate(combos)
+    ]
+    results: List[Dict] = []
+    job_results, _metrics = run_tasks(
+        jobs,
+        config=ExecutionConfig(
+            backend="process",
+            max_workers=max_workers,
+            queue_bound=max_workers * 2,
+            retry_policy=RETRY_NONE,
+        ),
+    )
+    for jr in job_results:
+        if jr.ok and jr.value:
+            results.extend(jr.value)
 
-            # Distribution over recurrence counts
-            count_dist = defaultdict(int)
-            for pid, c in pair_counts.items():
-                count_dist[c] += 1
-
-            for theta in theta_values:
-                if theta > K:
-                    continue
-                # Only count pairs that exist in original sequence (frac <= 1)
-                n_persistent = sum(
-                    1 for pid, c in pair_counts.items()
-                    if c >= theta and pid in original_pair_ids
-                )
-                # Fixed-denominator: fraction of original unique pairs that persist
-                frac_persistent = n_persistent / max(1, total_pairs_uniques)
-                # Legacy: pct of observed pairs (denominator varies with p)
-                pct_observed = 100.0 * n_persistent / max(1, len(pair_counts))
-                # Theoretical: P(X >= theta) for X ~ Binomial(K, (1-p)^2)
-                q = (1 - drop_prob) ** 2
-                theory_p_survival = binomial_survival_prob(K, q, theta)
-                p_star = mean_field_boundary(theta, K)
-                results.append({
-                    'drop_prob': drop_prob,
-                    'K': K,
-                    'theta': theta,
-                    'n_persistent': n_persistent,
-                    'total_pairs': len(pair_counts),
-                    'total_unique_pairs': total_pairs_uniques,
-                    'frac_persistent': frac_persistent,
-                    'pct_persistent': pct_observed,
-                    'theory_p_survival': theory_p_survival,
-                    'p_star': p_star,
-                    'count_dist': dict(count_dist),
-                })
+    results.sort(key=lambda r: (r["drop_prob"], r["K"], r["theta"]))
 
     return {
         'results': results,
@@ -176,6 +212,14 @@ def main():
     argv = sys.argv[1:]
     do_csv = '--csv' in argv
     do_plot = '--plot' in argv
+    if '--workers' in argv:
+        idx = argv.index('--workers')
+        if idx + 1 < len(argv):
+            try:
+                workers = max(1, int(argv[idx + 1]))
+                os.environ["STABILITY_WORKERS"] = str(workers)
+            except ValueError:
+                pass
 
     text = "Action before knowledge. Structure emerges before language. Tokens become actions. Patterns become residues."
     print("=" * 70)

@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-03-13T15:03:08.732418+00:00",
+  "profile": "quick",
+  "machine": {
+    "python_version": "3.13.12",
+    "platform": "win32",
+    "cpu_count": "12"
+  },
+  "env": {
+    "SANTEK_TEXT_WORKERS": "",
+    "SANTEK_METHOD_WORKERS": ""
+  },
+  "commands": [
+    {
+      "name": "pipeline_check",
+      "command": [
+        "C:\\Users\\SCHAVALA\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe",
+        "integration/run_user_result.py",
+        "Action before knowledge."
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 3314.204454421997,
+      "stdout_path": "C:\\Users\\SCHAVALA\\Downloads\\codes\\THRESHOLD_ONSET - Copy\\logs\\perf\\20260313T150139Z_pipeline_check.stdout.log",
+      "stderr_path": "C:\\Users\\SCHAVALA\\Downloads\\codes\\THRESHOLD_ONSET - Copy\\logs\\perf\\20260313T150139Z_pipeline_check.stderr.log",
+      "final_result_count": 0,
+      "status_ok_count": 0,
+      "traceback_count": 0,
+      "total_time_ms_values": [],
+      "notes": {}
+    },
+    {
+      "name": "small_train_smoke",
+      "command": [
+        "C:\\Users\\SCHAVALA\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe",
+        "build_hindu_corpus.py",
+        "--skip-download",
+        "--epochs",
+        "1",
+        "--max-texts",
+        "3"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 86226.64618492126,
+      "stdout_path": "C:\\Users\\SCHAVALA\\Downloads\\codes\\THRESHOLD_ONSET - Copy\\logs\\perf\\20260313T150142Z_small_train_smoke.stdout.log",
+      "stderr_path": "C:\\Users\\SCHAVALA\\Downloads\\codes\\THRESHOLD_ONSET - Copy\\logs\\perf\\20260313T150142Z_small_train_smoke.stderr.log",
+      "final_result_count": 23,
+      "status_ok_count": 23,
+      "traceback_count": 0,
+      "total_time_ms_values": [
+        188.9,
+        189.2,
+        256.1,
+        120.9,
+        6670.4,
+        8892.8,
+        3550.0,
+        5683.6,
+        235.4,
+        14027.9,
+        4862.3,
+        1760.9,
+        4295.1,
+        5911.8,
+        5757.6,
+        13677.2,
+        6167.5,
+        11975.5,
+        10453.5,
+        10678.6,
+        8908.7,
+        6070.0,
+        6469.9
+      ],
+      "notes": {}
+    }
+  ],
+  "total_elapsed_ms": 89544.36993598938
+}

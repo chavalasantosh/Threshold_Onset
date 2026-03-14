@@ -12,11 +12,48 @@ Reads Phase 0, Phase 1, and Phase 2 output only. Does not modify them.
 """
 
 from collections import deque
+import os
+from concurrent.futures import ThreadPoolExecutor
 
 # FIXED thresholds for Phase 3 gate (non-adaptive)
 # These values are external and fixed, not computed from data
 MIN_PERSISTENT_RELATIONS = 1
 MIN_STABILITY_RATIO = 0.6
+
+
+def _env_int(name, default, minimum=1):
+    raw = os.environ.get(name)
+    if not raw:
+        return max(minimum, int(default))
+    try:
+        return max(minimum, int(raw))
+    except ValueError:
+        return max(minimum, int(default))
+
+
+def _env_flag(name, default=False):
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return str(raw).strip().lower() in ("1", "true", "yes", "on")
+
+
+def _phase3_single_run(payload):
+    """
+    Execute one Phase-3 run payload and extract relation outputs.
+    """
+    residues, phase1_metrics, phase2_metrics = payload
+    from threshold_onset.phase3.relation import extract_relations  # pylint: disable=import-outside-toplevel
+
+    phase3_metrics = phase3(residues, phase1_metrics, phase2_metrics)
+    relation_result = extract_relations(phase3_metrics)
+    graph_metrics = {
+        'node_count': phase3_metrics['node_count'],
+        'edge_count': phase3_metrics['edge_count'],
+        'graph_nodes': phase3_metrics['graph_nodes'],
+        'graph_edges': phase3_metrics['graph_edges']
+    }
+    return relation_result['relation_hashes'], relation_result['relation_counts'], graph_metrics
 
 
 def phase3(residues, phase1_metrics, phase2_metrics):
@@ -79,8 +116,11 @@ def phase3(residues, phase1_metrics, phase2_metrics):
     # Compute degree counts
     degree_counts = _compute_degree_counts(graph_nodes, graph_edges)
     
-    # Compute path lengths
-    path_lengths = _compute_path_lengths(graph_nodes, graph_edges)
+    # Compute path lengths (optional in performance-sensitive runs)
+    if _env_flag("PHASE3_SKIP_PATH_LENGTHS", default=False):
+        path_lengths = []
+    else:
+        path_lengths = _compute_path_lengths(graph_nodes, graph_edges)
     
     return {
         'graph_nodes': graph_nodes,
@@ -207,27 +247,44 @@ def phase3_multi_run(residue_sequences, phase1_metrics_list, phase2_metrics):
     from threshold_onset.phase3.persistence import measure_relation_persistence  # pylint: disable=import-outside-toplevel
     from threshold_onset.phase3.stability import measure_relation_stability  # pylint: disable=import-outside-toplevel
     
+    worker_count = min(
+        max(1, _env_int("PHASE3_WORKERS", default=os.cpu_count() or 1)),
+        max(1, len(residue_sequences)),
+    )
+
     # Step 1: Run Phase 3 for each run and collect relations
     relation_hashes_per_run = []
     relation_counts_per_run = []
     graph_metrics_per_run = []
-    
-    for residues, phase1_metrics in zip(residue_sequences, phase1_metrics_list):
-        # Run Phase 3 for this run
-        phase3_metrics = phase3(residues, phase1_metrics, phase2_metrics)
-        
-        # Extract relations from Phase 3 metrics
-        relation_result = extract_relations(phase3_metrics)
-        relation_hashes_per_run.append(relation_result['relation_hashes'])
-        relation_counts_per_run.append(relation_result['relation_counts'])
-        
-        # Store graph metrics for stability measurement
-        graph_metrics_per_run.append({
-            'node_count': phase3_metrics['node_count'],
-            'edge_count': phase3_metrics['edge_count'],
-            'graph_nodes': phase3_metrics['graph_nodes'],
-            'graph_edges': phase3_metrics['graph_edges']
-        })
+
+    if worker_count > 1 and len(residue_sequences) > 1:
+        payloads = [
+            (residues, phase1_metrics, phase2_metrics)
+            for residues, phase1_metrics in zip(residue_sequences, phase1_metrics_list)
+        ]
+        with ThreadPoolExecutor(max_workers=worker_count) as pool:
+            results = list(pool.map(_phase3_single_run, payloads))
+        for relation_hashes, relation_counts, graph_metrics in results:
+            relation_hashes_per_run.append(relation_hashes)
+            relation_counts_per_run.append(relation_counts)
+            graph_metrics_per_run.append(graph_metrics)
+    else:
+        for residues, phase1_metrics in zip(residue_sequences, phase1_metrics_list):
+            # Run Phase 3 for this run
+            phase3_metrics = phase3(residues, phase1_metrics, phase2_metrics)
+            
+            # Extract relations from Phase 3 metrics
+            relation_result = extract_relations(phase3_metrics)
+            relation_hashes_per_run.append(relation_result['relation_hashes'])
+            relation_counts_per_run.append(relation_result['relation_counts'])
+            
+            # Store graph metrics for stability measurement
+            graph_metrics_per_run.append({
+                'node_count': phase3_metrics['node_count'],
+                'edge_count': phase3_metrics['edge_count'],
+                'graph_nodes': phase3_metrics['graph_nodes'],
+                'graph_edges': phase3_metrics['graph_edges']
+            })
     
     # Step 2: Measure relation persistence
     persistence_result = measure_relation_persistence(relation_hashes_per_run)
@@ -274,7 +331,9 @@ def phase3_multi_run(residue_sequences, phase1_metrics_list, phase2_metrics):
         aggregated_relation_hashes.update(relation_set)
     
     # Compute aggregated path lengths (from first run's graph)
-    if len(graph_metrics_per_run) > 0:
+    if _env_flag("PHASE3_SKIP_PATH_LENGTHS", default=False):
+        path_lengths = []
+    elif len(graph_metrics_per_run) > 0:
         first_graph = graph_metrics_per_run[0]
         path_lengths = _compute_path_lengths(first_graph['graph_nodes'], first_graph['graph_edges'])
     else:

@@ -58,6 +58,16 @@ def test_api_process_result_to_dict():
     assert json.dumps(d)  # Must not raise
     assert "success" in d
     assert "token_count" in d
+    assert "trace_id" in d
+
+
+def test_api_process_trace_id_passthrough():
+    """API process() should preserve caller-provided trace id."""
+    from threshold_onset.api import process
+
+    result = process("test", silent=True, trace_id="abc123traceid000")
+    assert result.trace_id == "abc123traceid000"
+    assert result.to_dict()["trace_id"] == "abc123traceid000"
 
 
 def test_cli_config():
@@ -94,16 +104,34 @@ def test_rest_process():
     """REST POST /process returns ProcessResult-like JSON (starts health server)."""
     import time
     import urllib.request
+    import urllib.error
 
     proc = subprocess.Popen(
         [sys.executable, "scripts/health_server.py"],
         cwd=str(ROOT),
         env={**os.environ, "HEALTH_PORT": "19999"},
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
-    time.sleep(2.5)  # give server time to bind and accept (avoids flaky timeout)
+
+    # Wait until server is actually ready.
+    ready = False
+    for _ in range(40):
+        try:
+            with urllib.request.urlopen("http://127.0.0.1:19999/health", timeout=1.5) as resp:
+                if resp.status == 200:
+                    ready = True
+                    break
+        except (urllib.error.URLError, TimeoutError, ConnectionError):
+            time.sleep(0.25)
+
+    assert ready, "health server did not become ready in time"
     try:
+        with urllib.request.urlopen("http://127.0.0.1:19999/ready", timeout=5) as resp:
+            ready_data = json.loads(resp.read().decode())
+        assert "ready" in ready_data
+        assert "config_loaded" in ready_data
+
         req = urllib.request.Request(
             "http://127.0.0.1:19999/process",
             data=json.dumps({"text": "test"}).encode(),
@@ -112,8 +140,12 @@ def test_rest_process():
         )
         with urllib.request.urlopen(req, timeout=30) as resp:
             data = json.loads(resp.read().decode())
+            response_trace = resp.headers.get("X-Trace-Id")
         assert "success" in data
         assert "generated_outputs" in data
+        assert "trace_id" in data
+        assert response_trace
+        assert data["trace_id"] == response_trace
     finally:
         proc.terminate()
         try:

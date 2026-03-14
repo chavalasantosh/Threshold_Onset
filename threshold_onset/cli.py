@@ -6,9 +6,12 @@ End users can run with no args: interactive menu asks what to do and for text wh
 """
 
 import argparse
+import importlib
 import subprocess
 import sys
+import uuid
 from pathlib import Path
+from typing import Optional
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
@@ -106,15 +109,26 @@ def cmd_health(args: argparse.Namespace) -> int:
     """Health check: config loaded, pipeline importable. Outputs JSON."""
     import json
     from threshold_onset import __version__
+    trace_id = uuid.uuid4().hex[:16]
+    ready = True
+    import_error = None
+    try:
+        importlib.import_module("integration.run_complete")
+    except Exception as exc:
+        ready = False
+        import_error = str(exc)
     status = {
         "status": "ok",
+        "ready": ready,
         "version": __version__,
         "config_loaded": True,
+        "trace_id": trace_id,
+        "import_error": import_error,
     }
     if args.verbose:
         try:
             from threshold_onset.api import process
-            r = process("test", silent=True)
+            r = process("test", silent=True, trace_id=trace_id)
             status["pipeline_ok"] = r.success
         except Exception as e:
             status["pipeline_ok"] = False

@@ -10,6 +10,46 @@ Phase 2 operates as separate layer from Phase 0 and Phase 1.
 Reads Phase 0 and Phase 1 output only. Does not modify them.
 """
 
+import os
+from concurrent.futures import ThreadPoolExecutor
+
+
+def _env_int(name, default, minimum=1):
+    """Read integer env var safely."""
+    raw = os.environ.get(name)
+    if not raw:
+        return max(minimum, int(default))
+    try:
+        return max(minimum, int(raw))
+    except ValueError:
+        return max(minimum, int(default))
+
+
+def _reconstruct_clusters_task(payload):
+    residues, phase1_metrics = payload
+    return _reconstruct_clusters(residues, phase1_metrics)
+
+
+def _derive_virtual_residue_sequences(residues, max_sequences=3):
+    """
+    Build deterministic sub-sequences from one run so persistence metrics
+    can still capture repeat structure in single-run mode.
+    """
+    if not residues:
+        return [[]]
+    if len(residues) < 8:
+        return [residues]
+
+    window_size = max(8, len(residues) // 2)
+    max_start = max(0, len(residues) - window_size)
+    if max_start == 0:
+        return [residues]
+
+    stride = max(1, max_start // max(1, max_sequences - 1))
+    starts = list(range(0, max_start + 1, stride))[:max_sequences]
+    sequences = [residues[start:start + window_size] for start in starts]
+    return sequences if sequences else [residues]
+
 
 def phase2(residues, phase1_metrics):
     """
@@ -39,14 +79,9 @@ def phase2(residues, phase1_metrics):
     from threshold_onset.phase2.identity import assign_identity_hashes  # pylint: disable=import-outside-toplevel
     from threshold_onset.phase2.stability import measure_stability  # pylint: disable=import-outside-toplevel
     
-    # For Phase 2, we need multiple iterations to measure persistence
-    # Since Phase 0 runs once, we'll treat the single residue sequence as one iteration
-    # For multi-iteration analysis, we would need multiple Phase 0 runs
-    # For now, we'll work with the single sequence and detect repeatable units within it
-    
-    # Persistence measurement (requires multiple iterations)
-    # For single iteration, persistence is measured within the sequence
-    residue_sequences = [residues]  # Single iteration for now
+    # Derive deterministic sub-sequences so persistence can be measured
+    # from one run without introducing randomness.
+    residue_sequences = _derive_virtual_residue_sequences(residues)
     persistence_result = measure_persistence(residue_sequences)
     
     # Repeatable unit detection (works on single sequence)
@@ -55,8 +90,8 @@ def phase2(residues, phase1_metrics):
     # Identity hash assignment (requires multiple iterations)
     identity_result = assign_identity_hashes(residue_sequences)
     
-    # Stability measurement (requires cluster sequences from multiple iterations)
-    # For single iteration, we'll construct cluster sequence from Phase 1 metrics
+    # Stability measurement requires cluster sequences.
+    # In single-run mode, reconstruct from the available residues + Phase 1 metrics.
     # Phase 1 provides cluster_count and cluster_sizes, but not actual cluster contents
     # We'll need to reconstruct clusters from residues using Phase 1's clustering logic
     cluster_sequences = _reconstruct_clusters(residues, phase1_metrics)
@@ -86,7 +121,7 @@ def _reconstruct_clusters(residues, phase1_metrics):
         phase1_metrics: dictionary with Phase 1 structural metrics
     
     Returns:
-        List of cluster sequences (single iteration for now)
+        List of cluster sequences
         Each cluster is a list of residues
     """
     # Import Phase 1 clustering to reconstruct clusters
@@ -150,26 +185,44 @@ def phase2_multi_run(residue_sequences, phase1_metrics_list):
     from threshold_onset.phase2.repeatable import detect_repeatable_units  # pylint: disable=import-outside-toplevel
     from threshold_onset.phase2.identity import assign_identity_hashes  # pylint: disable=import-outside-toplevel
     from threshold_onset.phase2.stability import measure_stability  # pylint: disable=import-outside-toplevel
-    
-    # Persistence measurement across multiple runs
-    persistence_result = measure_persistence(residue_sequences)
-    
-    # Repeatable unit detection (aggregate across all runs)
-    # Combine all residues from all runs for repeatability detection
+
     all_residues = []
     for residues in residue_sequences:
         all_residues.extend(residues)
-    repeatable_result = detect_repeatable_units(all_residues)
-    
-    # Identity hash assignment across multiple runs
-    identity_result = assign_identity_hashes(residue_sequences)
-    
-    # Stability measurement across multiple runs
-    # Reconstruct clusters for each run
-    cluster_sequences = []
-    for residues, phase1_metrics in zip(residue_sequences, phase1_metrics_list):
-        clusters = _reconstruct_clusters(residues, phase1_metrics)
-        cluster_sequences.extend(clusters)
+
+    worker_count = min(
+        max(1, _env_int("PHASE2_WORKERS", default=os.cpu_count() or 1)),
+        max(1, len(residue_sequences)),
+    )
+
+    # Parallelize independent heavy computations.
+    if worker_count > 1 and len(residue_sequences) > 1:
+        with ThreadPoolExecutor(max_workers=min(worker_count, 3)) as pool:
+            f_persistence = pool.submit(measure_persistence, residue_sequences)
+            f_repeatable = pool.submit(detect_repeatable_units, all_residues)
+            f_identity = pool.submit(assign_identity_hashes, residue_sequences)
+            persistence_result = f_persistence.result()
+            repeatable_result = f_repeatable.result()
+            identity_result = f_identity.result()
+
+        payloads = list(zip(residue_sequences, phase1_metrics_list))
+        with ThreadPoolExecutor(max_workers=worker_count) as pool:
+            reconstructed = list(pool.map(_reconstruct_clusters_task, payloads))
+        cluster_sequences = []
+        for clusters in reconstructed:
+            cluster_sequences.extend(clusters)
+    else:
+        # Persistence measurement across multiple runs
+        persistence_result = measure_persistence(residue_sequences)
+        repeatable_result = detect_repeatable_units(all_residues)
+        identity_result = assign_identity_hashes(residue_sequences)
+
+        # Stability measurement across multiple runs
+        cluster_sequences = []
+        for residues, phase1_metrics in zip(residue_sequences, phase1_metrics_list):
+            clusters = _reconstruct_clusters(residues, phase1_metrics)
+            cluster_sequences.extend(clusters)
+
     stability_result = measure_stability(cluster_sequences)
     
     return {

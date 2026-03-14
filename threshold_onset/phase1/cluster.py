@@ -30,27 +30,31 @@ def cluster_residues(residues, threshold=CLUSTER_THRESHOLD):
     if not residues:
         return {'cluster_count': 0, 'cluster_sizes': []}
     
-    from threshold_onset.phase1.distance import absolute_difference  # pylint: disable=import-outside-toplevel
-    
     # Simple clustering: assign each residue to a cluster
     # If distance to existing cluster center <= threshold, join that cluster
     # Otherwise, create new cluster
     clusters = []
     cluster_centers = []
+    cluster_sums = []
+    cluster_sizes = []
     
     for residue in residues:
         assigned = False
         for idx, center in enumerate(cluster_centers):
-            if absolute_difference(residue, center) <= threshold:
+            if abs(residue - center) <= threshold:
                 clusters[idx].append(residue)
                 # Update center as average (mechanical computation, not adaptation)
-                cluster_centers[idx] = sum(clusters[idx]) / len(clusters[idx])
+                cluster_sums[idx] += residue
+                cluster_sizes[idx] += 1
+                cluster_centers[idx] = cluster_sums[idx] / cluster_sizes[idx]
                 assigned = True
                 break
         
         if not assigned:
             clusters.append([residue])
             cluster_centers.append(residue)
+            cluster_sums.append(residue)
+            cluster_sizes.append(1)
     
     cluster_sizes = [len(cluster) for cluster in clusters]
     

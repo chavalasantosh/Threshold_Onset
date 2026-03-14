@@ -9,7 +9,7 @@ concurrent.futures, dataclasses, pathlib, statistics, collections,
 datetime, argparse, subprocess, traceback.
 
 Features (all stdlib):
-  • Parallel workers via ProcessPoolExecutor
+  • Parallel workers via integration.runtime.run_tasks (process backend)
   • Live terminal dashboard — ANSI colours + box-drawing chars (no rich)
   • Deep statistical analysis: linear regression, saturation detection,
     percentile histograms, Pearson correlation, growth-rate acceleration
@@ -35,10 +35,11 @@ import subprocess
 import sys
 import time
 import traceback
-from concurrent.futures import ProcessPoolExecutor, as_completed, TimeoutError as FutureTimeout
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from integration.runtime import ExecutionConfig, JobSpec, RETRY_FAST, choose_workers, run_tasks
+from integration.runtime.cli import build_runtime_env
 
 # ── project root ──────────────────────────────────────────────────────────────
 ROOT = Path(__file__).resolve().parent.parent
@@ -666,11 +667,12 @@ def _process_doc_worker(args: Tuple[int, str, Path, int]) -> DocResult:
                 pass
 
             if not in_process_ok:
+                child_env = build_runtime_env(workers=1, method_workers=1)
                 r = subprocess.run(
                     [sys.executable,
                      str(root / "integration" / "run_complete.py"), text],
                     cwd=str(root), capture_output=True,
-                    text=True, timeout=60, check=False,
+                    text=True, timeout=60, check=False, env=child_env,
                 )
                 if r.returncode != 0:
                     raise RuntimeError(f"exit {r.returncode}: {r.stderr[:200]}")
@@ -976,51 +978,83 @@ def run_scale(
         f"[{n_docs} docs | {n_workers} workers]  ◈\n"
     )))
 
-    with ProcessPoolExecutor(max_workers=n_workers) as pool:
-        futures = {pool.submit(_process_doc_worker, item): item
-                   for item in work_items}
+    effective_workers = choose_workers(
+        submitted=max(1, len(work_items)),
+        backend="process",
+        max_workers=n_workers,
+    )
 
-        for future in as_completed(futures):
-            elapsed = time.time() - t_start
-            try:
-                result: DocResult = future.result(timeout=doc_timeout)
-            except FutureTimeout:
-                item = futures[future]
-                result = DocResult(doc_index=item[0], text_preview=item[1][:60],
-                                   success=False,
-                                   duration_ms=doc_timeout * 1000,
-                                   error="Worker timeout")
-            except Exception as exc:
-                item = futures[future]
-                result = DocResult(doc_index=item[0], text_preview=item[1][:60],
-                                   success=False, duration_ms=0, error=str(exc))
+    jobs = [
+        JobSpec(
+            job_id=f"doc-{item[0]}",
+            fn=_process_doc_worker,
+            args=(item,),
+            retries=max_retries,
+            timeout_s=doc_timeout,
+            metadata={"doc_index": item[0], "preview": item[1][:60]},
+        )
+        for item in work_items
+    ]
 
-            all_results.append(result)
-            recent.append(result)
-            if not result.success:
-                n_fail += 1
-                log.warning("Doc %d failed: %s", result.doc_index, result.error)
-
-            n_done = len(all_results)
-            if n_done % sample_interval == 0 or result.doc_index == n_docs:
-                n_id, n_edge, n_core = _read_state(STATE_PATH)
-                snap = CorpusSnapshot(result.doc_index, n_id, n_edge, n_core)
-                snapshots.append(snap)
-                result.n_identities = n_id
-                result.n_edges      = n_edge
-                result.n_core       = n_core
-                id_spark.append(float(n_id))
-
-            # Live dashboard refresh
-            print_dashboard(
-                n_done=n_done, n_fail=n_fail, n_total=n_docs,
-                n_id=n_id, n_edge=n_edge, n_core=n_core,
-                elapsed=elapsed, recent=recent[-8:],
-                id_spark=id_spark, refresh=True,
+    def _on_result(_m, jr):
+        nonlocal n_id, n_edge, n_core, n_fail
+        elapsed = time.time() - t_start
+        if jr.ok and jr.value is not None:
+            result = jr.value
+        else:
+            doc_index = int(jr.metadata.get("doc_index", -1))
+            preview = str(jr.metadata.get("preview", ""))[:60]
+            result = DocResult(
+                doc_index=doc_index,
+                text_preview=preview,
+                success=False,
+                duration_ms=jr.duration_ms,
+                error=jr.error or "worker failed",
             )
 
-            if n_done % 25 == 0:
-                save_checkpoint(all_results, snapshots)
+        all_results.append(result)
+        recent.append(result)
+        if not result.success:
+            n_fail += 1
+            log.warning("Doc %d failed: %s", result.doc_index, result.error)
+
+        n_done = len(all_results)
+        if n_done % sample_interval == 0 or result.doc_index == n_docs:
+            n_id, n_edge, n_core = _read_state(STATE_PATH)
+            snap = CorpusSnapshot(result.doc_index, n_id, n_edge, n_core)
+            snapshots.append(snap)
+            result.n_identities = n_id
+            result.n_edges = n_edge
+            result.n_core = n_core
+            id_spark.append(float(n_id))
+
+        print_dashboard(
+            n_done=n_done,
+            n_fail=n_fail,
+            n_total=n_docs,
+            n_id=n_id,
+            n_edge=n_edge,
+            n_core=n_core,
+            elapsed=elapsed,
+            recent=recent[-8:],
+            id_spark=id_spark,
+            refresh=True,
+        )
+
+        if n_done % 25 == 0:
+            save_checkpoint(all_results, snapshots)
+
+    run_tasks(
+        jobs,
+        config=ExecutionConfig(
+            backend="process",
+            max_workers=effective_workers,
+            queue_bound=max(effective_workers * 2, 1),
+            default_timeout_s=doc_timeout,
+            retry_policy=RETRY_FAST,
+        ),
+        progress_callback=_on_result,
+    )
 
     total_elapsed = time.time() - t_start
     n_id, n_edge, n_core = _read_state(STATE_PATH)
@@ -1033,13 +1067,13 @@ def run_scale(
     growth_core= compute_growth_stats(snap_xs, [s.n_core        for s in snapshots])
 
     report = FinalReport(
-        run_timestamp        = datetime.datetime.utcnow().isoformat() + "Z",
+        run_timestamp        = datetime.datetime.now(datetime.timezone.utc).isoformat(),
         n_docs_requested     = n_docs,
         n_docs_processed     = len(all_results),
         n_docs_failed        = n_fail,
         total_duration_s     = total_elapsed,
         docs_per_second      = len(all_results) / total_elapsed if total_elapsed > 0 else 0,
-        worker_count         = n_workers,
+        worker_count         = effective_workers,
         final_identities     = n_id,
         final_edges          = n_edge,
         final_core           = n_core,
@@ -1051,7 +1085,7 @@ def run_scale(
         doc_results          = all_results,
         corpus_quality_score = quality,
         config               = {
-            "n_docs": n_docs, "n_workers": n_workers,
+            "n_docs": n_docs, "n_workers": effective_workers,
             "sample_interval": sample_interval,
             "max_retries": max_retries, "doc_timeout": doc_timeout,
         },
@@ -1084,6 +1118,10 @@ def main() -> int:
     parser.add_argument("--corpus",  "-c", type=Path,
                         help="Path to corpus JSON/JSONL file; run scale on this corpus instead of building one")
     args     = parser.parse_args()
+    runtime_env = build_runtime_env(workers=args.workers)
+    for key in ("SANTEK_TEXT_WORKERS", "STRESS_WORKERS"):
+        if key in runtime_env:
+            os.environ[key] = runtime_env[key]
 
     corpus_list: Optional[List[str]] = None
     n_docs = args.n_docs

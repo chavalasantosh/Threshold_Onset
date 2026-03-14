@@ -41,6 +41,7 @@ def measure_stability(cluster_sequences, threshold=STABILITY_THRESHOLD):
     
     # Track clusters across iterations using EXACT EQUALITY
     cluster_counts = {}
+    hash_cache = {}
     
     for cluster_sequence in cluster_sequences:
         # Extract clusters from this iteration
@@ -50,7 +51,10 @@ def measure_stability(cluster_sequences, threshold=STABILITY_THRESHOLD):
             # Normalize cluster for comparison (sort residues for exact equality)
             normalized_cluster = tuple(sorted(cluster))
             # Generate internal hash for cluster (mechanical identifier only)
-            cluster_hash = _hash_cluster(normalized_cluster)
+            cluster_hash = hash_cache.get(normalized_cluster)
+            if cluster_hash is None:
+                cluster_hash = _hash_cluster(normalized_cluster)
+                hash_cache[normalized_cluster] = cluster_hash
             
             # Count stability (only once per iteration)
             if cluster_hash not in seen_in_this_iteration:

@@ -13,7 +13,6 @@ No learning, tuning, or optimization allowed.
 # This value is external and fixed, not computed from data
 BOUNDARY_THRESHOLD = 0.1
 
-
 def detect_boundaries(residues, threshold=BOUNDARY_THRESHOLD):
     """
     Detect boundaries where consecutive residues differ significantly.
@@ -28,12 +27,9 @@ def detect_boundaries(residues, threshold=BOUNDARY_THRESHOLD):
     if len(residues) < 2:
         return []
     
-    from threshold_onset.phase1.distance import absolute_difference  # pylint: disable=import-outside-toplevel
-    
     boundaries = []
-    for i in range(len(residues) - 1):
-        diff = absolute_difference(residues[i], residues[i + 1])
-        if diff > threshold:
-            boundaries.append(i + 1)  # Position after the boundary
-    
+    for idx, (left, right) in enumerate(zip(residues, residues[1:])):
+        if abs(left - right) > threshold:
+            boundaries.append(idx + 1)  # Position after the boundary
+
     return boundaries

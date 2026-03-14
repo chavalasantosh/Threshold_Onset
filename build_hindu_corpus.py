@@ -65,6 +65,7 @@ urllib.request  |  json  |  pathlib  |  re  |  time  |  argparse
 """
 
 import argparse
+import concurrent.futures
 import importlib.util
 import json
 import os
@@ -75,7 +76,6 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
-import sys
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
@@ -827,16 +827,43 @@ def load_existing_corpus(max_texts: Optional[int] = None) -> List[str]:
         ERR("Run without --only-train first to download and build the corpus.")
         sys.exit(1)
 
-    texts = []
-    with CORPUS_FILE.open(encoding="utf-8") as f:
+    def _io_workers() -> int:
+        try:
+            return max(1, int(os.environ.get("CORPUS_IO_WORKERS", "2")))
+        except ValueError:
+            return 2
+
+    def _extract_batch(lines: List[str]) -> List[str]:
+        out: List[str] = []
+        for line in lines:
+            raw = line.strip()
+            if not raw:
+                continue
+            try:
+                rec = json.loads(raw)
+                txt = rec.get("text")
+                if isinstance(txt, str) and txt:
+                    out.append(txt)
+            except (json.JSONDecodeError, KeyError, AttributeError):
+                continue
+        return out
+
+    texts: List[str] = []
+    batch: List[str] = []
+    futures: List[concurrent.futures.Future] = []
+    workers = _io_workers()
+    with CORPUS_FILE.open(encoding="utf-8") as f, concurrent.futures.ThreadPoolExecutor(
+        max_workers=workers
+    ) as pool:
         for line in f:
-            line = line.strip()
-            if line:
-                try:
-                    rec = json.loads(line)
-                    texts.append(rec["text"])
-                except (json.JSONDecodeError, KeyError):
-                    pass
+            batch.append(line)
+            if len(batch) >= 5000:
+                futures.append(pool.submit(_extract_batch, batch))
+                batch = []
+        if batch:
+            futures.append(pool.submit(_extract_batch, batch))
+        for fut in concurrent.futures.as_completed(futures):
+            texts.extend(fut.result())
 
     if max_texts and len(texts) > max_texts:
         texts = texts[:max_texts]
@@ -901,16 +928,7 @@ def check_corpus_stats() -> None:
     if not CORPUS_FILE.exists():
         ERR(f"Corpus not found: {CORPUS_FILE}")
         sys.exit(1)
-    texts = []
-    with CORPUS_FILE.open(encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                try:
-                    rec = json.loads(line)
-                    texts.append(rec["text"])
-                except (json.JSONDecodeError, KeyError):
-                    pass
+    texts = load_existing_corpus(max_texts=None)
     if not texts:
         WARN("Corpus is empty.")
         return

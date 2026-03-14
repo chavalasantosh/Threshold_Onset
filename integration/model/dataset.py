@@ -12,6 +12,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import concurrent.futures
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -96,24 +98,57 @@ def _stable_hash(record_id: str, seed: bytes = SPLIT_SEED) -> int:
 
 def load_jsonl_corpus(path: Path) -> List[CorpusRecord]:
     """Load UTF-8 JSONL corpus; one JSON object per line. Skips blank lines and invalid lines."""
-    records: List[CorpusRecord] = []
-    with open(path, encoding="utf-8", errors="replace") as f:
-        for i, line in enumerate(f, 1):
-            line = line.strip()
-            if not line:
+    def _workers() -> int:
+        try:
+            requested = int(os.environ.get("DATASET_IO_WORKERS", "2"))
+        except ValueError:
+            requested = 2
+        return max(1, requested)
+
+    def _parse_chunk(payload: Tuple[int, List[str]]) -> List[CorpusRecord]:
+        base_line, chunk = payload
+        out: List[CorpusRecord] = []
+        for offset, line in enumerate(chunk, 0):
+            raw = line.strip()
+            if not raw:
                 continue
             try:
-                d = json.loads(line)
+                d = json.loads(raw)
                 if not isinstance(d, dict):
                     continue
                 rec = CorpusRecord.from_dict(d)
                 if not rec.text:
                     continue
                 if not rec.id:
-                    rec.id = f"line_{i}"
-                records.append(rec)
+                    rec.id = f"line_{base_line + offset}"
+                out.append(rec)
             except (json.JSONDecodeError, TypeError):
                 continue
+        return out
+
+    payloads: List[Tuple[int, List[str]]] = []
+    chunk: List[str] = []
+    chunk_start = 1
+    chunk_size = 5000
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for i, line in enumerate(f, 1):
+            if not chunk:
+                chunk_start = i
+            chunk.append(line)
+            if len(chunk) >= chunk_size:
+                payloads.append((chunk_start, chunk))
+                chunk = []
+        if chunk:
+            payloads.append((chunk_start, chunk))
+
+    if not payloads:
+        return []
+
+    records: List[CorpusRecord] = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=_workers()) as pool:
+        futures = [pool.submit(_parse_chunk, payload) for payload in payloads]
+        for fut in concurrent.futures.as_completed(futures):
+            records.extend(fut.result())
     return records
 
 

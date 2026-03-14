@@ -615,12 +615,19 @@ def tokenize_text(text, tokenizer_type="word", language=None, use_parallel=False
     if use_parallel and len(text) > 50000:  # 50KB threshold for parallel processing
         try:
             from .parallel_tokenizer import auto_parallel_tokenize
-            tokens = auto_parallel_tokenize(text, tokenizer_type)
+            tokens = auto_parallel_tokenize(
+                text,
+                tokenizer_type,
+                threshold=kwargs.get("parallel_threshold", 100000),
+                backend=kwargs.get("parallel_backend", "thread"),
+                max_workers=kwargs.get("parallel_workers"),
+                chunk_size=kwargs.get("parallel_chunk_size"),
+            )
             # Add source tags if provided
             if source_tag:
                 tokens = _add_source_tags_to_tokens(tokens, source_tag, tokenizer_type)
             return tokens
-        except ImportError:
+        except Exception:
             # Fallback to sequential if parallel module not available
             pass
     
@@ -1493,6 +1500,7 @@ def stability_test(text, iterations=1000):
         
         for i in range(iterations):
             try:
+                tokens = []
                 if tokenizer_type == "space":
                     tokens = tokenize_space(text)
                 elif tokenizer_type == "byte":
@@ -2017,7 +2025,7 @@ def run_once(text, seed, embedding_bit):
                 # also return the uid-sequenced records for identity alignment
                 "records": with_neighbors,
                 # Add tokenization metadata
-                "strategy": rec.get("strategy", "default") if with_neighbors else "default",
+                "strategy": with_neighbors[0].get("strategy", "default") if with_neighbors else "default",
                 "token_types": [rec.get("type", "unknown") for rec in with_neighbors]
             }
     return result
@@ -2687,6 +2695,13 @@ class TextTokenizer:
                 "checksum": ts.checksum_digits(),
             }
         return manifest
+
+    def tokenize(self, text, method="word"):
+        """
+        Compatibility helper returning raw token dicts for one method.
+        """
+        all_tokens = all_tokenizations(text)
+        return all_tokens.get(method, [])
 
 def main():
     print("Input mode? 1=text, 2=file path:")

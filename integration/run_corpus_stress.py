@@ -64,6 +64,8 @@ from typing import (
     Tuple,
     Union,
 )
+from integration.runtime import choose_workers
+from integration.runtime.cli import build_runtime_env
 
 # ── optional third-party (graceful degradation) ───────────────────────────────
 try:
@@ -191,6 +193,14 @@ class StressTestConfig:
                 f"pipeline_script not found: {self.pipeline_script}"
             )
         return errors
+
+    def normalize_workers(self) -> None:
+        """Normalize worker count using shared runtime policy."""
+        self.worker_count = choose_workers(
+            submitted=max(1, self.n_docs),
+            backend="process",
+            max_workers=self.worker_count,
+        )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -869,6 +879,7 @@ def _invoke_pipeline(
     # Subprocess fallback
     import subprocess
     try:
+        child_env = build_runtime_env(workers=1, method_workers=1)
         proc = subprocess.run(
             [sys.executable, str(script_path), text],
             cwd=str(root),
@@ -876,6 +887,7 @@ def _invoke_pipeline(
             text=True,
             timeout=timeout_s,
             check=False,
+            env=child_env,
         )
         return proc.returncode == 0, proc.stdout, proc.stderr
     except subprocess.TimeoutExpired:
@@ -1069,6 +1081,8 @@ def save_charts(
     stability: StabilityStats,
     stability_values: List[float],
     gi: GrowthAnalysis,
+    ge: GrowthAnalysis,
+    gc: GrowthAnalysis,
 ) -> None:
     if not HAS_MPL or not snapshots:
         return
@@ -1259,13 +1273,13 @@ def save_charts(
     metrics_labels = ["Identities", "Edges", "Core"]
     metrics_r2 = [
         gi.fit_full.r_squared,
-        gi.fit_full.r_squared * 0.95,  # placeholder — replace with real values
-        gi.fit_full.r_squared * 0.88,
+        ge.fit_full.r_squared,
+        gc.fit_full.r_squared,
     ]
     metrics_slopes = [
         gi.fit_full.slope,
-        gi.fit_full.slope * 0.8,
-        gi.fit_full.slope * 0.2,
+        ge.fit_full.slope,
+        gc.fit_full.slope,
     ]
     bar_w = 0.35
     idxs = [0, 1, 2]
@@ -1874,7 +1888,7 @@ def run(cfg: StressTestConfig) -> FinalReport:
     # ── Build report ──────────────────────────────────────────────────────────
     report = FinalReport(
         run_id=cfg.run_id,
-        run_timestamp=datetime.datetime.utcnow().isoformat() + "Z",
+        run_timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat(),
         config=dataclasses.asdict(cfg),
         corpus_quality=cq,
         metrics=metrics,
@@ -1889,7 +1903,7 @@ def run(cfg: StressTestConfig) -> FinalReport:
 
     # ── Save outputs ──────────────────────────────────────────────────────────
     if cfg.report_charts:
-        save_charts(snapshots, all_results, stability, stability_values, gi)
+        save_charts(snapshots, all_results, stability, stability_values, gi, ge, gc)
         report.output_files["charts"] = str(CHART_PATH)
 
     if cfg.report_html:
@@ -2076,6 +2090,10 @@ Examples:
     parser.add_argument("--no-html", action="store_true")
 
     args = parser.parse_args()
+    runtime_env = build_runtime_env(workers=args.workers)
+    for key in ("SANTEK_TEXT_WORKERS", "STRESS_WORKERS"):
+        if key in runtime_env:
+            os.environ[key] = runtime_env[key]
 
     cfg = StressTestConfig.from_env()
     cfg.n_docs = args.docs
@@ -2086,6 +2104,7 @@ Examples:
     cfg.resume = args.resume
     cfg.dry_run = args.dry_run
     cfg.log_level = args.log_level
+    cfg.normalize_workers()
     if args.run_id:
         cfg.run_id = args.run_id
     if args.no_charts:

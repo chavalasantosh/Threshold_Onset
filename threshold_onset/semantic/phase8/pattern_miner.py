@@ -80,10 +80,10 @@ def discover_forbidden_patterns(
         Set of forbidden role patterns (tuples)
     """
     forbidden = set()
-    
-    # Group transitions by role pattern (2-grams for now)
-    role_transition_outcomes = {}
-    
+
+    # Build refusal outcomes for base 2-gram transitions from edge deltas.
+    role_transition_outcomes: Dict[Tuple[str, str], List[float]] = {}
+
     for (source_hash, target_hash), delta in edge_deltas.items():
         source_symbol = identity_to_symbol.get(source_hash)
         target_symbol = identity_to_symbol.get(target_hash)
@@ -93,36 +93,61 @@ def discover_forbidden_patterns(
         
         source_role = symbol_to_role.get(source_symbol, 'unclassified')
         target_role = symbol_to_role.get(target_symbol, 'unclassified')
-        role_pattern = (source_role, target_role)
+        role_pattern_2 = (source_role, target_role)
         
         # Use refusal_delta as failure indicator
         refusal_delta = delta.get('refusal_delta', 0.0)
         
-        if role_pattern not in role_transition_outcomes:
-            role_transition_outcomes[role_pattern] = []
-        
-        role_transition_outcomes[role_pattern].append(refusal_delta)
-    
+        if role_pattern_2 not in role_transition_outcomes:
+            role_transition_outcomes[role_pattern_2] = []
+
+        role_transition_outcomes[role_pattern_2].append(refusal_delta)
+
     if not role_transition_outcomes:
         logger.warning("No role transition outcomes found")
         return forbidden
-    
-    # CORRECTED: Compute average refusal per role_pair
-    avg_refusal_per_pattern = {}
-    for role_pattern, outcomes in role_transition_outcomes.items():
-        if outcomes:
-            avg_refusal_per_pattern[role_pattern] = mean(outcomes)
-    
-    # CORRECTED: Collect all averages into global list
+
+    # Compute refusal score for every discovered role pattern (n-gram aware).
+    # For n>2, aggregate contiguous 2-gram transition scores.
+    avg_refusal_per_pattern: Dict[Tuple[str, ...], float] = {}
+    for role_pattern in role_patterns:
+        if len(role_pattern) < 2:
+            continue
+
+        # Direct 2-gram lookup.
+        if len(role_pattern) == 2:
+            outcomes = role_transition_outcomes.get((role_pattern[0], role_pattern[1]), [])
+            if outcomes:
+                avg_refusal_per_pattern[role_pattern] = mean(outcomes)
+            continue
+
+        # n-gram score: mean of available contiguous transition means.
+        transition_means: List[float] = []
+        for idx in range(len(role_pattern) - 1):
+            pair = (role_pattern[idx], role_pattern[idx + 1])
+            pair_outcomes = role_transition_outcomes.get(pair, [])
+            if pair_outcomes:
+                transition_means.append(mean(pair_outcomes))
+
+        if transition_means:
+            avg_refusal_per_pattern[role_pattern] = mean(transition_means)
+
+    # Fallback: if discovered patterns had no mappable scores, use observed 2-grams.
+    if not avg_refusal_per_pattern:
+        for role_pattern, outcomes in role_transition_outcomes.items():
+            if outcomes:
+                avg_refusal_per_pattern[role_pattern] = mean(outcomes)
+
+    # Collect all averages into global list.
     all_avg_refusals = list(avg_refusal_per_pattern.values())
-    
+
     if not all_avg_refusals:
         return forbidden
-    
-    # CORRECTED: Compare against global 90th percentile
+
+    # Compare against global 90th percentile.
     global_percentile_90 = calculate_percentile(all_avg_refusals, 90)
-    
-    # Patterns with high average refusal_delta are forbidden
+
+    # Patterns with high average refusal_delta are forbidden.
     for role_pattern, avg_refusal in avg_refusal_per_pattern.items():
         if avg_refusal > global_percentile_90:
             forbidden.add(role_pattern)

@@ -3,11 +3,79 @@ Parallel Processing Module for SanTOK
 Supports multi-threading and multi-processing for large text tokenization
 """
 
-import threading
+import os
 import multiprocessing
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import time
-from typing import List, Dict, Any, Callable
+from typing import List, Dict, Any, Optional
+
+
+def _fallback_detect_language(text: str) -> str:
+    """
+    Lightweight script-based language fallback when core detect_language
+    is unavailable.
+    Returns one of: cjk, devanagari, arabic, cyrillic, latin.
+    """
+    if not text:
+        return "latin"
+
+    cjk = 0
+    devanagari = 0
+    arabic = 0
+    cyrillic = 0
+    latin = 0
+
+    for ch in text:
+        code = ord(ch)
+        if (
+            0x4E00 <= code <= 0x9FFF  # CJK Unified Ideographs
+            or 0x3400 <= code <= 0x4DBF  # CJK Extension A
+            or 0x3040 <= code <= 0x30FF  # Hiragana + Katakana
+            or 0xAC00 <= code <= 0xD7AF  # Hangul Syllables
+        ):
+            cjk += 1
+        elif 0x0900 <= code <= 0x097F:
+            devanagari += 1
+        elif 0x0600 <= code <= 0x06FF:
+            arabic += 1
+        elif 0x0400 <= code <= 0x04FF:
+            cyrillic += 1
+        elif ("A" <= ch <= "Z") or ("a" <= ch <= "z"):
+            latin += 1
+
+    counts = {
+        "cjk": cjk,
+        "devanagari": devanagari,
+        "arabic": arabic,
+        "cyrillic": cyrillic,
+        "latin": latin,
+    }
+    return max(counts, key=counts.get)
+
+def _safe_int_env(name: str, default: int, minimum: int = 1) -> int:
+    """Read integer env var safely with sane bounds."""
+    raw = os.environ.get(name)
+    if not raw:
+        return default
+    try:
+        return max(minimum, int(raw))
+    except ValueError:
+        return default
+
+
+def _resolve_chunk_size(chunk_size: Optional[int]) -> int:
+    if chunk_size is not None and chunk_size > 0:
+        return int(chunk_size)
+    return _safe_int_env("SANTOK_PARALLEL_CHUNK_SIZE", 50000, minimum=1024)
+
+
+def _resolve_workers(max_workers: Optional[int], chunk_count: int) -> int:
+    if max_workers is not None:
+        requested = max(1, int(max_workers))
+    else:
+        requested = _safe_int_env("SANTOK_PARALLEL_WORKERS", multiprocessing.cpu_count(), minimum=1)
+    return max(1, min(chunk_count, requested))
+
 
 def chunk_text(text: str, chunk_size: int = 50000) -> List[str]:
     """Split text into chunks for parallel processing"""
@@ -18,7 +86,7 @@ def chunk_text(text: str, chunk_size: int = 50000) -> List[str]:
 
 def process_chunk_sequential(chunk_data: tuple) -> List[Dict[str, Any]]:
     """Process a single chunk sequentially"""
-    chunk_text, tokenizer_func, tokenizer_type, chunk_index = chunk_data
+    chunk_text, _tokenizer_func, tokenizer_type, _chunk_index = chunk_data
     
     # Import here to avoid circular imports
     from .core_tokenizer import (
@@ -41,58 +109,59 @@ def process_chunk_sequential(chunk_data: tuple) -> List[Dict[str, Any]]:
     tokenizer_func = tokenizer_map.get(tokenizer_type, tokenize_word)
     tokens = tokenizer_func(chunk_text)
     
-    # Adjust token IDs to be unique across chunks
-    for token in tokens:
-        token['id'] += chunk_index * 1000000  # Offset by chunk index
-    
     return tokens
 
 def tokenize_parallel_threaded(text: str, tokenizer_type: str = 'word', 
-                              max_workers: int = None, chunk_size: int = 50000) -> List[Dict[str, Any]]:
+                              max_workers: Optional[int] = None, chunk_size: Optional[int] = 50000) -> List[Dict[str, Any]]:
     """Tokenize text using multiple threads"""
+    chunk_size = _resolve_chunk_size(chunk_size)
     if len(text) <= chunk_size:
         # Use sequential processing for small texts
         return process_chunk_sequential((text, None, tokenizer_type, 0))
     
     chunks = chunk_text(text, chunk_size)
     chunk_data = [(chunk, None, tokenizer_type, i) for i, chunk in enumerate(chunks)]
-    
-    if max_workers is None:
-        max_workers = min(len(chunks), multiprocessing.cpu_count())
-    
-    all_tokens = []
-    
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = [executor.submit(process_chunk_sequential, data) for data in chunk_data]
-        
-        for future in futures:
-            chunk_tokens = future.result()
-            all_tokens.extend(chunk_tokens)
-    
+
+    workers = _resolve_workers(max_workers, len(chunks))
+    all_tokens: List[Dict[str, Any]] = []
+
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        # executor.map preserves chunk order; deterministic token stream.
+        chunk_results = list(executor.map(process_chunk_sequential, chunk_data))
+
+    token_id = 0
+    for chunk_tokens in chunk_results:
+        for token in chunk_tokens:
+            token['id'] = token_id
+            all_tokens.append(token)
+            token_id += 1
+
     return all_tokens
 
 def tokenize_parallel_multiprocess(text: str, tokenizer_type: str = 'word', 
-                                  max_workers: int = None, chunk_size: int = 50000) -> List[Dict[str, Any]]:
+                                  max_workers: Optional[int] = None, chunk_size: Optional[int] = 50000) -> List[Dict[str, Any]]:
     """Tokenize text using multiple processes"""
+    chunk_size = _resolve_chunk_size(chunk_size)
     if len(text) <= chunk_size:
         # Use sequential processing for small texts
         return process_chunk_sequential((text, None, tokenizer_type, 0))
     
     chunks = chunk_text(text, chunk_size)
     chunk_data = [(chunk, None, tokenizer_type, i) for i, chunk in enumerate(chunks)]
-    
-    if max_workers is None:
-        max_workers = min(len(chunks), multiprocessing.cpu_count())
-    
-    all_tokens = []
-    
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        futures = [executor.submit(process_chunk_sequential, data) for data in chunk_data]
-        
-        for future in futures:
-            chunk_tokens = future.result()
-            all_tokens.extend(chunk_tokens)
-    
+
+    workers = _resolve_workers(max_workers, len(chunks))
+    all_tokens: List[Dict[str, Any]] = []
+
+    with ProcessPoolExecutor(max_workers=workers) as executor:
+        chunk_results = list(executor.map(process_chunk_sequential, chunk_data))
+
+    token_id = 0
+    for chunk_tokens in chunk_results:
+        for token in chunk_tokens:
+            token['id'] = token_id
+            all_tokens.append(token)
+            token_id += 1
+
     return all_tokens
 
 def benchmark_parallel_performance(text: str, tokenizer_type: str = 'word', 
@@ -131,15 +200,28 @@ def benchmark_parallel_performance(text: str, tokenizer_type: str = 'word',
     
     return results
 
-def auto_parallel_tokenize(text: str, tokenizer_type: str = 'word', 
-                          threshold: int = 100000) -> List[Dict[str, Any]]:
+def auto_parallel_tokenize(
+    text: str,
+    tokenizer_type: str = 'word',
+    threshold: int = 100000,
+    *,
+    backend: str = "thread",
+    max_workers: Optional[int] = None,
+    chunk_size: Optional[int] = None,
+) -> List[Dict[str, Any]]:
     """Automatically choose between sequential and parallel processing based on text size"""
     if len(text) <= threshold:
         # Use sequential processing for small texts
         return process_chunk_sequential((text, None, tokenizer_type, 0))
-    else:
-        # Use parallel processing for large texts
-        return tokenize_parallel_threaded(text, tokenizer_type)
+
+    resolved_backend = (backend or "thread").lower()
+    if resolved_backend == "process":
+        return tokenize_parallel_multiprocess(
+            text, tokenizer_type, max_workers=max_workers, chunk_size=chunk_size
+        )
+    return tokenize_parallel_threaded(
+        text, tokenizer_type, max_workers=max_workers, chunk_size=chunk_size
+    )
 
 # Language-specific parallel processing
 def tokenize_multilang_parallel(text: str, tokenizer_type: str = 'word', 
@@ -149,9 +231,7 @@ def tokenize_multilang_parallel(text: str, tokenizer_type: str = 'word',
     try:
         from .core_tokenizer import detect_language
     except ImportError:
-        def detect_language(text):
-            # Simple language detection placeholder
-            return 'en'
+        detect_language = _fallback_detect_language
     
     if language is None:
         language = detect_language(text)

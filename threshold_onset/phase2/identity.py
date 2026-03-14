@@ -43,13 +43,17 @@ def assign_identity_hashes(residue_sequences, threshold=IDENTITY_PERSISTENCE_THR
     
     # Track segments and their persistence
     segment_persistence = {}
+    hash_cache = {}
     
     for sequence in residue_sequences:
         seen_in_this_iteration = set()
         
         for i in range(len(sequence) - SEGMENT_WINDOW + 1):
             segment = tuple(sequence[i:i + SEGMENT_WINDOW])
-            segment_hash = _hash_segment(segment)
+            segment_hash = hash_cache.get(segment)
+            if segment_hash is None:
+                segment_hash = _hash_segment(segment)
+                hash_cache[segment] = segment_hash
             
             # Count persistence (only once per iteration)
             if segment_hash not in seen_in_this_iteration:

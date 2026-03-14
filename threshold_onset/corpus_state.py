@@ -6,6 +6,7 @@ Identity stability and edge weights evolve with reinforcement, decay, atomicizat
 """
 
 import json
+import threading
 from pathlib import Path
 from typing import Any, Dict, Optional, Set, Tuple
 
@@ -58,6 +59,7 @@ class CorpusState:
         self.edge_weights: Dict[Tuple[str, str], float] = {}
         self.core_identities: Set[str] = set()
         self.doc_count = 0
+        self._lock = threading.RLock()
 
     def update(
         self,
@@ -69,47 +71,47 @@ class CorpusState:
 
         Order: reinforce present, decay absent, atomicize, prune (if scheduled).
         """
-        # 1. Reinforce present identities
-        for h in identity_hashes:
-            if h not in self.identity_stability:
-                self.identity_stability[h] = self.reinforcement
-            else:
-                self.identity_stability[h] += self.reinforcement
+        with self._lock:
+            canonical_edges = {_edge_key(a, b) for (a, b) in edge_pairs}
 
-        # 2. Decay absent identities
-        d_core = self.decay_rate * self.core_decay_factor
-        for h in list(self.identity_stability.keys()):
-            if h not in identity_hashes:
+            # 1. Reinforce present identities
+            for h in identity_hashes:
+                if h not in self.identity_stability:
+                    self.identity_stability[h] = self.reinforcement
+                else:
+                    self.identity_stability[h] += self.reinforcement
+
+            # 2. Decay absent identities (set-diff avoids repeated membership checks)
+            d_core = self.decay_rate * self.core_decay_factor
+            absent_identities = set(self.identity_stability.keys()) - set(identity_hashes)
+            for h in absent_identities:
                 d = d_core if h in self.core_identities else self.decay_rate
                 self.identity_stability[h] *= 1.0 - d
 
-        # 3. Reinforce present edges
-        for (a, b) in edge_pairs:
-            key = _edge_key(a, b)
-            if key not in self.edge_weights:
-                self.edge_weights[key] = self.reinforcement
-            else:
-                self.edge_weights[key] += self.reinforcement
+            # 3. Reinforce present edges
+            for key in canonical_edges:
+                if key not in self.edge_weights:
+                    self.edge_weights[key] = self.reinforcement
+                else:
+                    self.edge_weights[key] += self.reinforcement
 
-        # 4. Decay absent edges (no core for edges; use same decay)
-        for key in list(self.edge_weights.keys()):
-            a, b = key
-            present = (a, b) in edge_pairs or (b, a) in edge_pairs
-            if not present:
+            # 4. Decay absent edges
+            absent_edges = set(self.edge_weights.keys()) - canonical_edges
+            for key in absent_edges:
                 self.edge_weights[key] *= 1.0 - self.decay_rate
 
-        # 5. Atomicize
-        for h, s in list(self.identity_stability.items()):
-            if s > self.T_atomic:
-                self.core_identities.add(h)
+            # 5. Atomicize
+            for h, s in list(self.identity_stability.items()):
+                if s > self.T_atomic:
+                    self.core_identities.add(h)
 
-        # 6. Prune (if scheduled)
-        self.doc_count += 1
-        if self.doc_count % self.prune_interval_docs == 0:
-            self._prune()
+            # 6. Prune (if scheduled)
+            self.doc_count += 1
+            if self.doc_count % self.prune_interval_docs == 0:
+                self._prune()
 
-        # 7. Enforce caps
-        self._enforce_caps()
+            # 7. Enforce caps
+            self._enforce_caps()
 
     def _prune(self) -> None:
         """Remove low-stability identities and edges."""
@@ -166,28 +168,30 @@ class CorpusState:
 
     def metrics(self) -> Dict[str, Any]:
         """Return current metrics."""
-        return {
-            "corpus_identities_count": len(self.identity_stability),
-            "corpus_edges_count": len(self.edge_weights),
-            "corpus_core_count": len(self.core_identities),
-            "corpus_doc_count": self.doc_count,
-        }
+        with self._lock:
+            return {
+                "corpus_identities_count": len(self.identity_stability),
+                "corpus_edges_count": len(self.edge_weights),
+                "corpus_core_count": len(self.core_identities),
+                "corpus_doc_count": self.doc_count,
+            }
 
     def save(self, path: Path) -> None:
         """Persist state to JSON."""
-        data = {
-            "version": 1,
-            "identity_stability": self.identity_stability,
-            "edge_weights": {f"{a}|{b}": w for (a, b), w in self.edge_weights.items()},
-            "core_identities": list(self.core_identities),
-            "doc_count": self.doc_count,
-            "params": {
-                "reinforcement": self.reinforcement,
-                "decay_rate": self.decay_rate,
-                "T_atomic": self.T_atomic,
-                "theta_prune": self.theta_prune,
-            },
-        }
+        with self._lock:
+            data = {
+                "version": 1,
+                "identity_stability": self.identity_stability,
+                "edge_weights": {f"{a}|{b}": w for (a, b), w in self.edge_weights.items()},
+                "core_identities": list(self.core_identities),
+                "doc_count": self.doc_count,
+                "params": {
+                    "reinforcement": self.reinforcement,
+                    "decay_rate": self.decay_rate,
+                    "T_atomic": self.T_atomic,
+                    "theta_prune": self.theta_prune,
+                },
+            }
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:

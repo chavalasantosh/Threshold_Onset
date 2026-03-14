@@ -11,11 +11,13 @@ Entry point for the full evaluation suite. End users can run with no parameters:
 import sys
 import subprocess
 from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional
+import argparse
 
 ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+from integration.runtime.cli import build_runtime_env
 EXIT_SUCCESS = 0
 EXIT_FAILURE = 1
 
@@ -33,14 +35,19 @@ PIPELINE_STEPS: List[Tuple[str, str]] = [
 ]
 
 
-def _run_step(name: str, script: str, args: Optional[List[str]] = None) -> bool:
+def _run_step(
+    name: str,
+    script: str,
+    args: Optional[List[str]] = None,
+    env: Optional[Dict[str, str]] = None,
+) -> bool:
     """Execute a pipeline step. Returns True if exit code is 0."""
     sep = "=" * 70
     print(f"\n{sep}\nRUNNING: {name}\n{sep}")
     cmd = [sys.executable, str(ROOT / script)]
     if args:
         cmd.extend(args)
-    result = subprocess.run(cmd, cwd=str(ROOT), capture_output=False, check=False)
+    result = subprocess.run(cmd, cwd=str(ROOT), env=env, capture_output=False, check=False)
     status = "PASS" if result.returncode == 0 else "FAIL"
     print(f"\n[{name}] {status} (exit {result.returncode})")
     return result.returncode == 0
@@ -61,13 +68,13 @@ def _print_summary(results: List[Tuple[str, bool]]) -> None:
     print("=" * 70)
 
 
-def _run_full_suite(user_text: Optional[str] = None) -> int:
+def _run_full_suite(user_text: Optional[str] = None, env: Optional[Dict[str, str]] = None) -> int:
     """Execute all pipeline steps. If user_text is provided, step 10 uses it."""
     results: List[Tuple[str, bool]] = []
     for i, (name, script) in enumerate(PIPELINE_STEPS):
         step_name = f"{name} (your input)" if user_text and i == len(PIPELINE_STEPS) - 1 else name
         args = [user_text] if user_text and i == len(PIPELINE_STEPS) - 1 else None
-        passed = _run_step(step_name, script, args)
+        passed = _run_step(step_name, script, args, env=env)
         results.append((step_name, passed))
     _print_summary(results)
     return EXIT_SUCCESS if all(p for _, p in results) else EXIT_FAILURE
@@ -93,14 +100,32 @@ def _prompt_user_input() -> Optional[str]:
         return None
 
 
-def _parse_args() -> Tuple[str, Optional[str]]:
+def _parse_args() -> Tuple[str, Optional[str], argparse.Namespace]:
     """Parse argv into (mode, text). Modes: 'full' | 'user' | 'check'."""
     argv = sys.argv
-    if len(argv) < 2:
-        return "full", None
-    mode = argv[1].lower()
-    text = " ".join(argv[2:]).strip() if len(argv) > 2 else None
-    return mode, text
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--workers", type=int, default=None)
+    parser.add_argument("--method-workers", type=int, default=None, dest="method_workers")
+    parser.add_argument("--profile", action="store_true")
+    known, _rest = parser.parse_known_args(argv[1:])
+    filtered: List[str] = []
+    i = 1
+    while i < len(argv):
+        arg = argv[i]
+        if arg in ("--workers", "--method-workers"):
+            i += 2
+            continue
+        if arg == "--profile":
+            i += 1
+            continue
+        filtered.append(arg)
+        i += 1
+
+    if not filtered:
+        return "full", None, known
+    mode = filtered[0].lower()
+    text = " ".join(filtered[1:]).strip() if len(filtered) > 1 else None
+    return mode, text, known
 
 
 def _interactive_menu() -> Optional[str]:
@@ -125,7 +150,12 @@ def _interactive_menu() -> Optional[str]:
 
 
 def main() -> int:
-    mode, text = _parse_args()
+    mode, text, runtime_flags = _parse_args()
+    runtime_env = build_runtime_env(
+        workers=runtime_flags.workers,
+        method_workers=runtime_flags.method_workers,
+        profile=runtime_flags.profile,
+    )
 
     if mode == "--check":
         if not text:
@@ -137,7 +167,7 @@ def main() -> int:
                 print("No text provided. Run: python main.py --check \"Your text\"")
                 print("  Or run: python main.py --check   and type your text when asked.")
                 return EXIT_FAILURE
-        passed = _run_step("Quick check", "integration/run_user_result.py", [text])
+        passed = _run_step("Quick check", "integration/run_user_result.py", [text], env=runtime_env)
         return EXIT_SUCCESS if passed else EXIT_FAILURE
 
     if mode == "--user":
@@ -152,7 +182,7 @@ def main() -> int:
         for line in text.strip().split("\n"):
             print(f"  {line}")
         print("-" * 40)
-        return _run_full_suite(user_text=text)
+        return _run_full_suite(user_text=text, env=runtime_env)
 
     # No args: interactive menu (or full suite if not TTY)
     if len(sys.argv) < 2:
@@ -163,7 +193,7 @@ def main() -> int:
             if not text:
                 print("No text entered.")
                 return EXIT_FAILURE
-            passed = _run_step("Quick check", "integration/run_user_result.py", [text])
+            passed = _run_step("Quick check", "integration/run_user_result.py", [text], env=runtime_env)
             return EXIT_SUCCESS if passed else EXIT_FAILURE
         if choice == "2":
             text = _prompt_user_input()
@@ -171,17 +201,17 @@ def main() -> int:
                 print("No text entered.")
                 return EXIT_FAILURE
             print("\nRunning full suite with your text...")
-            return _run_full_suite(user_text=text)
+            return _run_full_suite(user_text=text, env=runtime_env)
         if choice == "3":
             _print_header("THRESHOLD_ONSET — Full Evaluation Suite")
-            return _run_full_suite()
+            return _run_full_suite(env=runtime_env)
         # No choice or invalid — run full suite as before
         _print_header("THRESHOLD_ONSET — Full Evaluation Suite")
-        return _run_full_suite()
+        return _run_full_suite(env=runtime_env)
 
     # Default: full suite with default corpus
     _print_header("THRESHOLD_ONSET — Full Evaluation Suite")
-    return _run_full_suite()
+    return _run_full_suite(env=runtime_env)
 
 
 if __name__ == "__main__":

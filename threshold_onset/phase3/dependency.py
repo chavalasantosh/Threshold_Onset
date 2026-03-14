@@ -52,8 +52,6 @@ def measure_dependencies(residues, phase2_metrics, threshold=DEPENDENCY_THRESHOL
     
     # Scan residues with fixed window
     for i in range(len(residues) - window + 1):
-        window_residues = residues[i:i + window]
-        
         # Get identity hashes for residues in this window (in order)
         window_identities = []
         for residue_idx in range(i, i + window):
@@ -111,11 +109,16 @@ def _map_residues_to_identities(residues, phase2_metrics, segment_window):
         return residue_to_identity
     
     identity_mappings = phase2_metrics['identity_mappings']
+    repeatable_hashes = set(phase2_metrics.get('repeatable_unit_hashes', []))
+    hash_cache = {}
     
     # Create segments and map to identity hashes
     for i in range(len(residues) - segment_window + 1):
         segment = tuple(residues[i:i + segment_window])
-        segment_hash = _hash_segment(segment)
+        segment_hash = hash_cache.get(segment)
+        if segment_hash is None:
+            segment_hash = _hash_segment(segment)
+            hash_cache[segment] = segment_hash
         
         # Look up identity hash in identity_mappings
         if segment_hash in identity_mappings:
@@ -123,23 +126,19 @@ def _map_residues_to_identities(residues, phase2_metrics, segment_window):
             
             # Map all residue indices in this segment to the identity hash
             for residue_idx in range(i, i + segment_window):
-                if residue_idx not in residue_to_identity:
-                    residue_to_identity[residue_idx] = set()
-                residue_to_identity[residue_idx].add(identity_hash)
+                residue_to_identity.setdefault(residue_idx, set()).add(identity_hash)
     
     # Also map from repeatable_unit_hashes
-    if 'repeatable_unit_hashes' in phase2_metrics:
-        repeatable_hashes = phase2_metrics['repeatable_unit_hashes']
-        
+    if repeatable_hashes:
         for i in range(len(residues) - segment_window + 1):
             unit = tuple(residues[i:i + segment_window])
-            unit_hash = _hash_segment(unit)
-            
+            unit_hash = hash_cache.get(unit)
+            if unit_hash is None:
+                unit_hash = _hash_segment(unit)
+                hash_cache[unit] = unit_hash
             if unit_hash in repeatable_hashes:
                 for residue_idx in range(i, i + segment_window):
-                    if residue_idx not in residue_to_identity:
-                        residue_to_identity[residue_idx] = set()
-                    residue_to_identity[residue_idx].add(unit_hash)
+                    residue_to_identity.setdefault(residue_idx, set()).add(unit_hash)
     
     return residue_to_identity
 

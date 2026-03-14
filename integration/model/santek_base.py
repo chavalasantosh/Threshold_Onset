@@ -724,6 +724,8 @@ Zero third-party libraries. Pure Python stdlib only.
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
+import contextlib
 import hashlib
 import importlib.util
 import json
@@ -736,6 +738,14 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+try:
+    from integration.runtime import JobSpec, run_tasks
+    _HAS_RUNTIME_EXECUTOR = True
+except Exception:  # pragma: no cover - optional hardening
+    JobSpec = None  # type: ignore[assignment]
+    run_tasks = None  # type: ignore[assignment]
+    _HAS_RUNTIME_EXECUTOR = False
 
 logging.basicConfig(
     level=logging.WARNING,
@@ -856,6 +866,7 @@ def _run_pipeline_single(rc_mod, text: str, method: str) -> Optional[Dict[str, A
         cfg.show_tui = False
         cfg.tokenization_method = method
         cfg.tokenization_methods = None          # single method run
+        cfg.corpus.enabled = False               # avoid expensive corpus state I/O
         cfg.generation.num_sequences = 0         # skip generation
         cfg.generation.steps = 0                 # skip generation
         cfg.continuation_text = text[:300]       # use real domain text
@@ -878,6 +889,7 @@ def _run_pipeline_all_methods(
     rc_mod,
     text: str,
     methods: Optional[List[str]] = None,
+    max_method_workers: int = 1,
 ) -> List[Tuple[str, Dict[str, Any]]]:
     """
     Run pipeline for ALL 9 tokenization methods. Returns list of (method, model_state).
@@ -888,12 +900,118 @@ def _run_pipeline_all_methods(
     """
     if methods is None:
         methods = ALL_TOKENIZATION_METHODS
-    results = []
-    for method in methods:
-        ms = _run_pipeline_single(rc_mod, text, method)
-        if ms is not None:
-            results.append((method, ms))
+
+    results: List[Tuple[str, Dict[str, Any]]] = []
+    workers = max(1, int(max_method_workers))
+    if workers == 1 or len(methods) <= 1:
+        for method in methods:
+            ms = _run_pipeline_single(rc_mod, text, method)
+            if ms is not None:
+                results.append((method, ms))
+        return results
+
+    with concurrent.futures.ThreadPoolExecutor(
+        max_workers=min(workers, len(methods)),
+        thread_name_prefix="santek-method",
+    ) as executor:
+        fut_to_method = {
+            executor.submit(_run_pipeline_single, rc_mod, text, method): method
+            for method in methods
+        }
+        for fut in concurrent.futures.as_completed(fut_to_method):
+            method = fut_to_method[fut]
+            try:
+                ms = fut.result()
+            except Exception as exc:  # pylint: disable=broad-exception-caught
+                log.debug("Method worker failed method=%s text=%r: %s", method, text[:40], exc)
+                continue
+            if ms is not None:
+                results.append((method, ms))
     return results
+
+
+@contextlib.contextmanager
+def _temporary_env(overrides: Dict[str, str]):
+    """Temporarily set environment variables, then restore previous values."""
+    if not overrides:
+        yield
+        return
+
+    previous: Dict[str, Optional[str]] = {}
+    for key, value in overrides.items():
+        previous[key] = os.environ.get(key)
+        os.environ[key] = value
+    try:
+        yield
+    finally:
+        for key, old_value in previous.items():
+            if old_value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = old_value
+
+
+def _env_flag(name: str, default: bool = False) -> bool:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return str(raw).strip().lower() in ("1", "true", "yes", "on")
+
+
+def _training_fast_env_overrides() -> Dict[str, str]:
+    """
+    Opt-in training fast preset:
+      - skips Phase 1 pairwise distances
+      - skips Phase 3 path-length BFS
+    Only applies when SANTEK_TRAIN_FAST is enabled.
+    """
+    if not _env_flag("SANTEK_TRAIN_FAST", default=True):
+        return {}
+    overrides: Dict[str, str] = {}
+    if "PHASE1_SKIP_DISTANCES" not in os.environ:
+        overrides["PHASE1_SKIP_DISTANCES"] = "1"
+    if "PHASE3_SKIP_PATH_LENGTHS" not in os.environ:
+        overrides["PHASE3_SKIP_PATH_LENGTHS"] = "1"
+    return overrides
+
+
+def _env_int(name: str, default: int, minimum: int = 1) -> int:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    try:
+        return max(minimum, int(raw))
+    except ValueError:
+        return default
+
+
+def _process_text_worker(
+    payload: Tuple[int, str, List[str], int]
+) -> Tuple[int, Optional[PathScores], Optional[List[int]], Optional[Vocab], int, int, float, Optional[str]]:
+    """
+    Worker entrypoint for per-text parallel init.
+    Returns (idx, path_scores, seq, vocab, method_count, identity_count, elapsed_ms, error).
+    """
+    idx, text, methods, method_workers = payload
+    t_text = time.time()
+    try:
+        rc = _load_run_complete()
+        method_states = _run_pipeline_all_methods(
+            rc, text, methods, max_method_workers=max(1, int(method_workers))
+        )
+        if not method_states:
+            return idx, None, None, None, 0, 0, (time.time() - t_text) * 1000.0, "all methods failed"
+
+        ps = _build_path_scores_additive(method_states)
+        seq = _get_symbol_sequence_multi_state(method_states)
+        vocab = _build_vocab_all_methods(method_states)
+        n_id = max(
+            len(ms.get("phase4_metrics", {}).get("identity_to_symbol", {}))
+            for _, ms in method_states
+        )
+        return idx, ps, seq, vocab, len(method_states), n_id, (time.time() - t_text) * 1000.0, None
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        return idx, None, None, None, 0, 0, (time.time() - t_text) * 1000.0, str(exc)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1286,6 +1404,14 @@ def santek_train(
     if methods is None:
         methods = ALL_TOKENIZATION_METHODS
 
+    cpu_count = os.cpu_count() or 4
+    default_text_workers = min(len(corpus), max(1, cpu_count - 1))
+    text_workers = _env_int("SANTEK_TEXT_WORKERS", default_text_workers, minimum=1)
+    # Use method-level parallelism only in single-process mode to avoid oversubscription.
+    default_method_workers = 1 if text_workers > 1 else min(4, len(methods))
+    method_workers = _env_int("SANTEK_METHOD_WORKERS", default_method_workers, minimum=1)
+    fast_env = _training_fast_env_overrides()
+
     if verbose:
         print()
         print("=" * 76)
@@ -1295,13 +1421,17 @@ def santek_train(
         print("=" * 76)
         print(f"  Corpus   : {len(corpus)} texts")
         print(f"  Methods  : {len(methods)} tokenization methods")
+        print(f"  Parallel : text_workers={text_workers}  method_workers={method_workers}")
+        print(f"  Fast mode: {'on' if bool(fast_env) else 'off'}")
         print(f"  Epochs   : {epochs}  Eta: {eta}  Decay: {decay}")
         print(f"  MaxStreak: {max_streak}  Patience: {patience}  Threshold: {tension_threshold}")
         print(f"  Methods  : {', '.join(methods)}")
         print()
 
     log.info("Loading pipeline...")
-    rc = _load_run_complete()
+    rc = None
+    if text_workers <= 1:
+        rc = _load_run_complete()
 
     # ── INIT: run all methods per text ────────────────────────────────────────
     if verbose:
@@ -1317,49 +1447,99 @@ def santek_train(
 
     t_init_start = time.time()
 
-    for i, text in enumerate(corpus):
-        t_text = time.time()
-
-        # Run all 9 methods
-        method_states = _run_pipeline_all_methods(rc, text, methods)
-
-        if not method_states:
-            log.warning("corpus[%d] skipped — all methods failed", i)
-            text_path_scores.append({})
-            text_streaks.append({})
-            text_seqs.append([])
-            continue
-
-        # Build additive path_scores from all methods
-        ps = _build_path_scores_additive(method_states)
-
-        # Build merged symbol sequence from all methods
-        seq = _get_symbol_sequence_multi_state(method_states)
-
-        # Build vocab from all methods
-        vocab = _build_vocab_all_methods(method_states)
-        _merge_vocab(global_vocab, vocab)
-
-        text_path_scores.append(ps)
-        text_streaks.append(defaultdict(int))
-        text_seqs.append(seq)
-        valid_indices.append(i)
-
-        elapsed_text_ms = (time.time() - t_text) * 1000
-
-        if verbose:
-            n_methods = len(method_states)
-            n_id = max(
-                len(ms.get("phase4_metrics", {}).get("identity_to_symbol", {}))
-                for _, ms in method_states
+    with _temporary_env(fast_env):
+        if text_workers > 1 and len(corpus) > 1 and _HAS_RUNTIME_EXECUTOR:
+            payloads: List[Tuple[int, str, List[str], int]] = [
+                (i, text, list(methods), method_workers) for i, text in enumerate(corpus)
+            ]
+            jobs = [
+                JobSpec(
+                    job_id=f"text-{idx}",
+                    fn=_process_text_worker,
+                    args=(payload,),
+                    retries=0,
+                )
+                for idx, payload in enumerate(payloads)
+            ]
+            job_results, _metrics = run_tasks(
+                jobs,
+                backend="process",
+                max_workers=min(text_workers, len(corpus)),
             )
-            print(f"  [{i+1:>5}/{len(corpus)}] "
-                  f"methods={n_methods}/9  "
-                  f"edges={len(ps):>5}  "
-                  f"identities={n_id:>4}  "
-                  f"seq_len={len(seq):>4}  "
-                  f"vocab={len(vocab):>4}  "
-                  f"{elapsed_text_ms:.0f}ms")
+            results_by_idx: Dict[int, Tuple[int, Optional[PathScores], Optional[List[int]], Optional[Vocab], int, int, float, Optional[str]]] = {}
+            for jr in job_results:
+                if not jr.ok or jr.value is None:
+                    continue
+                value = jr.value
+                results_by_idx[value[0]] = value
+
+            for i in range(len(corpus)):
+                if i not in results_by_idx:
+                    log.warning("corpus[%d] skipped — worker did not return result", i)
+                    text_path_scores.append({})
+                    text_streaks.append({})
+                    text_seqs.append([])
+                    continue
+                result = results_by_idx[i]
+                _, ps, seq, vocab, n_methods, n_id, elapsed_text_ms, err = result
+                if ps is None or seq is None or vocab is None:
+                    log.warning("corpus[%d] skipped — %s", i, err or "worker failed")
+                    text_path_scores.append({})
+                    text_streaks.append({})
+                    text_seqs.append([])
+                    continue
+                _merge_vocab(global_vocab, vocab)
+                text_path_scores.append(ps)
+                text_streaks.append(defaultdict(int))
+                text_seqs.append(seq)
+                valid_indices.append(i)
+                if verbose:
+                    print(f"  [{i+1:>5}/{len(corpus)}] "
+                          f"methods={n_methods}/9  "
+                          f"edges={len(ps):>5}  "
+                          f"identities={n_id:>4}  "
+                          f"seq_len={len(seq):>4}  "
+                          f"vocab={len(vocab):>4}  "
+                          f"{elapsed_text_ms:.0f}ms")
+        else:
+            if text_workers > 1 and len(corpus) > 1 and not _HAS_RUNTIME_EXECUTOR:
+                log.warning("integration.runtime unavailable; falling back to single-process text loop")
+            for i, text in enumerate(corpus):
+                t_text = time.time()
+                method_states = _run_pipeline_all_methods(
+                    rc, text, methods, max_method_workers=method_workers
+                )
+                if not method_states:
+                    log.warning("corpus[%d] skipped — all methods failed", i)
+                    text_path_scores.append({})
+                    text_streaks.append({})
+                    text_seqs.append([])
+                    continue
+
+                ps = _build_path_scores_additive(method_states)
+                seq = _get_symbol_sequence_multi_state(method_states)
+                vocab = _build_vocab_all_methods(method_states)
+                _merge_vocab(global_vocab, vocab)
+
+                text_path_scores.append(ps)
+                text_streaks.append(defaultdict(int))
+                text_seqs.append(seq)
+                valid_indices.append(i)
+
+                elapsed_text_ms = (time.time() - t_text) * 1000
+                if verbose:
+                    n_methods = len(method_states)
+                    n_id = max(
+                        len(ms.get("phase4_metrics", {}).get("identity_to_symbol", {}))
+                        for _, ms in method_states
+                    )
+                    print(f"  [{i+1:>5}/{len(corpus)}] "
+                          f"methods={n_methods}/9  "
+                          f"edges={len(ps):>5}  "
+                          f"identities={n_id:>4}  "
+                          f"seq_len={len(seq):>4}  "
+                          f"vocab={len(vocab):>4}  "
+                          f"{elapsed_text_ms:.0f}ms")
 
     if not valid_indices:
         raise ValueError("No valid pipeline results from corpus. Check pipeline setup.")
@@ -1491,6 +1671,33 @@ def santek_train(
     return out
 
 
+def train(
+    corpus: List[str],
+    epochs: int = 100,
+    eta: float = 0.10,
+    decay: float = 0.05,
+    max_streak: int = 3,
+    tension_threshold: float = 0.10,
+    patience: int = 5,
+    verbose: bool = True,
+    methods: Optional[List[str]] = None,
+    model_path: Optional[Path] = None,
+) -> SanTEKTrainingResult:
+    """Compatibility alias for canonical import surface."""
+    return santek_train(
+        corpus=corpus,
+        epochs=epochs,
+        eta=eta,
+        decay=decay,
+        max_streak=max_streak,
+        tension_threshold=tension_threshold,
+        patience=patience,
+        verbose=verbose,
+        methods=methods,
+        model_path=model_path,
+    )
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Save / Load
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1561,6 +1768,31 @@ def load_base_model(path: Path) -> SantekModel:
     return SantekModel(path_scores=ps, vocab=vocab, meta=meta)
 
 
+def save_santek_model(
+    model: SantekModel,
+    path: Path,
+    *,
+    training_config: Optional[Dict[str, Any]] = None,
+    split_manifest: Optional[Dict[str, Any]] = None,
+) -> Path:
+    """Compatibility wrapper; preserves optional split manifest metadata."""
+    merged_cfg: Dict[str, Any] = {}
+    if training_config:
+        merged_cfg.update(training_config)
+    if split_manifest is not None:
+        merged_cfg["split_manifest"] = split_manifest
+    return save_base_model(
+        model,
+        path,
+        training_config=(merged_cfg if merged_cfg else None),
+    )
+
+
+def load_santek_model(path: Path) -> SantekModel:
+    """Compatibility alias for canonical import surface."""
+    return load_base_model(path)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Generation
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1570,6 +1802,11 @@ def _is_prompt_connected(last_symbol: int, path_scores: PathScores) -> bool:
         if fr == last_symbol and to != last_symbol:
             return True
     return False
+
+
+def is_prompt_connected(last_symbol: int, path_scores: PathScores) -> bool:
+    """Public compatibility alias."""
+    return _is_prompt_connected(last_symbol, path_scores)
 
 
 def _generate_symbols_with_cycle_control(
@@ -1665,6 +1902,7 @@ def _symbols_to_text(symbols: List[int], vocab: Vocab) -> str:
 def generate(
     prompt: str,
     model: SantekModel,
+    repo_root: Optional[Path] = None,
     length: int = 30,
     methods: Optional[List[str]] = None,
     refuse_if_disconnected: bool = True,
@@ -1678,6 +1916,8 @@ def generate(
     if methods is None:
         methods = ALL_TOKENIZATION_METHODS
 
+    # repo_root kept for compatibility with older wrappers; resolution is internal.
+    _ = repo_root
     rc = _load_run_complete()
     method_states = _run_pipeline_all_methods(rc, prompt, methods)
 

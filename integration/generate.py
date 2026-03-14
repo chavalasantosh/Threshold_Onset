@@ -24,6 +24,30 @@ if str(project_root) not in sys.path:
 from integration.continuation_observer import ContinuationObserver
 
 
+def _classify_transition_outcome(
+    observer,
+    current_identity,
+    next_identity,
+    next_symbol,
+    recent_symbols,
+):
+    """Classify transition outcome for learner feedback."""
+    if current_identity is None or next_identity is None:
+        return "dead_end"
+
+    allowed_from_current = observer.adjacency.get(current_identity, set())
+    if next_identity not in allowed_from_current:
+        return "refusal"
+
+    if not observer.adjacency.get(next_identity, set()):
+        return "dead_end"
+
+    if next_symbol in recent_symbols[-3:]:
+        return "loop"
+
+    return "ok"
+
+
 def generate_sequence(
     start_symbol,
     steps,
@@ -119,10 +143,15 @@ def generate_sequence(
         # Observe transition for learning
         transition = (current_symbol, next_symbol)
         if learner is not None:
-            # Check if this transition will lead to refusal (simple heuristic)
-            # In real learning, we'd track outcomes over multiple steps
-            # For now, mark as "ok" - will be corrected in later iterations
-            learner.observe(transition, "ok")
+            next_identity = symbol_to_identity.get(next_symbol)
+            outcome = _classify_transition_outcome(
+                observer,
+                current_identity,
+                next_identity,
+                next_symbol,
+                recent_symbols,
+            )
+            learner.observe(transition, outcome)
 
         # Update with memory
         sequence.append(next_symbol)

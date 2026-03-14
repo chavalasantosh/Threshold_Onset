@@ -40,6 +40,7 @@ def measure_persistence(residue_sequences, threshold=PERSISTENCE_THRESHOLD):
     
     # Track segments across iterations using EXACT EQUALITY
     segment_counts = {}
+    hash_cache = {}
     
     # Use fixed window size for segment definition
     SEGMENT_WINDOW = 2
@@ -51,7 +52,10 @@ def measure_persistence(residue_sequences, threshold=PERSISTENCE_THRESHOLD):
         for i in range(len(sequence) - SEGMENT_WINDOW + 1):
             segment = tuple(sequence[i:i + SEGMENT_WINDOW])
             # Generate internal hash for segment (mechanical identifier only)
-            segment_hash = _hash_segment(segment)
+            segment_hash = hash_cache.get(segment)
+            if segment_hash is None:
+                segment_hash = _hash_segment(segment)
+                hash_cache[segment] = segment_hash
             
             # Count persistence (only once per iteration)
             if segment_hash not in seen_in_this_iteration:
