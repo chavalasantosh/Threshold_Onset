@@ -10,6 +10,8 @@
 
 
 
+[![gitcgr](https://gitcgr.com/badge/chavalasantosh/threshold_onset.svg)](https://gitcgr.com/chavalasantosh/threshold_onset)
+
 # THRESHOLD_ONSET
 
 **Phase 0: Action before Knowledge**
