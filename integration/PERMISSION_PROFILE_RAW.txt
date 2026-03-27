@@ -1,0 +1,36 @@
+IDENTITY PERMISSION PROFILE
+============================
+
+RAW COUNTS
+----------
+Total identity symbols: 26
+Symbols with self-loops (allowed): 0
+Symbols without self-loops (refused): 26
+Total allowed self-transitions: 0
+Total refused self-transitions (structural): 26
+Total observed refusals: 6
+
+PER SYMBOL (Sample - all symbols follow same pattern)
+------------------------------------------------------
+Symbol 0:
+  Allowed self-transitions: 0
+  Refused self-transitions (structural): 1
+  Observed refusals: 0
+  Self-loop exists in graph: False
+
+Symbol 4:
+  Allowed self-transitions: 0
+  Refused self-transitions (structural): 1
+  Observed refusals: 6
+  Self-loop exists in graph: False
+
+Symbol 18:
+  Allowed self-transitions: 0
+  Refused self-transitions (structural): 1
+  Observed refusals: 1
+  Self-loop exists in graph: False
+
+... (all 26 symbols have same pattern: allowed=0, refused=1, self-loop=False)
+
+============================
+PROFILE COMPLETE

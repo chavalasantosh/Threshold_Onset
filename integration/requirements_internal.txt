@@ -1,0 +1,11 @@
+# Internal Project Modules
+# These are our own pip-installable projects
+
+santok>=1.0.0
+santek>=1.0.0
+somaya>=1.0.0
+
+# Installation:
+# pip install santok
+# pip install santek
+# pip install somaya

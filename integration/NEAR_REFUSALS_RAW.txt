@@ -1,0 +1,50 @@
+NEAR-REFUSAL OBSERVATION
+=========================
+
+SEQUENCE DATA
+-------------
+Sequence length: 23
+
+SELF-TRANSITION ATTEMPTS
+------------------------
+Symbol 6: 2 attempts (refused)
+
+NEAR-REFUSAL PATTERNS (symbol i → symbol j, j ≠ i)
+---------------------------------------------------
+Symbol 2 followed by:
+  → 6: 2 times
+
+Symbol 5 followed by:
+  → 6: 4 times
+
+Symbol 6 followed by:
+  → 5: 4 times
+  → 17: 2 times
+  → 20: 2 times
+  → 25: 1 time
+
+Symbol 17 followed by:
+  → 25: 2 times
+
+Symbol 20 followed by:
+  → 6: 2 times
+
+Symbol 25 followed by:
+  → 6: 2 times
+  → 2: 1 time
+
+TOP NEAR-REFUSAL TRANSITIONS
+-----------------------------
+6 → 5: 4 occurrences
+5 → 6: 4 occurrences
+2 → 6: 2 occurrences
+6 → 17: 2 occurrences
+17 → 25: 2 occurrences
+25 → 6: 2 occurrences
+6 → 20: 2 occurrences
+20 → 6: 2 occurrences
+6 → 25: 1 occurrence
+25 → 2: 1 occurrence
+
+=========================
+OBSERVATION COMPLETE

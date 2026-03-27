@@ -1,0 +1,30 @@
+REFUSAL SIGNATURE AGGREGATION
+==============================
+
+RAW COUNTS
+----------
+Total refusals collected: 7
+Distinct refusal signatures: 2
+
+TESTS RUN
+---------
+original: word, permuted=False, refusals=1
+permuted_seed42: word, permuted=True, refusals=2
+permuted_seed123: word, permuted=True, refusals=2
+character_tokenization: character, permuted=False, refusals=1
+longer_continuation: word, permuted=False, refusals=1
+
+SIGNATURE COUNTS
+----------------
+Signature: (4, 4, False)
+  Count: 6
+  Step indices: [10, 11]
+  Appears in: original, permuted_seed42, permuted_seed123, longer_continuation
+
+Signature: (18, 18, False)
+  Count: 1
+  Step indices: [26]
+  Appears in: character_tokenization
+
+==============================
+AGGREGATION COMPLETE

@@ -1,0 +1,149 @@
+================================================================================
+THRESHOLD_ONSET - VISUAL SUMMARY
+================================================================================
+
+INPUT: "The quick brown fox jumps over the lazy dog"
+
+    |
+    v
+┌─────────────────────────────────────────────────────────────────┐
+│                    PHASE 0: BREAK INTO PIECES                   │
+│  Input: "The quick brown fox..."                                │
+│  Output: ["The", "quick", "brown", "fox", "jumps", ...]        │
+│  Result: 13 words, 26 residues                                  │
+└─────────────────────────────────────────────────────────────────┘
+    |
+    v
+┌─────────────────────────────────────────────────────────────────┐
+│                  PHASE 1: FIND PATTERNS                         │
+│  Looks for: Which words appear together?                       │
+│  Output: 4 groups of related words                            │
+│  Result: Boundaries and clusters found                          │
+└─────────────────────────────────────────────────────────────────┘
+    |
+    v
+┌─────────────────────────────────────────────────────────────────┐
+│              PHASE 2: REMEMBER FAMILIAR WORDS                   │
+│  Looks for: Words that repeat across multiple runs              │
+│  Output: 13 persistent identities                              │
+│  Result: "I've seen these before!"                              │
+└─────────────────────────────────────────────────────────────────┘
+    |
+    v
+┌─────────────────────────────────────────────────────────────────┐
+│            PHASE 3: UNDERSTAND CONNECTIONS                      │
+│  Looks for: How words connect to each other                     │
+│  Example: "fox" → "jumps" → "over"                              │
+│  Output: 507 connections (relations)                           │
+│  Result: A map of word relationships                            │
+└─────────────────────────────────────────────────────────────────┘
+    |
+    v
+┌─────────────────────────────────────────────────────────────────┐
+│              PHASE 4: CREATE SIMPLE CODE                        │
+│  Converts: Words → Numbers                                      │
+│  Example: "fox" = 1, "jumps" = 2, "dog" = 3                    │
+│  Output: Translation table                                      │
+│  Result: Easy-to-process numbers                                │
+└─────────────────────────────────────────────────────────────────┘
+    |
+    v
+┌─────────────────────────────────────────────────────────────────┐
+│         PHASE 5: EXPLORE CONSEQUENCES                           │
+│  Asks: "If I'm at word X, what happens next?"                  │
+│  Tries: Many different paths                                   │
+│  Output: Map of "what leads to what"                            │
+│  Result: 156 edge deltas (path possibilities)                  │
+└─────────────────────────────────────────────────────────────────┘
+    |
+    v
+┌─────────────────────────────────────────────────────────────────┐
+│         PHASE 6: GROUP SIMILAR MEANINGS                         │
+│  Looks for: Words that behave similarly                         │
+│  Example: Words that often lead to dead ends vs.                 │
+│           words that open many possibilities                     │
+│  Output: 2 meaning clusters                                     │
+│  Result: Groups of words with similar "personalities"          │
+└─────────────────────────────────────────────────────────────────┘
+    |
+    v
+┌─────────────────────────────────────────────────────────────────┐
+│            PHASE 7: ASSIGN ROLES                                │
+│  Gives: Each group a job description                            │
+│  Example: "connectors", "action words", "unclassified"          │
+│  Output: Role for each cluster                                  │
+│  Result: Understanding of word functions                        │
+└─────────────────────────────────────────────────────────────────┘
+    |
+    v
+┌─────────────────────────────────────────────────────────────────┐
+│            PHASE 8: LEARN RULES                                  │
+│  Discovers: Patterns that work well                            │
+│  Example: "Action words usually come after connectors"         │
+│  Also learns: What NOT to do (forbidden patterns)               │
+│  Output: 1 pattern, 1 template                                 │
+│  Result: Grammar rules discovered                               │
+└─────────────────────────────────────────────────────────────────┘
+    |
+    v
+┌─────────────────────────────────────────────────────────────────┐
+│         PHASE 9: CREATE NEW SEQUENCE                            │
+│  Uses: All learned knowledge                                   │
+│  Goal: Generate fluent, meaningful sequence                     │
+│  Output: 50-symbol sequence                                     │
+│  Result: New content following learned patterns                 │
+└─────────────────────────────────────────────────────────────────┘
+    |
+    v
+OUTPUT FILES:
+  ✓ consequence_field.json  (What leads to what)
+  ✓ meaning_map.json         (Groups of similar words)
+  ✓ roles.json              (Job descriptions)
+  ✓ constraints.json        (Rules learned)
+  ✓ Generated sequence      (New 50-symbol sequence)
+
+================================================================================
+ANALOGY: Learning to Write Stories
+================================================================================
+
+1. PHASE 0-4: Learning the Basics
+   Like a child learning:
+   - The alphabet (Phase 0)
+   - Words (Phase 1)
+   - Recognizing familiar words (Phase 2)
+   - How words connect (Phase 3)
+   - Simple codes/symbols (Phase 4)
+
+2. PHASE 5-6: Understanding Style
+   Like analyzing what makes stories good:
+   - Which words create suspense? (Phase 5)
+   - Which words are similar? (Phase 6)
+
+3. PHASE 7: Learning Grammar
+   Like understanding parts of speech:
+   - Nouns, verbs, adjectives (Phase 7)
+
+4. PHASE 8: Learning Rules
+   Like learning grammar rules:
+   - "Sentences need subject and verb" (Phase 8)
+
+5. PHASE 9: Writing Your Own
+   Like creating a new story:
+   - Following all learned rules (Phase 9)
+
+================================================================================
+KEY INSIGHT
+================================================================================
+
+"Action comes before knowledge"
+कार्य (kārya) happens before ज्ञान (jñāna)
+
+The system:
+1. ACTS (processes text)          → Phases 0-4
+2. OBSERVES (finds patterns)       → Phases 5-6
+3. UNDERSTANDS (discovers meaning) → Phases 7-8
+4. CREATES (generates new)         → Phase 9
+
+Just like humans learn: by doing first, understanding later!
+
+================================================================================

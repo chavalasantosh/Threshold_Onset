@@ -1,0 +1,40 @@
+TRANSITION PERMISSION MATRIX
+=============================
+
+MATRIX SUMMARY
+--------------
+Total identity pairs: 676 (26 x 26)
+Allowed transitions: 650
+Forbidden transitions: 26
+Pairs with observed refusals: 2
+Total observed refusal count: 7
+
+SELF-TRANSITIONS (i → i)
+-------------------------
+All 26 self-transitions:
+  allowed: 0
+  forbidden: 1
+  observed: varies (most are 0, but some were observed)
+
+Observed self-transitions:
+  16 → 16: allowed=0, forbidden=1, observed=6
+  8 → 8: allowed=0, forbidden=1, observed=1
+
+All other 24 self-transitions: allowed=0, forbidden=1, observed=0
+
+NON-SELF TRANSITIONS (Sample)
+------------------------------
+Sample from first 10 symbols shows:
+- Most non-self transitions: allowed=1, forbidden=0, observed=0
+- Example: 0 → 1: allowed=1, forbidden=0, observed=0
+- Example: 4 → 5: allowed=1, forbidden=0, observed=0
+- Example: 8 → 7: allowed=1, forbidden=0, observed=0
+
+All non-self transitions appear to be allowed in the graph structure.
+
+OBSERVED REFUSALS (non-self)
+-----------------------------
+None observed in non-self transitions.
+
+=============================
+MATRIX COMPLETE

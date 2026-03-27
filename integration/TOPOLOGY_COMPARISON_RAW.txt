@@ -1,0 +1,66 @@
+ESCAPE TOPOLOGY COMPARISON
+===========================
+
+METRICS PER INPUT
+-----------------
+philosophy:
+  Total symbols: 6
+  Symbols with attempts: 1
+  Total attempts: 3
+  Average escape paths: 1.67
+  Average concentration: 0.6780
+  Max attempts: 3
+  Max escape paths: 4
+
+technical:
+  Total symbols: 8
+  Symbols with attempts: 1
+  Total attempts: 3
+  Average escape paths: 1.75
+  Average concentration: 0.7567
+  Max attempts: 3
+  Max escape paths: 6
+
+literary:
+  Total symbols: 7
+  Symbols with attempts: 0
+  Total attempts: 0
+  Average escape paths: 1.71
+  Average concentration: 0.5791
+  Max attempts: 0
+  Max escape paths: 4
+
+short:
+  Total symbols: 4
+  Symbols with attempts: 1
+  Total attempts: 3
+  Average escape paths: 1.75
+  Average concentration: 0.5073
+  Max attempts: 3
+  Max escape paths: 3
+
+INVARIANTS
+----------
+None found (no metric is identical across all inputs)
+
+VARIATIONS
+----------
+All metrics vary across inputs:
+- total_symbols: 4-8
+- symbols_with_attempts: 0-1
+- total_attempts: 0-3
+- avg_escape_paths: 1.67-1.75
+- avg_concentration: 0.51-0.76
+- max_attempts: 0-3
+- max_escape_paths: 3-6
+
+STRUCTURAL PATTERNS
+-------------------
+All inputs have self-transition attempts: False
+  (literary has 0, others have 1)
+
+All inputs have concentrated escape paths: True
+  (all inputs have symbols with concentration = 1.0)
+
+===========================
+COMPARISON COMPLETE

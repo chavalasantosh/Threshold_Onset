@@ -1,0 +1,33 @@
+# THRESHOLD_ONSET — Docker Compose
+# For local development and deployment
+
+services:
+  threshold-onset:
+    build: .
+    image: threshold-onset:latest
+    container_name: threshold-onset
+    environment:
+      - THRESHOLD_ONSET_CONFIG=/app/config/default.json
+      - THRESHOLD_ONSET_LOG_LEVEL=INFO
+    volumes:
+      - ./config:/app/config:ro
+      - ./output:/app/output
+    healthcheck:
+      test: ["CMD", "threshold-onset", "config"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    # Override CMD for one-shot run
+    command: ["threshold-onset", "run"]
+
+  # Optional: run full suite (longer)
+  threshold-onset-suite:
+    build: .
+    image: threshold-onset:latest
+    container_name: threshold-onset-suite
+    profiles:
+      - suite
+    environment:
+      - THRESHOLD_ONSET_CONFIG=/app/config/default.json
+    command: ["threshold-onset", "suite"]

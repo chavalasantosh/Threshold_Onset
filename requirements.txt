@@ -1,0 +1,6 @@
+# Version Control Tools Only
+# This is the ONLY 3rd party dependency allowed
+# Phase 0 code uses ZERO dependencies (pure Python stdlib only)
+watchfiles>=0.21.0
+pylint>=3.0.0
+numpy

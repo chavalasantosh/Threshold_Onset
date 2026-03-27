@@ -1,0 +1,14 @@
+# SanTOK - Text Tokenization System
+# Requirements file
+# 
+# Note: SanTOK uses only Python standard library, so no external dependencies are required.
+# The optional dependencies below are for development and testing.
+
+# Development dependencies (optional)
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# Code quality (optional)
+black>=22.0.0
+flake8>=5.0.0
+mypy>=1.0.0

@@ -1,0 +1,47 @@
+name: Lint - Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint:
+    name: Code Linting
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pylint>=3.0.0
+    
+    - name: Run pylint on main.py
+      run: |
+        pylint main.py --disable=import-outside-toplevel,import-error,redefined-outer-name || true
+      continue-on-error: true
+    
+    - name: Run pylint on threshold_onset/
+      run: |
+        find threshold_onset -name "*.py" -not -path "*/__pycache__/*" | head -20 | xargs pylint --disable=import-outside-toplevel,import-error,redefined-outer-name || true
+      continue-on-error: true
+    
+    - name: Check Python syntax
+      run: |
+        python -m py_compile main.py
+        find threshold_onset -name "*.py" -not -path "*/__pycache__/*" -exec python -m py_compile {} \;
+    
+    - name: Verify imports
+      run: |
+        pip install -e .
+        python -c "from threshold_onset.phase0.phase0 import phase0; from threshold_onset.phase1.phase1 import phase1; from threshold_onset.phase2.phase2 import phase2_multi_run; from threshold_onset.phase3.phase3 import phase3_multi_run; from threshold_onset.phase4.phase4 import phase4; print('All imports OK')"

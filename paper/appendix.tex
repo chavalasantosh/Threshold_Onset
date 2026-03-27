@@ -1,0 +1,255 @@
+%=============================================================================
+% APPENDIX
+%=============================================================================
+
+\appendix
+
+\section{Phase boundary rules}
+\label{app:boundaries}
+
+The strict phase ordering enforces that structure is earned before it is used. Figure~\ref{fig:app:boundaries} visualizes the phase boundaries. The following tools are forbidden in each phase:
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+    phase/.style={rectangle, draw, minimum width=2cm},
+    forbid/.style={font=\tiny, red}
+]
+\node[phase] (p0) {Phase 0};
+\node[phase, below=0.2cm of p0] (p1) {Phase 1};
+\node[phase, below=0.2cm of p1] (p2) {Phase 2};
+\node[phase, below=0.2cm of p2] (p3) {Phase 3};
+\node[phase, below=0.2cm of p3] (p4) {Phase 4};
+\node[forbid, right=0.3cm of p0] {$\times$ symbols, identity};
+\node[forbid, right=0.3cm of p1] {$\times$ symbols, identity};
+\node[forbid, right=0.3cm of p2] {$\times$ symbols};
+\node[forbid, right=0.3cm of p3] {$\times$ symbols};
+\draw[-{Stealth[length=1.5mm]}] (p0) -- (p1) -- (p2) -- (p3) -- (p4);
+\end{tikzpicture}
+\caption{Phase boundaries: forbidden tools per phase.}
+\label{fig:app:boundaries}
+\end{figure}
+
+\begin{itemize}
+\item \textbf{Phase 0} may not use: symbols, labels, identity, segmentation, relations.
+\item \textbf{Phase 1} may not use: symbols, identity, relations.
+\item \textbf{Phase 2} may not use: symbols, relations.
+\item \textbf{Phase 3} may not use: symbols (identity hashes are internal).
+\item \textbf{Phase 4} introduces symbols; no phase may use tools from a later phase.
+\end{itemize}
+
+Violating these boundaries would allow a phase to ``cheat'' by using structure that has not yet emerged from action and persistence.
+
+\section{Symbol mapping example}
+\label{app:symbol_mapping}
+
+For input ``Action before knowledge. Structure emerges.'' Sample symbol-to-token mapping from decoder:
+
+\begin{center}
+\begin{tabular}{cc}
+\toprule
+Symbol & Token \\
+\midrule
+0 & before \\
+1 & Action \\
+2 & emerges. \\
+3 & knowledge. \\
+4 & Structure \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Generated text examples}
+\label{app:generated}
+
+\textbf{Decoded output (symbol sequence from identity\_to\_symbol):}\\
+before Action emerges. knowledge. Structure
+
+\textbf{Properties:} 0 self-transitions, 5 unique symbols (invariant preserved).
+
+\section{Stability mode and phase transition}
+\label{app:stability}
+
+\textbf{Perturbation model.}
+Independent Bernoulli deletion with probability $p$ per token. Each run $k$ receives a perturbed token sequence (subsampling preserves order). Segment identity is token-grounded: $\mathsf{segment\_id}(t_i, t_{i+1}) = \mathsf{hash}((t_i, t_{i+1}))$. Figure~\ref{fig:app:stability} illustrates the flow.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+    run/.style={rectangle, draw, minimum width=2cm},
+    arrow/.style={-{Stealth[length=2mm]}}
+]
+\node[run] (r1) {Run 1};
+\node[run, below=0.2cm of r1] (r2) {Run 2 (perturbed)};
+\node[run, below=0.2cm of r2] (r3) {Run 3 (perturbed)};
+\node[run, below=0.5cm of r3] (p) {Persistent pairs};
+\draw[arrow] (r1) -- (r2) -- (r3) -- (p);
+\end{tikzpicture}
+\caption{Stability mode: $K$ perturbed runs $\rightarrow$ persistent pairs.}
+\label{fig:app:stability}
+\end{figure}
+
+\textbf{Distribution of recurrence.}
+For a fixed pair, let $X$ = number of runs in which the pair appears. Survival per run: both tokens must survive, so $q = (1-p)^2$. Thus $X \sim \text{Binomial}(K, q)$. A pair \emph{persists} if $X \geq \theta$.
+
+\textbf{Mean-field phase boundary.}
+When $\mathbb{E}[X] = K(1-p)^2 = \theta$, we obtain $p^* = 1 - \sqrt{\theta/K}$. Above $p^*$, expected recurrence falls below threshold; identities collapse. This is the mean-field approximation of the collapse transition.
+
+\textbf{Fixed-denominator normalization.}
+Fraction persistent = (persistent pairs that exist in original) / (total unique pairs in original). Denominator is fixed; avoids ``counts change because denominator changes.''
+
+\textbf{Theoretical curve.}
+$P(X \geq \theta) = \sum_{k=\theta}^{K} \binom{K}{k} q^k (1-q)^{K-k}$ with $q = (1-p)^2$. Overlay empirical fraction vs this curve; alignment supports the binomial model.
+
+\textbf{Identity $\rightarrow$ output.}
+Identity is defined over token pairs $(t_i, t_{i+1})$. The decoder maps identity $\rightarrow$ (both tokens) or $\rightarrow$ pivot (first token).
+
+\textbf{Run.}
+\texttt{python integration/stability\_experiments.py} (table with frac, theory, $p^*$). \texttt{--csv} for plotting data; \texttt{--plot} if matplotlib available.
+
+\textbf{Scope.}
+The binomial phase analysis applies to the stability-mode \emph{pair identity} model. Extending the same analysis to residue-based identities in the full pipeline is future work.
+
+\section{Additional ablations}
+\label{app:ablations}
+
+\textbf{Segment window $w$.}
+With $w=1$, each residue is its own segment; identity granularity is maximal but persistence may drop (fewer repeated segments). With $w=3$, segments are longer; fewer segments overall; coarser identity. Default $w=2$ balances granularity and persistence. We fix $w=2$ for all experiments.
+
+\textbf{Cluster threshold $\tau$.}
+With $\tau=0.05$, more clusters (tighter clustering); with $\tau=0.2$, fewer clusters. Default $\tau=0.1$ is fixed and non-adaptive. Phase 1 does not use adaptive thresholds; clustering is purely geometric.
+
+\textbf{Persistence threshold $\theta$.}
+With $\theta=1$, every segment that appears once persists; sensitivity is high but noise may dominate. With $\theta \geq 3$, only segments that repeat across many runs persist; stricter but potentially fewer identities. Default $\theta=2$ requires at least 2 runs to observe a segment for it to persist.
+
+\section{Reproducibility}
+
+\textbf{Code and data.}
+The implementation is available at \url{https://github.com/chavalasantosh/THRESHOLDONSET} and on PyPI as \texttt{threshold-onset}. No external datasets are required; validation uses synthetic inputs. To reproduce:
+
+\begin{enumerate}
+\item Install: \texttt{pip install threshold-onset}
+\item Run all: \texttt{python main.py} or \texttt{python run\_all.py} (10 steps: decoder test, validation 7 types, stress 100--5000 tokens, benchmark, baselines, external validation, stability mode, stability experiments, structural scaling, full pipeline)
+\item Or run individually: \texttt{python integration/benchmark.py} (39 samples), \texttt{python integration/baselines.py} (4 baselines), \texttt{python integration/external\_validation.py} (136 samples), \texttt{python integration/stability\_experiments.py}
+\end{enumerate}
+
+\textbf{Hyperparameters.}
+All hyperparameters: $K=3$, $w=2$, $\tau=0.1$, $\theta=2$. In deterministic mode, hashing is deterministic; no randomization. In stability mode, subsampling uses per-run random seeds.
+
+\section{Benchmark Corpus Sample}
+\label{app:corpus}
+
+Representative samples from THRESHOLD\_ONSETBench (39 total):
+
+\begin{itemize}
+\item \textbf{short\_1:} ``Hi there.''
+\item \textbf{short\_2:} ``Hello world.''
+\item \textbf{normal\_1:} ``Action before knowledge. Structure emerges before language.''
+\item \textbf{normal\_2:} ``Function stabilizes before meaning appears.''
+\item \textbf{repeated\_1:} ``the the the a a a''
+\item \textbf{philosophy\_1:} ``Structure emerges from action and repetition.''
+\item \textbf{tech\_1:} ``Tokens become residues. Residues form segments.''
+\item \textbf{stress\_100:} 100 tokens (cyclical pattern)
+\item \textbf{stress\_500:} 500 tokens (cyclical pattern)
+\end{itemize}
+
+External validation corpus (136 total) spans philosophy, tech, literary, and synthetic domains. Samples include: ``The sky is blue.'', ``Structure emerges from action.'', ``Code compiles before execution.'', ``Hash to residue. Segment to identity.'', and 20 synthetic token-repeat patterns.
+
+\section{Case Studies}
+\label{app:cases}
+
+Figure~\ref{fig:app:cases} summarizes the case study flows. \textbf{Case 1: Short input.}
+Input ``Hi there.'' $\rightarrow$ 2 tokens $\rightarrow$ 2 residues $\rightarrow$ 1 segment (if consecutive) $\rightarrow$ 1 identity $\rightarrow$ 1 symbol. Output: cyclic alternation or single token; 0 self-transitions.
+
+\textbf{Case 2: Repetitive input.}
+Input ``word word word'' $\rightarrow$ 3 tokens, 1 unique $\rightarrow$ residues collapse to 1 $\rightarrow$ 1 segment $\rightarrow$ 1 symbol. Identity collapse is expected; structural diversity determines symbol diversity.
+
+\textbf{Case 3: Long input.}
+Input with 50 unique tokens $\rightarrow$ up to 49 segments (window $w=2$) $\rightarrow$ persistence filters to stable identities $\rightarrow$ graph $G$ with edges from co-occurrence. Generation respects $E$; no self-transitions.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+    box/.style={rectangle, draw, minimum width=1.5cm, font=\scriptsize}
+]
+\node[box] (c1) {Short};
+\node[box, below=0.2cm of c1] (c2) {Repetitive};
+\node[box, below=0.2cm of c2] (c3) {Long};
+\node[below=0.1cm of c1, font=\tiny] {2 tok $\rightarrow$ 1 sym};
+\node[below=0.1cm of c2, font=\tiny] {1 unique $\rightarrow$ 1 sym};
+\node[below=0.1cm of c3, font=\tiny] {50 tok $\rightarrow$ many sym};
+\end{tikzpicture}
+\caption{Case studies: short, repetitive, long inputs.}
+\label{fig:app:cases}
+\end{figure}
+
+\section{Implementation Details}
+\label{app:impl}
+
+\textbf{Tokenization.}
+Word-level via whitespace split. Tokens are strings; no subword splitting. Vocabulary size is determined by the input.
+
+\textbf{Hashing.}
+Phase 0: SHA-256, first 8 hex chars, then $\lfloor \text{int} \bmod 10000 \rfloor / 10000$. Phase 2: MD5 of string representation of segment tuple. Deterministic across runs.
+
+\textbf{Clustering.}
+Phase 1 uses distance-to-center: $\text{dist}(r, c) = |r - c|$. Residue joins cluster if $\text{dist} \leq \tau$; otherwise new cluster. Center updates as mean of cluster members.
+
+\textbf{Relation detection.}
+Context window $W_{\text{ctx}}$ determines co-occurrence. Identities within $W_{\text{ctx}}$ positions form edges. Relations persist across runs via threshold.
+
+\section{Full Stability Parameter Sweep}
+\label{app:stability_full}
+
+Table~\ref{tab:stability_full} shows the parameter sweep with fixed-denominator fraction and theoretical $P(X \geq \theta)$. drop\_prob $\in \{0, 0.05, 0.1, 0.15, 0.2\}$, $K \in \{3, 5, 7\}$, $\theta \in \{2, 3\}$. Input: 13 tokens, 12 unique pairs. frac = persistent / 12 (fixed denominator).
+
+\begin{table}[t]
+\centering
+\caption{Stability sweep: frac (fixed denom.), theory $P(X \geq \theta)$, $p^*$.}
+\label{tab:stability_full}
+\small
+\begin{tabular}{ccccccc}
+\toprule
+\textbf{$p$} & \textbf{$K$} & \textbf{$\theta$} & \textbf{frac} & \textbf{theory} & \textbf{$p^*$} \\
+\midrule
+0.00 & 3 & 2 & 100\% & 100\% & 0.18 \\
+0.05 & 3 & 2 & 100\% & 97.3\% & 0.18 \\
+0.05 & 3 & 3 & 58.3\% & 73.5\% & 0.00 \\
+0.10 & 3 & 2 & 100\% & 90.5\% & 0.18 \\
+0.10 & 3 & 3 & 41.7\% & 53.1\% & 0.00 \\
+0.15 & 3 & 2 & 100\% & 81.2\% & 0.18 \\
+0.15 & 3 & 3 & 25.0\% & 37.7\% & 0.00 \\
+0.20 & 3 & 2 & 83.3\% & 70.5\% & 0.18 \\
+0.20 & 3 & 3 & 16.7\% & 26.2\% & 0.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Monotonicity: higher $p$ $\Rightarrow$ fewer persistent. Empirical fraction tracks theoretical curve; collapse near $p^*$.
+
+\section{Failure Modes and Edge Cases}
+\label{app:failures}
+
+\textbf{Empty input.}
+Tokenization yields empty list $\Rightarrow$ pipeline fails at Phase 0. Excluded by filtering.
+
+\textbf{Single token.}
+One token $\Rightarrow$ zero segments (need $w=2$ consecutive) $\Rightarrow$ Phase 2 may fail. Handled: single-token identity maps to single symbol; special-case handling in implementation.
+
+\textbf{Phase 2 gate failure.}
+If no segments persist across $\geq \theta$ runs, Phase 2 returns empty identity mappings. Pipeline fails. Occurs with $K=1$ often; $K \geq 3$ stabilizes.
+
+\textbf{Identity collapse.}
+Uniform repetitive input $\Rightarrow$ all residues collapse $\Rightarrow$ one identity $\Rightarrow$ one symbol. Expected: output is structurally faithful to input.
+
+\section{Comparison with Constrained Decoding}
+\label{app:constrained}
+
+Constrained decoding in LLMs~\cite{raffel2019t5} typically uses:
+\begin{itemize}
+\item \textbf{Post-hoc filtering:} Generate, then filter invalid sequences. Inefficient; may require multiple samples.
+\item \textbf{Constrained beam search:} incorporate constraints into search. Requires modifying search logic.
+\item \textbf{Vocabulary masking:} exclude invalid tokens at each step. Needs token-level constraint specification.
+\end{itemize}
+
+THRESHOLD\_ONSET differs: the constraint is \emph{graph-theoretic}. Relation construction creates edges only between distinct identities; thus $A_{ii} = 0$ for all $i$. The graph has no self-loops by construction. Path selection never includes $(s, s)$. No filtering, no masking, no search modification. Constraint-safe generation is a corollary of topology.

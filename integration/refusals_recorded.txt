@@ -1,0 +1,25 @@
+RAW REFUSALS RECORDED
+=====================
+
+Test: character_tokenization
+------------------------------
+Refusal 1:
+  step_index: 26
+  current_symbol: 22
+  attempted_next_symbol: 22
+  reason_for_refusal: no_persistent_relation
+
+Test: longer_continuation
+------------------------------
+Refusal 1:
+  step_index: 11
+  current_symbol: 8
+  attempted_next_symbol: 8
+  reason_for_refusal: no_persistent_relation
+
+Test: different_continuation
+------------------------------
+No refusals observed.
+
+=====================
+OBSERVATION COMPLETE

@@ -1,0 +1,38 @@
+# Development
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.mypy_cache
+.ruff_cache
+*.egg-info
+.eggs
+dist
+build
+venv
+.env
+.env.*
+
+# Documentation / paper (not needed in container)
+paper/
+docs/
+*.md
+!README.md
+
+# Tests (optional: include for smoke tests)
+# tests/
+validation_crush/
+versions/
+
+# Logs
+*.log
+execution_log.txt
+output/
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo

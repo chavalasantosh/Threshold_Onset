@@ -1,0 +1,78 @@
+{
+  "santek_base_model": {
+    "training_corpus_file": "data/training_corpus.txt",
+    "training_corpus_file_val": "",
+    "training_corpus_file_test": "",
+    "corpus_jsonl": "",
+    "training_corpus_urls": [
+      "https://www.gutenberg.org/cache/epub/2388/pg2388.txt",
+      "https://www.gutenberg.org/cache/epub/8920/pg8920.txt"
+    ],
+    "training_corpus_url": "",
+    "training_corpus_split": "paragraphs",
+    "default_prompt": "Action before knowledge."
+  },
+  "model": {
+    "learning_rate": 0.1,
+    "prediction_method": "highest_score",
+    "prediction_methods": ["highest_score", "weighted_random"]
+  },
+  "pipeline": {
+    "tokenization_methods": [
+      "space",
+      "word",
+      "char",
+      "grammar",
+      "subword",
+      "subword_bpe",
+      "subword_syllable",
+      "subword_frequency",
+      "byte"
+    ],
+    "num_runs": 3,
+    "continuation_text": "Tokens become actions. Patterns become residues.",
+    "continuation_texts": [
+      "Tokens become actions. Patterns become residues.",
+      "Structure emerges before language exists.",
+      "Constraint bounds generation. No self-transition allowed."
+    ],
+    "output_dir": "output",
+    "log_level": "INFO",
+    "max_input_length": 100000000000,
+    "max_file_bytes": 524288000000000000000,
+    "file_input_mode": "auto",
+    "include_phase10_metrics": false,
+    "phase10_cross_check_phase3": false
+  },
+  "stability": {
+    "theta": 2,
+    "drop_prob": 0.1,
+    "seed": 42
+  },
+  "benchmark": {
+    "sizes": [
+      100,
+      500,
+      1000,
+      2000,
+      5000,
+      10000,
+      20000,
+      50000,
+      100000,
+      200000
+    ],
+    "num_runs": 300
+  },
+  "corpus": {
+    "enabled": true,
+    "state_path": "output/corpus_state.json",
+    "reinforcement": 1.0,
+    "decay_rate": 0.1,
+    "T_atomic": 2.0,
+    "theta_prune": 0.01,
+    "prune_interval_docs": 10,
+    "max_identities": 100000,
+    "max_edges": 500000
+  }
+}
