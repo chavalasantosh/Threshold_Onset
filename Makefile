@@ -1,7 +1,7 @@
 # THRESHOLD_ONSET — Common tasks
 # Use: make <target>
 
-.PHONY: install run check health config test test-api docker-build docker-run help
+.PHONY: install run check health config test test-api dev-check docker-build docker-run help
 
 install:
 	pip install -e .
@@ -23,6 +23,10 @@ test:
 
 test-api:
 	python -m pytest tests/test_api.py -v --tb=short
+
+# Fast smoke: line_codec + API (see docs/architecture/GOLDEN_PATH.md)
+dev-check:
+	python scripts/dev_check.py
 
 test-cov:
 	pip install pytest-cov
@@ -48,6 +52,7 @@ help:
 	@echo "  health        - threshold-onset health"
 	@echo "  config        - Show config"
 	@echo "  test          - Run all tests"
+	@echo "  dev-check     - Fast smoke tests (recommended first)"
 	@echo "  test-api      - Run API integration tests"
 	@echo "  test-cov      - Run tests with coverage"
 	@echo "  docker-build  - Build Docker image"

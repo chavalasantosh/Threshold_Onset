@@ -1,5 +1,13 @@
 # THRESHOLD_ONSET - Quick Start Guide
 
+## Golden path (read this first)
+
+1. `pip install -e ".[dev]"` from the repo root  
+2. `python scripts/dev_check.py` — must pass before assuming something is “broken”  
+3. Read **`docs/architecture/GOLDEN_PATH.md`** for one clear mental model and command table  
+
+Then continue below for full pipeline runs.
+
 ## 🚀 Getting Started in 5 Minutes
 
 ### 1. Installation

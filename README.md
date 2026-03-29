@@ -47,6 +47,17 @@ A **training and inference stack for an LM**: structural pipeline (Phases 0–4)
 
 ## Quick Start
 
+### Canonical path (start here)
+
+If the repo feels overwhelming, follow **one** path: install dev deps, run smoke tests, then choose a single runner (see `docs/architecture/GOLDEN_PATH.md`).
+
+```bash
+pip install -e ".[dev]"
+python scripts/dev_check.py
+```
+
+If that passes, your checkout and import paths are sound before you touch `main.py`, training, or Docker.
+
 ### Installation
 
 ```bash

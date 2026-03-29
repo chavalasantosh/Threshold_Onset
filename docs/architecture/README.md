@@ -4,6 +4,10 @@ System architecture and design documentation for the THRESHOLD_ONSET repository.
 
 ## Contents
 
+### [`GOLDEN_PATH.md`](GOLDEN_PATH.md)
+
+**Start here if the repo feels too large:** one install + test path, a single mental model, and a small command table (runners, data/Git rules).
+
 ### [`ARCHITECTURE.md`](ARCHITECTURE.md)
 
 Full **current-directory** codebase map:
