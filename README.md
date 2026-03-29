@@ -39,6 +39,8 @@ The frozen phases and *action-before-knowledge* rule are **how** the system buil
 
 ## What This Is
 
+**Scope:** This repository is a **monorepo** (many top-level folders). The Python package lives in **`threshold_onset/`** only — not the whole repo. See [`docs/architecture/FULL_ARCHITECTURE.md`](docs/architecture/FULL_ARCHITECTURE.md).
+
 A **training and inference stack for an LM**: structural pipeline (Phases 0–4), semantic discovery (5–9), SanTEK base model (`santek_base_model.py`), and integrations. Under the hood it **explores structure emergence** through action, trace, and repetition before leaning on interpretation — that discipline is the **engineering path**, not a replacement for chasing **best LM** performance.
 
 **Status:** **FROZEN FOREVER** — All phases (0-9), decoder, integration. See [PROJECT_FREEZE.md](PROJECT_FREEZE.md).

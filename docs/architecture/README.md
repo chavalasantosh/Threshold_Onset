@@ -4,9 +4,13 @@ System architecture and design documentation for the THRESHOLD_ONSET repository.
 
 ## Contents
 
+### [`FULL_ARCHITECTURE.md`](FULL_ARCHITECTURE.md)
+
+**Start here for scope:** explains the difference between the **whole repository** (monorepo root) and the **`threshold_onset/` package** folder — they are not the same thing.
+
 ### [`GOLDEN_PATH.md`](GOLDEN_PATH.md)
 
-**Start here if the repo feels too large:** one install + test path, a single mental model, and a small command table (runners, data/Git rules).
+**Operational path:** one install + test path, a small command table (runners, data/Git rules).
 
 ### [`ARCHITECTURE.md`](ARCHITECTURE.md)
 
