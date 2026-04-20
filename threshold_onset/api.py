@@ -5,7 +5,6 @@ Clean Python API for embedding the pipeline in other applications.
 """
 
 import importlib
-import json
 import logging
 import os
 import sys
@@ -20,6 +19,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from threshold_onset.config import get_config
 from threshold_onset.exceptions import ValidationError
+from threshold_onset.line_codec import encode as encode_compact
 
 
 # Default max input length (chars) to prevent abuse
@@ -70,10 +70,10 @@ def _new_trace_id() -> str:
     return uuid.uuid4().hex[:16]
 
 
-def _json_log(event: str, trace_id: str, **fields: Any) -> None:
+def _compact_log(event: str, trace_id: str, **fields: Any) -> None:
     payload = {"event": event, "trace_id": trace_id, **fields}
     try:
-        LOG.info(json.dumps(payload, ensure_ascii=True, sort_keys=True))
+        LOG.info(encode_compact(payload, sort_keys=True).rstrip("\n"))
     except Exception:
         # Keep API robust even when logging sinks are misconfigured.
         pass
@@ -189,7 +189,7 @@ def process(
             sys.path.insert(0, p)
 
     start = time.perf_counter()
-    _json_log(
+    _compact_log(
         "process_started",
         trace,
         input_chars=len(text),
@@ -226,15 +226,23 @@ def process(
                 )
 
         if effective_timeout > 0:
-            with ThreadPoolExecutor(max_workers=1, thread_name_prefix="threshold_onset_api") as executor:
-                future = executor.submit(_invoke_run)
+            executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="threshold_onset_api")
+            future = executor.submit(_invoke_run)
+            try:
                 out = future.result(timeout=effective_timeout)
+            except FuturesTimeoutError:
+                future.cancel()
+                # Do not wait on running worker after timeout; return promptly.
+                executor.shutdown(wait=False, cancel_futures=True)
+                raise
+            else:
+                executor.shutdown(wait=True, cancel_futures=False)
         else:
             out = _invoke_run()
 
         if out is not None:
             elapsed = time.perf_counter() - start
-            _json_log(
+            _compact_log(
                 "process_succeeded",
                 trace,
                 duration_seconds=elapsed,
@@ -264,7 +272,7 @@ def process(
 
     except FuturesTimeoutError:
         elapsed = time.perf_counter() - start
-        _json_log("process_timeout", trace, duration_seconds=elapsed, timeout_seconds=effective_timeout)
+        _compact_log("process_timeout", trace, duration_seconds=elapsed, timeout_seconds=effective_timeout)
         return ProcessResult(
             success=False,
             input_text=text,
@@ -280,7 +288,7 @@ def process(
     except Exception as e:
         elapsed = time.perf_counter() - start
         code = _classify_error(e)
-        _json_log("process_failed", trace, duration_seconds=elapsed, error_code=code, error=str(e))
+        _compact_log("process_failed", trace, duration_seconds=elapsed, error_code=code, error=str(e))
         return ProcessResult(
             success=False,
             input_text=text,
@@ -295,7 +303,7 @@ def process(
         )
 
     elapsed = time.perf_counter() - start
-    _json_log("process_no_result", trace, duration_seconds=elapsed)
+    _compact_log("process_no_result", trace, duration_seconds=elapsed)
     return ProcessResult(
         success=False,
         input_text=text,

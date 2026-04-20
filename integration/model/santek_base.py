@@ -1514,6 +1514,8 @@ def _build_model_json_payload(
         meta["split_manifest"] = dict(split_manifest)
     if checkpoint_block:
         meta["checkpoint"] = dict(checkpoint_block)
+    if phase10_training_summary is not None:
+        meta["phase10_training_summary"] = dict(phase10_training_summary)
     # Epoch-wise trace (compact) for analysis / dashboards
     if result.epochs:
         meta["epoch_trace"] = [

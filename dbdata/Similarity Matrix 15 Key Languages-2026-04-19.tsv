@@ -1,0 +1,335 @@
+language_a	language_b	similarity
+Arabic	Arabic	0.9934999942779541
+Arabic	Korean	0.9639000296592712
+Arabic	Korean	0.9634000062942505
+Japanese	Japanese	0.9621999859809875
+Bengali	Swahili	0.9599000215530396
+Japanese	Korean	0.9592999815940857
+Bengali	Bengali	0.9585000276565552
+Mandarin Chinese	Swahili	0.9578999876976013
+Swahili	Korean	0.9571999907493591
+Arabic	Bengali	0.9569000005722046
+Japanese	Swahili	0.9552000164985657
+English	Turkish	0.9552000164985657
+English	Swahili	0.9550999999046326
+Arabic	Japanese	0.954800009727478
+English	Hindi	0.9545000195503235
+Bengali	Korean	0.9545000195503235
+Swahili	Turkish	0.9544000029563904
+Bengali	Japanese	0.9531000256538391
+Arabic	Cantonese	0.9527999758720398
+Japanese	Turkish	0.951200008392334
+English	Bengali	0.951200008392334
+Turkish	Korean	0.9510999917984009
+Arabic	Japanese	0.9509000182151794
+Arabic	Bengali	0.9502999782562256
+English	Italian	0.9501000046730042
+English	Japanese	0.9491000175476074
+Bengali	Cantonese	0.9488999843597412
+Spanish	Turkish	0.9488000273704529
+Hindi	Korean	0.9487000107765198
+Mandarin Chinese	Korean	0.9485999941825867
+Bengali	Turkish	0.9480000138282776
+Spanish	Japanese	0.9470000267028809
+Arabic	Cantonese	0.9469000101089478
+English	Korean	0.9466000199317932
+Cantonese	Korean	0.9459999799728394
+Arabic	Swahili	0.9449999928474426
+Korean	Thai	0.9447000026702881
+Japanese	Cantonese	0.944599986076355
+Hindi	Turkish	0.9445000290870667
+Japanese	Vietnamese	0.9444000124931335
+Arabic	Turkish	0.9444000124931335
+Mandarin Chinese	Arabic	0.9442999958992004
+Japanese	Korean	0.9442999958992004
+Korean	Vietnamese	0.9441999793052673
+Arabic	Swahili	0.944100022315979
+Swahili	Cantonese	0.9437000155448914
+Bengali	Arabic	0.9435999989509583
+Mandarin Chinese	Vietnamese	0.9430000185966492
+Hindi	Arabic	0.9430000185966492
+Mandarin Chinese	Arabic	0.942799985408783
+Arabic	Turkish	0.942300021648407
+Swahili	Italian	0.9420999884605408
+Mandarin Chinese	Japanese	0.9419999718666077
+Turkish	Italian	0.9417999982833862
+French	Swahili	0.9409000277519226
+Hindi	Italian	0.9401000142097473
+Cantonese	Vietnamese	0.9398000240325928
+Bengali	Japanese	0.9395999908447266
+Japanese	Vietnamese	0.9391999840736389
+Bengali	Japanese	0.9390000104904175
+French	Cantonese	0.9387999773025513
+French	Bengali	0.9386000037193298
+Hindi	Arabic	0.9384999871253967
+French	Turkish	0.9383999705314636
+Mandarin Chinese	Japanese	0.9383999705314636
+Mandarin Chinese	Cantonese	0.9383000135421753
+English	Spanish	0.9381999969482422
+Bengali	Turkish	0.9381999969482422
+Hindi	Japanese	0.9380999803543091
+Hindi	Swahili	0.9379000067710876
+English	Arabic	0.9379000067710876
+English	Arabic	0.9376999735832214
+Hindi	Vietnamese	0.9376000165939331
+Spanish	Korean	0.9373000264167786
+Hindi	French	0.9369000196456909
+Japanese	Turkish	0.9366000294685364
+English	Mandarin Chinese	0.9365000128746033
+Bengali	Italian	0.9365000128746033
+Hindi	Bengali	0.9363999962806702
+English	French	0.9361000061035156
+Arabic	Bengali	0.9361000061035156
+Japanese	Swahili	0.9358999729156494
+Arabic	Japanese	0.9358999729156494
+Turkish	Cantonese	0.935699999332428
+Bengali	Korean	0.9355000257492065
+English	Japanese	0.9351999759674072
+French	Korean	0.9351000189781189
+Korean	Italian	0.9344000220298767
+French	Japanese	0.9341999888420105
+Mandarin Chinese	Hindi	0.9340999722480774
+Mandarin Chinese	Bengali	0.9340000152587891
+Bengali	Vietnamese	0.9340000152587891
+Japanese	Thai	0.9337999820709229
+Japanese	Bengali	0.9336000084877014
+Japanese	Arabic	0.9333000183105469
+Italian	Thai	0.9330000281333923
+Turkish	Vietnamese	0.9327999949455261
+Mandarin Chinese	Thai	0.9322999715805054
+Swahili	Vietnamese	0.9322999715805054
+Vietnamese	Thai	0.932200014591217
+Mandarin Chinese	Turkish	0.9307000041007996
+Spanish	Swahili	0.9305999875068665
+Cantonese	Thai	0.9304999709129333
+English	Bengali	0.9302999973297119
+Bengali	Swahili	0.9301000237464905
+French	Arabic	0.9301000237464905
+Bengali	Vietnamese	0.9298999905586243
+Mandarin Chinese	Bengali	0.9296000003814697
+Spanish	Bengali	0.9294999837875366
+Japanese	Thai	0.929099977016449
+Hindi	Spanish	0.9290000200271606
+Bengali	Cantonese	0.9286999702453613
+Spanish	Arabic	0.928600013256073
+French	Italian	0.9282000064849854
+French	Arabic	0.9279999732971191
+Arabic	Thai	0.9279000163078308
+Cantonese	Italian	0.9276999831199646
+Japanese	Cantonese	0.9266999959945679
+French	Vietnamese	0.9258000254631042
+Arabic	Vietnamese	0.925599992275238
+Japanese	Italian	0.9253000020980835
+Arabic	Italian	0.9248999953269958
+Hindi	Japanese	0.9248999953269958
+Arabic	Thai	0.9244999885559082
+Vietnamese	Italian	0.9243999719619751
+Bengali	Italian	0.923799991607666
+Spanish	Arabic	0.9221000075340271
+Bengali	Thai	0.9214000105857849
+Spanish	French	0.9205999970436096
+Arabic	Italian	0.9200999736785889
+Hindi	Cantonese	0.9200000166893005
+French	Japanese	0.9192000031471252
+Spanish	Japanese	0.9190999865531921
+Spanish	Cantonese	0.9185000061988831
+Mandarin Chinese	French	0.9185000061988831
+Bengali	Thai	0.91839998960495
+Arabic	Vietnamese	0.91839998960495
+Turkish	Thai	0.9178000092506409
+Hindi	Bengali	0.9172000288963318
+Mandarin Chinese	Italian	0.9168000221252441
+English	Cantonese	0.9168000221252441
+Spanish	Vietnamese	0.9164999723434448
+Swahili	Thai	0.9162999987602234
+Spanish	Italian	0.9161999821662903
+English	Vietnamese	0.9158999919891357
+French	Bengali	0.9136000275611877
+Spanish	Thai	0.9136000275611877
+English	Thai	0.9133999943733215
+Japanese	Italian	0.9125000238418579
+Hindi	Thai	0.9072999954223633
+Spanish	Bengali	0.9070000052452087
+Mandarin Chinese	Spanish	0.9059000015258789
+French	Thai	0.8970999717712402
+Arabic	Arabic	0.9934999942779541
+Korean	Arabic	0.9639000296592712
+Korean	Arabic	0.9634000062942505
+Japanese	Japanese	0.9621999859809875
+Swahili	Bengali	0.9599000215530396
+Korean	Japanese	0.9592999815940857
+Bengali	Bengali	0.9585000276565552
+Swahili	Mandarin Chinese	0.9578999876976013
+Korean	Swahili	0.9571999907493591
+Bengali	Arabic	0.9569000005722046
+Swahili	Japanese	0.9552000164985657
+Turkish	English	0.9552000164985657
+Swahili	English	0.9550999999046326
+Japanese	Arabic	0.954800009727478
+Hindi	English	0.9545000195503235
+Korean	Bengali	0.9545000195503235
+Turkish	Swahili	0.9544000029563904
+Japanese	Bengali	0.9531000256538391
+Cantonese	Arabic	0.9527999758720398
+Turkish	Japanese	0.951200008392334
+Bengali	English	0.951200008392334
+Korean	Turkish	0.9510999917984009
+Japanese	Arabic	0.9509000182151794
+Bengali	Arabic	0.9502999782562256
+Italian	English	0.9501000046730042
+Japanese	English	0.9491000175476074
+Cantonese	Bengali	0.9488999843597412
+Turkish	Spanish	0.9488000273704529
+Korean	Hindi	0.9487000107765198
+Korean	Mandarin Chinese	0.9485999941825867
+Turkish	Bengali	0.9480000138282776
+Japanese	Spanish	0.9470000267028809
+Cantonese	Arabic	0.9469000101089478
+Korean	English	0.9466000199317932
+Korean	Cantonese	0.9459999799728394
+Swahili	Arabic	0.9449999928474426
+Thai	Korean	0.9447000026702881
+Cantonese	Japanese	0.944599986076355
+Turkish	Hindi	0.9445000290870667
+Vietnamese	Japanese	0.9444000124931335
+Turkish	Arabic	0.9444000124931335
+Arabic	Mandarin Chinese	0.9442999958992004
+Korean	Japanese	0.9442999958992004
+Vietnamese	Korean	0.9441999793052673
+Swahili	Arabic	0.944100022315979
+Cantonese	Swahili	0.9437000155448914
+Arabic	Bengali	0.9435999989509583
+Vietnamese	Mandarin Chinese	0.9430000185966492
+Arabic	Hindi	0.9430000185966492
+Arabic	Mandarin Chinese	0.942799985408783
+Turkish	Arabic	0.942300021648407
+Italian	Swahili	0.9420999884605408
+Japanese	Mandarin Chinese	0.9419999718666077
+Italian	Turkish	0.9417999982833862
+Swahili	French	0.9409000277519226
+Italian	Hindi	0.9401000142097473
+Vietnamese	Cantonese	0.9398000240325928
+Japanese	Bengali	0.9395999908447266
+Vietnamese	Japanese	0.9391999840736389
+Japanese	Bengali	0.9390000104904175
+Cantonese	French	0.9387999773025513
+Bengali	French	0.9386000037193298
+Arabic	Hindi	0.9384999871253967
+Turkish	French	0.9383999705314636
+Japanese	Mandarin Chinese	0.9383999705314636
+Cantonese	Mandarin Chinese	0.9383000135421753
+Spanish	English	0.9381999969482422
+Turkish	Bengali	0.9381999969482422
+Japanese	Hindi	0.9380999803543091
+Swahili	Hindi	0.9379000067710876
+Arabic	English	0.9379000067710876
+Arabic	English	0.9376999735832214
+Vietnamese	Hindi	0.9376000165939331
+Korean	Spanish	0.9373000264167786
+French	Hindi	0.9369000196456909
+Turkish	Japanese	0.9366000294685364
+Mandarin Chinese	English	0.9365000128746033
+Italian	Bengali	0.9365000128746033
+Bengali	Hindi	0.9363999962806702
+French	English	0.9361000061035156
+Bengali	Arabic	0.9361000061035156
+Swahili	Japanese	0.9358999729156494
+Japanese	Arabic	0.9358999729156494
+Cantonese	Turkish	0.935699999332428
+Korean	Bengali	0.9355000257492065
+Japanese	English	0.9351999759674072
+Korean	French	0.9351000189781189
+Italian	Korean	0.9344000220298767
+Japanese	French	0.9341999888420105
+Hindi	Mandarin Chinese	0.9340999722480774
+Bengali	Mandarin Chinese	0.9340000152587891
+Vietnamese	Bengali	0.9340000152587891
+Thai	Japanese	0.9337999820709229
+Bengali	Japanese	0.9336000084877014
+Arabic	Japanese	0.9333000183105469
+Thai	Italian	0.9330000281333923
+Vietnamese	Turkish	0.9327999949455261
+Thai	Mandarin Chinese	0.9322999715805054
+Vietnamese	Swahili	0.9322999715805054
+Thai	Vietnamese	0.932200014591217
+Turkish	Mandarin Chinese	0.9307000041007996
+Swahili	Spanish	0.9305999875068665
+Thai	Cantonese	0.9304999709129333
+Bengali	English	0.9302999973297119
+Swahili	Bengali	0.9301000237464905
+Arabic	French	0.9301000237464905
+Vietnamese	Bengali	0.9298999905586243
+Bengali	Mandarin Chinese	0.9296000003814697
+Bengali	Spanish	0.9294999837875366
+Thai	Japanese	0.929099977016449
+Spanish	Hindi	0.9290000200271606
+Cantonese	Bengali	0.9286999702453613
+Arabic	Spanish	0.928600013256073
+Italian	French	0.9282000064849854
+Arabic	French	0.9279999732971191
+Thai	Arabic	0.9279000163078308
+Italian	Cantonese	0.9276999831199646
+Cantonese	Japanese	0.9266999959945679
+Vietnamese	French	0.9258000254631042
+Vietnamese	Arabic	0.925599992275238
+Italian	Japanese	0.9253000020980835
+Italian	Arabic	0.9248999953269958
+Japanese	Hindi	0.9248999953269958
+Thai	Arabic	0.9244999885559082
+Italian	Vietnamese	0.9243999719619751
+Italian	Bengali	0.923799991607666
+Arabic	Spanish	0.9221000075340271
+Thai	Bengali	0.9214000105857849
+French	Spanish	0.9205999970436096
+Italian	Arabic	0.9200999736785889
+Cantonese	Hindi	0.9200000166893005
+Japanese	French	0.9192000031471252
+Japanese	Spanish	0.9190999865531921
+Cantonese	Spanish	0.9185000061988831
+French	Mandarin Chinese	0.9185000061988831
+Thai	Bengali	0.91839998960495
+Vietnamese	Arabic	0.91839998960495
+Thai	Turkish	0.9178000092506409
+Bengali	Hindi	0.9172000288963318
+Italian	Mandarin Chinese	0.9168000221252441
+Cantonese	English	0.9168000221252441
+Vietnamese	Spanish	0.9164999723434448
+Thai	Swahili	0.9162999987602234
+Italian	Spanish	0.9161999821662903
+Vietnamese	English	0.9158999919891357
+Bengali	French	0.9136000275611877
+Thai	Spanish	0.9136000275611877
+Thai	English	0.9133999943733215
+Italian	Japanese	0.9125000238418579
+Thai	Hindi	0.9072999954223633
+Bengali	Spanish	0.9070000052452087
+Spanish	Mandarin Chinese	0.9059000015258789
+Thai	French	0.8970999717712402
+Vietnamese	Vietnamese	1
+Japanese	Japanese	1
+Spanish	Spanish	1
+Arabic	Arabic	1
+Bengali	Bengali	1
+Korean	Korean	1
+Italian	Italian	1
+Mandarin Chinese	Mandarin Chinese	1
+Turkish	Turkish	1
+Hindi	Hindi	1
+Swahili	Swahili	1
+English	English	1
+Cantonese	Cantonese	1
+French	French	1
+Vietnamese	Vietnamese	1
+Japanese	Japanese	1
+Spanish	Spanish	1
+Arabic	Arabic	1
+Bengali	Bengali	1
+Korean	Korean	1
+Italian	Italian	1
+Mandarin Chinese	Mandarin Chinese	1
+Thai	Thai	1
+Turkish	Turkish	1
+Hindi	Hindi	1
+Swahili	Swahili	1
+Cantonese	Cantonese	1
+French	French	1

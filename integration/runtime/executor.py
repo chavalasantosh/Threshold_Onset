@@ -85,6 +85,7 @@ def run_tasks(
     )
     start = time.time()
     results: Dict[str, JobResult] = {}
+    timed_out_futures: Dict[concurrent.futures.Future, JobResult] = {}
     submitted_idx = 0
     in_flight: Dict[concurrent.futures.Future, Tuple[JobSpec, float]] = {}
     queue_bound = cfg.queue_bound if cfg.queue_bound > 0 else workers
@@ -118,25 +119,29 @@ def run_tasks(
                     continue
                 if (now - started_at) > timeout_s and not future.done():
                     cancelled = future.cancel()
+                    result = JobResult(
+                        job_id=job.job_id,
+                        ok=False,
+                        error=f"timeout after {timeout_s}s",
+                        duration_ms=(now - started_at) * 1000.0,
+                        metadata=dict(job.metadata),
+                    )
+                    results[result.job_id] = result
+                    timed_out_futures[future] = result
+                    metrics.timed_out += 1
                     if cancelled:
-                        result = JobResult(
-                            job_id=job.job_id,
-                            ok=False,
-                            error=f"timeout after {timeout_s}s",
-                            duration_ms=(now - started_at) * 1000.0,
-                            metadata=dict(job.metadata),
-                        )
-                        results[result.job_id] = result
-                        metrics.timed_out += 1
                         metrics.cancelled += 1
-                        in_flight.pop(future, None)
-                        if progress_callback is not None:
-                            progress_callback(metrics, result)
+                    if progress_callback is not None:
+                        progress_callback(metrics, result)
 
             for future in done:
                 if future not in in_flight:
                     continue
                 job, _started = in_flight.pop(future)
+                if future in timed_out_futures:
+                    # Ignore eventual completion after timeout; timeout result already recorded.
+                    timed_out_futures.pop(future, None)
+                    continue
                 timeout_s = job.timeout_s if job.timeout_s is not None else cfg.default_timeout_s
                 if timeout_s is not None and future.cancelled():
                     result = JobResult(

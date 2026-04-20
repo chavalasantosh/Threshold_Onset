@@ -636,8 +636,8 @@ def build_corpus(n_docs: int = 200) -> List[str]:
 # Document Processing  (worker)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _process_doc_worker(args: Tuple[int, str, Path, int]) -> DocResult:
-    doc_index, text, root, max_retries = args
+def _process_doc_worker(args: Tuple[int, str, Path, int, float]) -> DocResult:
+    doc_index, text, root, max_retries, doc_timeout = args
     preview   = text[:60].replace("\n", " ")
     last_error: Optional[str] = None
 
@@ -672,7 +672,7 @@ def _process_doc_worker(args: Tuple[int, str, Path, int]) -> DocResult:
                     [sys.executable,
                      str(root / "integration" / "run_complete.py"), text],
                     cwd=str(root), capture_output=True,
-                    text=True, timeout=60, check=False, env=child_env,
+                    text=True, timeout=doc_timeout, check=False, env=child_env,
                 )
                 if r.returncode != 0:
                     raise RuntimeError(f"exit {r.returncode}: {r.stderr[:200]}")
@@ -964,7 +964,7 @@ def run_scale(
     snapshots:   List[CorpusSnapshot] = list(existing_snapshots)
 
     work_items = [
-        (i, corpus[i - 1], ROOT, max_retries)
+        (i, corpus[i - 1], ROOT, max_retries, doc_timeout)
         for i in range(1, n_docs + 1)
         if i not in processed_indices
     ]

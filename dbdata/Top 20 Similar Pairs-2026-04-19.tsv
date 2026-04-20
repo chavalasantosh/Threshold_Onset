@@ -1,0 +1,21 @@
+language_pair	language_a	language_b	cosine_similarity	rank
+Hungarian ↔ Hebrew	Hungarian	Hebrew	1.0000001192092896	1
+Gujarati ↔ Javanese	Gujarati	Javanese	1	2
+Gujarati ↔ Polish	Gujarati	Polish	1	3
+Gujarati ↔ Punjabi	Gujarati	Punjabi	1	4
+Gujarati ↔ Czech	Gujarati	Czech	1	5
+Gujarati ↔ Amharic	Gujarati	Amharic	1	6
+Gujarati ↔ Burmese	Gujarati	Burmese	1	7
+Gujarati ↔ Khmer	Gujarati	Khmer	1	8
+Gujarati ↔ Somali	Gujarati	Somali	1	9
+Gujarati ↔ Pashto	Gujarati	Pashto	1	10
+Gujarati ↔ Tagalog	Gujarati	Tagalog	1	11
+Javanese ↔ Polish	Javanese	Polish	1	12
+Javanese ↔ Punjabi	Javanese	Punjabi	1	13
+Javanese ↔ Czech	Javanese	Czech	1	14
+Javanese ↔ Amharic	Javanese	Amharic	1	15
+Javanese ↔ Burmese	Javanese	Burmese	1	16
+Javanese ↔ Khmer	Javanese	Khmer	1	17
+Javanese ↔ Somali	Javanese	Somali	1	18
+Javanese ↔ Pashto	Javanese	Pashto	1	19
+Javanese ↔ Tagalog	Javanese	Tagalog	1	20

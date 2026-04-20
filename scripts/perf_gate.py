@@ -4,14 +4,18 @@
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import sys
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_REPORT = ROOT / "logs" / "perf" / "baseline_latest.json"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from threshold_onset.line_codec import decode_document
+
+DEFAULT_REPORT = ROOT / "logs" / "perf" / "baseline_latest.txt"
 
 
 def _max_elapsed_threshold(name: str) -> float:
@@ -35,7 +39,7 @@ def main() -> int:
         print(f"[perf-gate] missing report: {report_path}", file=sys.stderr)
         return 2
 
-    payload = json.loads(report_path.read_text(encoding="utf-8"))
+    payload = decode_document(report_path.read_text(encoding="utf-8"))
     failed = []
 
     for cmd in payload.get("commands", []):

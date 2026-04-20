@@ -99,15 +99,16 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
 
 def cmd_config(args: argparse.Namespace) -> int:
     """Show current config (after loading)."""
+    from threshold_onset.line_codec import encode as encode_compact
+
     config = get_config()
-    import json
-    print(json.dumps(config, indent=2))
+    print(encode_compact(config, sort_keys=True), end="")
     return EXIT_SUCCESS
 
 
 def cmd_health(args: argparse.Namespace) -> int:
-    """Health check: config loaded, pipeline importable. Outputs JSON."""
-    import json
+    """Health check: config loaded, pipeline importable. Prints compact line format."""
+    from threshold_onset.line_codec import encode as encode_compact
     from threshold_onset import __version__
     trace_id = uuid.uuid4().hex[:16]
     ready = True
@@ -117,8 +118,21 @@ def cmd_health(args: argparse.Namespace) -> int:
     except Exception as exc:
         ready = False
         import_error = str(exc)
+    pipeline_ok = None
+    pipeline_error = None
+    if args.verbose:
+        try:
+            from threshold_onset.api import process
+            r = process("test", silent=True, trace_id=trace_id)
+            pipeline_ok = bool(r.success)
+            if not r.success:
+                pipeline_error = r.error
+        except Exception as e:
+            pipeline_ok = False
+            pipeline_error = str(e)
+    overall_ok = ready and (pipeline_ok is not False)
     status = {
-        "status": "ok",
+        "status": "ok" if overall_ok else "degraded",
         "ready": ready,
         "version": __version__,
         "config_loaded": True,
@@ -126,15 +140,10 @@ def cmd_health(args: argparse.Namespace) -> int:
         "import_error": import_error,
     }
     if args.verbose:
-        try:
-            from threshold_onset.api import process
-            r = process("test", silent=True, trace_id=trace_id)
-            status["pipeline_ok"] = r.success
-        except Exception as e:
-            status["pipeline_ok"] = False
-            status["pipeline_error"] = str(e)
-    print(json.dumps(status, indent=2))
-    return EXIT_SUCCESS
+        status["pipeline_ok"] = pipeline_ok
+        status["pipeline_error"] = pipeline_error
+    print(encode_compact(status, sort_keys=True), end="")
+    return EXIT_SUCCESS if overall_ok else EXIT_FAILURE
 
 
 def main() -> int:

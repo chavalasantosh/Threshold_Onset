@@ -67,6 +67,9 @@ def bytes_to_tokens(
     Returns:
         List of token strings (for TokenAction hashing).
     """
+    if binary_chunk < 1:
+        raise ValueError("binary_chunk must be >= 1")
+
     if mode == "bytes":
         return _bytes_to_chunk_tokens(data, binary_chunk)
 
@@ -87,6 +90,8 @@ def bytes_to_tokens(
 
 def _bytes_to_chunk_tokens(data: bytes, chunk_size: int) -> List[str]:
     """Chunk bytes into hex strings."""
+    if chunk_size < 1:
+        raise ValueError("chunk_size must be >= 1")
     tokens = []
     for i in range(0, len(data), chunk_size):
         chunk = data[i : i + chunk_size]
@@ -137,6 +142,9 @@ def file_to_input_string(
     Returns:
         (input_string, input_type) — input_type is "text" or "binary".
     """
+    if binary_chunk < 1:
+        raise ValueError("binary_chunk must be >= 1")
+
     path = Path(path).resolve()
     suffix = path.suffix.lower()
 

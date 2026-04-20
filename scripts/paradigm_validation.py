@@ -7,21 +7,24 @@ import argparse
 import contextlib
 import hashlib
 import io
-import json
 import statistics
+import sys
 import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from integration.run_complete import PipelineConfig, run
 from integration.baselines import run_baselines
+from threshold_onset.line_codec import encode as encode_compact
 
-
-ROOT = Path(__file__).resolve().parent.parent
 LOG_DIR = ROOT / "logs" / "paradigm"
-LATEST_JSON = LOG_DIR / "paradigm_validation_latest.json"
+LATEST_REPORT = LOG_DIR / "paradigm_validation_latest.txt"
 LATEST_MD = LOG_DIR / "paradigm_validation_latest.md"
 
 
@@ -93,7 +96,7 @@ def _signature_for_result(result) -> str:
         "refusal_count": int(result.refusal_count),
         "primary_output": primary.strip(),
     }
-    raw = json.dumps(payload, sort_keys=True, ensure_ascii=False)
+    raw = encode_compact(payload, sort_keys=True).rstrip("\n")
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
@@ -362,7 +365,7 @@ def main() -> int:
     total_elapsed_ms = (time.perf_counter() - t_start) * 1000.0
     total = max(1, len(records))
     successes = sum(1 for r in records if r.success)
-    structural = sum(1 for r in records if r.identity_count > 0 and r.relation_count >= 0)
+    structural = sum(1 for r in records if r.identity_count > 0 and r.relation_count > 0)
     latencies = [r.latency_ms for r in records if r.latency_ms > 0]
     latency_p50 = statistics.median(latencies) if latencies else 0.0
     if latencies:
@@ -419,10 +422,10 @@ def main() -> int:
     )
 
     LOG_DIR.mkdir(parents=True, exist_ok=True)
-    LATEST_JSON.write_text(json.dumps(asdict(report), indent=2, ensure_ascii=False), encoding="utf-8")
+    LATEST_REPORT.write_text(encode_compact(asdict(report), sort_keys=True), encoding="utf-8")
     _write_markdown(report)
 
-    print(f"[paradigm-validation] report: {LATEST_JSON}")
+    print(f"[paradigm-validation] report: {LATEST_REPORT}")
     print(f"[paradigm-validation] success={success_rate:.2%} structural={structural_rate:.2%} "
           f"determinism={determinism_rate:.2%} p95={latency_p95:.1f}ms")
     if baseline_metrics:

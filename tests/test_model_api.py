@@ -73,20 +73,18 @@ def test_evaluate_with_real_pipeline_state():
         return_result=True,
         return_model_state=True,
     )
-    if not result or not result.model_state:
-        pytest.skip("Pipeline did not return model_state")
+    assert result is not None, "Pipeline returned no result"
+    assert result.model_state is not None, "Pipeline did not return model_state"
     model_cfg = ModelConfig.from_project()
     r = evaluate(result.model_state, model_cfg)
-    if r.error:
-        pytest.skip(f"evaluate error: {r.error}")
+    assert not r.error, f"evaluate error: {r.error}"
     assert 0 <= r.accuracy <= 1
     assert r.total_predictions >= 0
     assert r.correct_predictions >= 0
     assert r.updated_path_scores is None
 
     r2 = evaluate_with_learning(result.model_state, model_cfg)
-    if r2.error:
-        pytest.skip(f"evaluate_with_learning error: {r2.error}")
+    assert not r2.error, f"evaluate_with_learning error: {r2.error}"
     assert 0 <= r2.accuracy <= 1
     assert r2.updated_path_scores is not None
     assert isinstance(r2.updated_path_scores, dict)
@@ -130,8 +128,8 @@ def test_phase10_metrics_absent_from_model_state_by_default():
         return_result=True,
         return_model_state=True,
     )
-    if not result or not result.model_state:
-        pytest.skip("Pipeline did not return model_state")
+    assert result is not None, "Pipeline returned no result"
+    assert result.model_state is not None, "Pipeline did not return model_state"
     assert "phase10_metrics" not in result.model_state
 
 
@@ -148,8 +146,8 @@ def test_phase10_metrics_present_when_pipeline_flag_enabled():
         return_result=True,
         return_model_state=True,
     )
-    if not result or not result.model_state:
-        pytest.skip("Pipeline did not return model_state")
+    assert result is not None, "Pipeline returned no result"
+    assert result.model_state is not None, "Pipeline did not return model_state"
     p10 = result.model_state.get("phase10_metrics")
     assert p10 is not None
     assert p10.get("phase") == "phase10"

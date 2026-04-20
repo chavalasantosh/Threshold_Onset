@@ -12,6 +12,7 @@ CRITICAL: Output shows only counts, never symbol values.
 
 import sys
 import os
+import copy
 
 # Add threshold_onset package to path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -33,16 +34,25 @@ def run_main_capture_output():
 
         cfg = PipelineConfig.from_project()
         cfg.show_tui = False
-        result = run(text_override="The quick brown fox jumps.", cfg=cfg, return_result=True)
+        result = run(
+            text_override="The quick brown fox jumps.",
+            cfg=cfg,
+            return_result=True,
+            return_model_state=True,
+        )
 
         if result is None:
             return None
 
         # Build metrics from PipelineResult
+        phase3_metrics = (result.model_state or {}).get("phase3_metrics", {})
         metrics = {
             "phase2_identity_mappings": result.identity_count,
             "phase3_persistent_relations": result.relation_count,
-            "phase3_stability_ratio": 1.0 if result.relation_count > 0 else 0.0,
+            "phase3_stability_ratio": phase3_metrics.get(
+                "stability_ratio",
+                1.0 if result.relation_count > 0 else 0.0,
+            ),
             "phase4_identity_alias_count": result.identity_count,
             "phase4_relation_alias_count": result.relation_count,
             "phase4_gate_failed": not result.succeeded,
@@ -171,14 +181,15 @@ def test_gate_determinism(num_iterations=5):
     
     assert gate_results, "No gate results collected"
     
-    # Gate should either always pass or always fail (deterministic)
+    # With stable frozen upstream phases, gate should pass every time.
     gate_consistent = len(set(gate_results)) == 1
+    gate_always_passes = all(not failed for failed in gate_results)
     
     print("  Results:")
     print(f"    Gate failed: {gate_results}")
     print()
     
-    if gate_consistent:
+    if gate_consistent and gate_always_passes:
         gate_status = "FAILED" if gate_results[0] else "PASSED"
         print(f"  [PASS] Gate consistently {gate_status}")
         print()
@@ -186,6 +197,7 @@ def test_gate_determinism(num_iterations=5):
         print("  [FAIL] Gate behavior is inconsistent")
         print()
     assert gate_consistent, "Gate must be deterministic"
+    assert gate_always_passes, "Gate should pass when upstream phases are frozen"
 
 
 def test_reversibility():
@@ -203,35 +215,34 @@ def test_reversibility():
     print("Testing that Phase 4 doesn't modify Phase 3 structure...")
     print()
     
-    # Run with Phase 4 enabled
-    print("  Running with Phase 4 enabled...", end=' ', flush=True)
-    metrics_with_phase4 = run_main_capture_output()
-    assert metrics_with_phase4 is not None, "Pipeline failed"
-    print("OK")
-    
-    # Extract Phase 3 metrics (these should be unchanged by Phase 4)
-    phase3_persistent_relations = metrics_with_phase4.get('phase3_persistent_relations')
-    phase3_stability_ratio = metrics_with_phase4.get('phase3_stability_ratio')
-    
-    print()
-    print("  Phase 3 metrics (with Phase 4):")
-    print(f"    Persistent relations: {phase3_persistent_relations}")
-    print(f"    Stability ratio: {phase3_stability_ratio}")
-    print()
-    
-    # Phase 4 should not modify Phase 3 metrics
-    # Since Phase 4 is read-only, Phase 3 metrics should be identical
-    # We verify this by checking that Phase 3 metrics are present and valid
-    
-    assert phase3_persistent_relations is not None and phase3_stability_ratio is not None, (
-        "Could not extract Phase 3 metrics"
+    from tests.phase_test_helpers import (  # pylint: disable=import-outside-toplevel
+        run_phase0_finite,
+        run_phase1,
+        run_phase2_multi_run,
+        run_phase3_multi_run,
     )
-    
-    # Phase 4 is reversible by design (read-only)
-    # The fact that Phase 3 metrics are still present and unchanged
-    # proves reversibility
-    print("  [PASS] Phase 4 is read-only - Phase 3 metrics unchanged")
-    print("         (Phase 4 does not modify Phase 3 structure)")
+    from threshold_onset.phase4.phase4 import phase4  # pylint: disable=import-outside-toplevel,import-error
+
+    residue_sequences = []
+    phase1_metrics_list = []
+    for _ in range(5):
+        residues = run_phase0_finite()
+        phase1_metrics = run_phase1(residues)
+        residue_sequences.append(residues)
+        phase1_metrics_list.append(phase1_metrics)
+
+    phase2_metrics = run_phase2_multi_run(residue_sequences, phase1_metrics_list)
+    phase3_metrics = run_phase3_multi_run(residue_sequences, phase1_metrics_list, phase2_metrics)
+    assert phase2_metrics is not None and phase3_metrics is not None, "Could not build fixed Phase 2/3 inputs"
+
+    phase3_before = copy.deepcopy(phase3_metrics)
+    print("  Running Phase 4 with fixed inputs...", end=' ', flush=True)
+    symbol_metrics = phase4(phase2_metrics, phase3_metrics)
+    assert symbol_metrics is not None, "Phase 4 gate failed"
+    print("OK")
+
+    assert phase3_metrics == phase3_before, "Phase 4 mutated Phase 3 metrics"
+    print("  [PASS] Phase 4 is read-only - Phase 3 metrics are bit-for-bit unchanged")
     print()
 
 
@@ -345,21 +356,24 @@ def run_freeze_validation():
     
     all_tests_passed = True
     
-    # Test 1: Determinism
-    test1_passed = test_determinism(num_iterations=5)
-    all_tests_passed = all_tests_passed and test1_passed
-    
-    # Test 2: Gate Determinism
-    test2_passed = test_gate_determinism(num_iterations=5)
-    all_tests_passed = all_tests_passed and test2_passed
-    
-    # Test 3: Reversibility
-    test3_passed = test_reversibility()
-    all_tests_passed = all_tests_passed and test3_passed
-    
-    # Test 4: Immutability
-    test4_passed = test_immutability(num_iterations=3)
-    all_tests_passed = all_tests_passed and test4_passed
+    test1_passed = test2_passed = test3_passed = test4_passed = True
+    try:
+        test_determinism(num_iterations=5)
+    except AssertionError:
+        test1_passed = False
+    try:
+        test_gate_determinism(num_iterations=5)
+    except AssertionError:
+        test2_passed = False
+    try:
+        test_reversibility()
+    except AssertionError:
+        test3_passed = False
+    try:
+        test_immutability(num_iterations=3)
+    except AssertionError:
+        test4_passed = False
+    all_tests_passed = test1_passed and test2_passed and test3_passed and test4_passed
     
     # Summary
     print("=" * 70)

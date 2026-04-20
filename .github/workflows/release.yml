@@ -1,0 +1,38 @@
+# CD: on version tags, build sdist/wheel and attach as GitHub Actions artifacts (download + pip install from tarball).
+# To publish to PyPI later: enable Trusted Publishing on PyPI for this repo and add pypa/gh-action-pypi-publish.
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: threshold-onset-dist-${{ github.ref_name }}
+          path: dist/
+          if-no-files-found: error

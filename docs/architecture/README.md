@@ -8,6 +8,10 @@ System architecture and design documentation for the THRESHOLD_ONSET repository.
 
 **Start here for scope:** explains the difference between the **whole repository** (monorepo root) and the **`threshold_onset/` package** folder — they are not the same thing.
 
+### [`WORKFLOW_AND_PROCESS.md`](WORKFLOW_AND_PROCESS.md)
+
+**Workflow diagrams** (Mermaid): how processing flows (phases, SanTEK train/generate), API path, and **clean development process** — framed like an architecture diagram, honest about “not a standard transformer backprop stack.”
+
 ### [`GOLDEN_PATH.md`](GOLDEN_PATH.md)
 
 **Operational path:** one install + test path, a small command table (runners, data/Git rules).

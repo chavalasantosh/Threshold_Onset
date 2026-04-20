@@ -5,6 +5,7 @@ Uses stdlib only. Config file: JSON.
 Environment: THRESHOLD_ONSET_CONFIG, THRESHOLD_ONSET_TOKENIZATION, THRESHOLD_ONSET_NUM_RUNS, etc.
 """
 
+import copy
 import json
 import os
 from pathlib import Path
@@ -36,7 +37,7 @@ def _load_json(path: Path) -> Dict[str, Any]:
 
 def _apply_env_overrides(config: Dict[str, Any]) -> Dict[str, Any]:
     """Apply environment variable overrides. Non-destructive copy."""
-    result = json.loads(json.dumps(config))  # deep copy
+    result = copy.deepcopy(config)
 
     # THRESHOLD_ONSET_TOKENIZATION
     val = os.environ.get("THRESHOLD_ONSET_TOKENIZATION")
@@ -48,6 +49,11 @@ def _apply_env_overrides(config: Dict[str, Any]) -> Dict[str, Any]:
     if val is not None:
         try:
             n = int(val)
+            if n < 1:
+                raise ConfigError(
+                    "THRESHOLD_ONSET_NUM_RUNS must be >= 1",
+                    details={"THRESHOLD_ONSET_NUM_RUNS": val},
+                )
             if "pipeline" in result:
                 result["pipeline"]["num_runs"] = n
             if "benchmark" in result:

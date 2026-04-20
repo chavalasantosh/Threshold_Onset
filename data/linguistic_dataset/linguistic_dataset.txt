@@ -1,0 +1,171 @@
+LINGUISTIC DATASET - MULTI-LANGUAGE
+================================================================================
+
+Language: English
+Script: Latin
+Word Order: SVO
+Sample Sentence: The quick brown fox jumps over the lazy dog.
+--------------------------------------------------------------------------------
+
+Language: Mandarin Chinese
+Script: Han (Simplified/Traditional)
+Word Order: SVO
+Sample Sentence: 我在学习中文。 (I am studying Chinese.)
+--------------------------------------------------------------------------------
+
+Language: Hindi
+Script: Devanagari
+Word Order: SOV
+Sample Sentence: मैं हिंदी सीख रहा हूँ। (I am learning Hindi.)
+--------------------------------------------------------------------------------
+
+Language: Spanish
+Script: Latin
+Word Order: SVO (flexible, pro-drop)
+Sample Sentence: El gato negro duerme en el sofá.
+--------------------------------------------------------------------------------
+
+Language: French
+Script: Latin
+Word Order: SVO (relatively fixed)
+Sample Sentence: Le chat noir dort sur le canapé.
+--------------------------------------------------------------------------------
+
+Language: Arabic
+Script: Arabic
+Word Order: VSO (classical), SVO (modern dialects)
+Sample Sentence: الولد يقرأ الكتاب. (The boy reads the book.)
+--------------------------------------------------------------------------------
+
+Language: Bengali
+Script: Bengali
+Word Order: SOV
+Sample Sentence: আমি বাংলা শিখছি। (I am learning Bengali.)
+--------------------------------------------------------------------------------
+
+Language: Portuguese
+Script: Latin
+Word Order: SVO (flexible)
+Sample Sentence: O gato preto dorme no sofá.
+--------------------------------------------------------------------------------
+
+Language: Russian
+Script: Cyrillic
+Word Order: SVO (flexible due to case)
+Sample Sentence: Чёрный кот спит на диване.
+--------------------------------------------------------------------------------
+
+Language: Urdu
+Script: Nastaliq (Perso-Arabic)
+Word Order: SOV
+Sample Sentence: میں اردو سیکھ رہا ہوں۔ (I am learning Urdu.)
+--------------------------------------------------------------------------------
+
+Language: Indonesian
+Script: Latin
+Word Order: SVO
+Sample Sentence: Saya sedang belajar bahasa Indonesia.
+--------------------------------------------------------------------------------
+
+Language: German
+Script: Latin
+Word Order: V2 main clauses, SOV subordinate
+Sample Sentence: Die schwarze Katze schläft auf dem Sofa.
+--------------------------------------------------------------------------------
+
+Language: Japanese
+Script: Mixed (Hiragana, Katakana, Kanji)
+Word Order: SOV
+Sample Sentence: 私は日本語を勉強しています。 (I am studying Japanese.)
+--------------------------------------------------------------------------------
+
+Language: Arabic
+Script: Arabic
+Word Order: VSO (classical), SVO (modern dialects)
+Sample Sentence: الولد يقرأ الكتاب. (The boy reads the book.)
+--------------------------------------------------------------------------------
+
+Language: Bengali
+Script: Bengali
+Word Order: SOV (Subject-Object-Verb)
+Sample Sentence: আমি বাংলা শিখছি। (I am learning Bengali.)
+--------------------------------------------------------------------------------
+
+Language: Portuguese
+Script: Latin
+Word Order: SVO (Subject-Verb-Object), flexible
+Sample Sentence: O gato preto dorme no sofá.
+--------------------------------------------------------------------------------
+
+Language: Russian
+Script: Cyrillic
+Word Order: SVO (flexible due to case marking)
+Sample Sentence: Чёрный кот спит на диване.
+--------------------------------------------------------------------------------
+
+Language: Urdu
+Script: Nastaliq (Perso-Arabic)
+Word Order: SOV (Subject-Object-Verb)
+Sample Sentence: میں اردو سیکھ رہا ہوں۔ (I am learning Urdu.)
+--------------------------------------------------------------------------------
+
+Language: Indonesian
+Script: Latin
+Word Order: SVO (Subject-Verb-Object)
+Sample Sentence: Saya sedang belajar bahasa Indonesia.
+--------------------------------------------------------------------------------
+
+Language: German
+Script: Latin
+Word Order: V2 in main clauses, SOV in subordinate clauses
+Sample Sentence: Die schwarze Katze schläft auf dem Sofa.
+--------------------------------------------------------------------------------
+
+Language: Japanese
+Script: Mixed (Hiragana, Katakana, Kanji)
+Word Order: SOV (Subject-Object-Verb)
+Sample Sentence: 私は日本語を勉強しています。(I am studying Japanese.)
+--------------------------------------------------------------------------------
+
+Language: Swahili
+Script: Latin
+Word Order: SVO (Subject-Verb-Object)
+Sample Sentence: Ninajifunza Kiswahili. (I am learning Swahili.)
+--------------------------------------------------------------------------------
+
+Language: Marathi
+Script: Devanagari
+Word Order: SOV (Subject-Object-Verb)
+Sample Sentence: मी मराठी शिकत आहे. (I am learning Marathi.)
+--------------------------------------------------------------------------------
+
+Language: Telugu
+Script: Telugu
+Word Order: SOV (Subject-Object-Verb)
+Sample Sentence: నేను తెలుగు నేర్చుకుంటున్నాను. (I am learning Telugu.)
+--------------------------------------------------------------------------------
+
+Language: Turkish
+Script: Latin
+Word Order: SOV (Subject-Object-Verb)
+Sample Sentence: Ben Türkçe öğreniyorum. (I am learning Turkish.)
+--------------------------------------------------------------------------------
+
+Language: Tamil
+Script: Tamil
+Word Order: SOV (Subject-Object-Verb)
+Sample Sentence: நான் தமிழ் கற்றுக்கொண்டிருக்கிறேன். (I am learning Tamil.)
+--------------------------------------------------------------------------------
+
+Language: Cantonese
+Script: Traditional Chinese
+Word Order: SVO (Subject-Verb-Object)
+Sample Sentence: 我學緊廣東話。(I am learning Cantonese.)
+--------------------------------------------------------------------------------
+
+Language: Korean
+Script: Hangul
+Word Order: SOV (Subject-Object-Verb)
+Sample Sentence: 저는 한국어를 배우고 있어요. (I am learning Korean.)
+--------------------------------------------------------------------------------
+

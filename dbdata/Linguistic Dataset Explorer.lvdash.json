@@ -1,0 +1,2927 @@
+{
+  "datasets": [
+    {
+      "name": "a268d207",
+      "displayName": "Untitled dataset",
+      "queryLines": [
+        ""
+      ],
+      "catalog": "dbacademy",
+      "schema": "labuser14433625_1776574838"
+    },
+    {
+      "name": "language_embeddings",
+      "displayName": "Language Embeddings",
+      "queryLines": [
+        "SELECT\n",
+        "  *\n",
+        "FROM\n",
+        "  language_embeddings"
+      ],
+      "catalog": "dbacademy",
+      "schema": "labuser14433625_1776574838"
+    },
+    {
+      "name": "top20_pairs",
+      "displayName": "Top 20 Similar Pairs",
+      "queryLines": [
+        "SELECT\n",
+        "  CONCAT(language_a, ' ↔ ', language_b) AS language_pair,\n",
+        "  language_a,\n",
+        "  language_b,\n",
+        "  cosine_similarity,\n",
+        "  rank\n",
+        "FROM\n",
+        "  language_similarity_pairs\n",
+        "WHERE\n",
+        "  rank <= 20\n",
+        "ORDER BY\n",
+        "  rank"
+      ],
+      "catalog": "dbacademy",
+      "schema": "labuser14433625_1776574838"
+    },
+    {
+      "name": "nearest_neighbors",
+      "displayName": "Nearest Neighbors",
+      "queryLines": [
+        "WITH ranked AS (\n",
+        "  SELECT\n",
+        "    language_a,\n",
+        "    language_b,\n",
+        "    ROUND(cosine_similarity, 4) AS similarity,\n",
+        "    ROW_NUMBER() OVER (PARTITION BY language_a ORDER BY cosine_similarity DESC) AS neighbor_rank\n",
+        "  FROM\n",
+        "    (\n",
+        "      SELECT\n",
+        "        language_a,\n",
+        "        language_b,\n",
+        "        cosine_similarity\n",
+        "      FROM\n",
+        "        language_similarity_pairs\n",
+        "      UNION ALL\n",
+        "      SELECT\n",
+        "        language_b AS language_a,\n",
+        "        language_a AS language_b,\n",
+        "        cosine_similarity\n",
+        "      FROM\n",
+        "        language_similarity_pairs\n",
+        "    )\n",
+        ")\n",
+        "SELECT\n",
+        "  language_a AS language,\n",
+        "  neighbor_rank,\n",
+        "  language_b AS nearest_neighbor,\n",
+        "  similarity\n",
+        "FROM\n",
+        "  ranked\n",
+        "WHERE\n",
+        "  neighbor_rank <= 3\n",
+        "ORDER BY\n",
+        "  language_a,\n",
+        "  neighbor_rank"
+      ],
+      "catalog": "dbacademy",
+      "schema": "labuser14433625_1776574838"
+    },
+    {
+      "name": "all_pairs",
+      "displayName": "All Similarity Pairs",
+      "queryLines": [
+        "SELECT\n",
+        "  *\n",
+        "FROM\n",
+        "  language_similarity_pairs"
+      ],
+      "catalog": "dbacademy",
+      "schema": "labuser14433625_1776574838"
+    },
+    {
+      "name": "bottom20_pairs",
+      "displayName": "Bottom 20 Least Similar Pairs",
+      "queryLines": [
+        "SELECT\n",
+        "  CONCAT(language_a, ' ↔ ', language_b) AS language_pair,\n",
+        "  language_a,\n",
+        "  language_b,\n",
+        "  cosine_similarity,\n",
+        "  rank\n",
+        "FROM\n",
+        "  language_similarity_pairs\n",
+        "ORDER BY\n",
+        "  cosine_similarity ASC\n",
+        "LIMIT 20"
+      ],
+      "catalog": "dbacademy",
+      "schema": "labuser14433625_1776574838"
+    },
+    {
+      "name": "sim_matrix",
+      "displayName": "Similarity Matrix (15 Key Languages)",
+      "queryLines": [
+        "WITH key_pairs AS (\n",
+        "  SELECT\n",
+        "    language_a,\n",
+        "    language_b,\n",
+        "    cosine_similarity\n",
+        "  FROM\n",
+        "    language_similarity_pairs\n",
+        "  WHERE\n",
+        "    language_a IN (\n",
+        "      'English',\n",
+        "      'Mandarin Chinese',\n",
+        "      'Hindi',\n",
+        "      'Spanish',\n",
+        "      'French',\n",
+        "      'Arabic',\n",
+        "      'Bengali',\n",
+        "      'Japanese',\n",
+        "      'Korean',\n",
+        "      'Cantonese',\n",
+        "      'Vietnamese',\n",
+        "      'Italian',\n",
+        "      'Thai',\n",
+        "      'Turkish',\n",
+        "      'Swahili'\n",
+        "    )\n",
+        "    AND language_b IN (\n",
+        "      'English',\n",
+        "      'Mandarin Chinese',\n",
+        "      'Hindi',\n",
+        "      'Spanish',\n",
+        "      'French',\n",
+        "      'Arabic',\n",
+        "      'Bengali',\n",
+        "      'Japanese',\n",
+        "      'Korean',\n",
+        "      'Cantonese',\n",
+        "      'Vietnamese',\n",
+        "      'Italian',\n",
+        "      'Thai',\n",
+        "      'Turkish',\n",
+        "      'Swahili'\n",
+        "    )\n",
+        ")\n",
+        "SELECT\n",
+        "  language_a,\n",
+        "  language_b,\n",
+        "  ROUND(cosine_similarity, 4) AS similarity\n",
+        "FROM\n",
+        "  key_pairs\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  language_b,\n",
+        "  language_a,\n",
+        "  ROUND(cosine_similarity, 4)\n",
+        "FROM\n",
+        "  key_pairs\n",
+        "UNION ALL\n",
+        "SELECT DISTINCT\n",
+        "  language_a,\n",
+        "  language_a,\n",
+        "  1.0\n",
+        "FROM\n",
+        "  key_pairs\n",
+        "UNION ALL\n",
+        "SELECT DISTINCT\n",
+        "  language_b,\n",
+        "  language_b,\n",
+        "  1.0\n",
+        "FROM\n",
+        "  key_pairs"
+      ],
+      "catalog": "dbacademy",
+      "schema": "labuser14433625_1776574838"
+    }
+  ],
+  "pages": [
+    {
+      "name": "3ebc59a0",
+      "displayName": "Overview",
+      "layout": [
+        {
+          "widget": {
+            "name": "header_text",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Linguistic Dataset Explorer\n",
+                "58 languages · santok + threshold-onset pipeline · 74-dim embeddings · cosine similarity"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "total_languages",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "count(language)",
+                      "expression": "COUNT(`language`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Total Languages",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "count(language)",
+                  "displayName": "Languages"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "top20_pairs_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "top20_pairs",
+                  "fields": [
+                    {
+                      "name": "language_pair",
+                      "expression": "`language_pair`"
+                    },
+                    {
+                      "name": "avg(cosine_similarity)",
+                      "expression": "AVG(`cosine_similarity`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Top 20 Most Similar Language Pairs",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "language_pair",
+                  "axis": {
+                    "hideTitle": true
+                  },
+                  "displayName": "Language Pair",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(cosine_similarity)",
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 4
+                    },
+                    "abbreviation": "none"
+                  },
+                  "displayName": "Cosine Similarity",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "token_count_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "language",
+                      "expression": "`language`"
+                    },
+                    {
+                      "name": "sum(token_count)",
+                      "expression": "SUM(`token_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Token Count by Language",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "language",
+                  "axis": {
+                    "hideTitle": true
+                  },
+                  "displayName": "Language",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(token_count)",
+                  "displayName": "Token Count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 14,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "phase_metrics_pivot",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "language",
+                      "expression": "`language`"
+                    },
+                    {
+                      "name": "avg(phase1_cluster_count)",
+                      "expression": "AVG(`phase1_cluster_count`)"
+                    },
+                    {
+                      "name": "avg(phase1_boundary_count)",
+                      "expression": "AVG(`phase1_boundary_count`)"
+                    },
+                    {
+                      "name": "avg(phase1_repetition_score)",
+                      "expression": "AVG(`phase1_repetition_score`)"
+                    },
+                    {
+                      "name": "avg(phase2_stability_score)",
+                      "expression": "AVG(`phase2_stability_score`)"
+                    },
+                    {
+                      "name": "avg(phase2_identity_count)",
+                      "expression": "AVG(`phase2_identity_count`)"
+                    },
+                    {
+                      "name": "avg(phase3_node_count)",
+                      "expression": "AVG(`phase3_node_count`)"
+                    },
+                    {
+                      "name": "avg(phase3_edge_count)",
+                      "expression": "AVG(`phase3_edge_count`)"
+                    },
+                    {
+                      "name": "avg(phase3_density)",
+                      "expression": "AVG(`phase3_density`)"
+                    }
+                  ],
+                  "cubeGroupingSets": {
+                    "sets": [
+                      {
+                        "fieldNames": [
+                          "language"
+                        ]
+                      },
+                      {}
+                    ]
+                  },
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "ASC",
+                      "expression": "`language`"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Phase Pipeline Metrics by Language",
+                "showTitle": true
+              },
+              "widgetType": "pivot",
+              "encodings": {
+                "rows": [
+                  {
+                    "fieldName": "language",
+                    "displayTotal": false,
+                    "displayName": "Language"
+                  }
+                ],
+                "cell": {
+                  "type": "multi-cell",
+                  "fields": [
+                    {
+                      "fieldName": "avg(phase1_cluster_count)",
+                      "cellType": "text",
+                      "displayName": "P1 Clusters"
+                    },
+                    {
+                      "fieldName": "avg(phase1_boundary_count)",
+                      "cellType": "text",
+                      "displayName": "P1 Boundaries"
+                    },
+                    {
+                      "fieldName": "avg(phase1_repetition_score)",
+                      "cellType": "text",
+                      "displayName": "P1 Repetition"
+                    },
+                    {
+                      "fieldName": "avg(phase2_stability_score)",
+                      "cellType": "text",
+                      "displayName": "P2 Stability"
+                    },
+                    {
+                      "fieldName": "avg(phase2_identity_count)",
+                      "cellType": "text",
+                      "displayName": "P2 Identities"
+                    },
+                    {
+                      "fieldName": "avg(phase3_node_count)",
+                      "cellType": "text",
+                      "displayName": "P3 Nodes"
+                    },
+                    {
+                      "fieldName": "avg(phase3_edge_count)",
+                      "cellType": "text",
+                      "displayName": "P3 Edges"
+                    },
+                    {
+                      "fieldName": "avg(phase3_density)",
+                      "cellType": "text",
+                      "displayName": "P3 Density"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 14,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "feature_overview_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "language",
+                      "expression": "`language`"
+                    },
+                    {
+                      "name": "script",
+                      "expression": "`script`"
+                    },
+                    {
+                      "name": "word_order",
+                      "expression": "`word_order`"
+                    },
+                    {
+                      "name": "stress_pattern",
+                      "expression": "`stress_pattern`"
+                    },
+                    {
+                      "name": "case_system",
+                      "expression": "`case_system`"
+                    },
+                    {
+                      "name": "gender_system",
+                      "expression": "`gender_system`"
+                    },
+                    {
+                      "name": "rhythm",
+                      "expression": "`rhythm`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Language Feature Overview",
+                "showTitle": true
+              },
+              "rowsPerPage": 25,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "language",
+                    "displayName": "Language"
+                  },
+                  {
+                    "fieldName": "script",
+                    "displayName": "Script"
+                  },
+                  {
+                    "fieldName": "word_order",
+                    "displayName": "Word Order"
+                  },
+                  {
+                    "fieldName": "stress_pattern",
+                    "displayName": "Stress"
+                  },
+                  {
+                    "fieldName": "case_system",
+                    "displayName": "Case System"
+                  },
+                  {
+                    "fieldName": "gender_system",
+                    "displayName": "Gender"
+                  },
+                  {
+                    "fieldName": "rhythm",
+                    "displayName": "Rhythm"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 21,
+            "width": 6,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "nearest_neighbors_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "nearest_neighbors",
+                  "fields": [
+                    {
+                      "name": "language",
+                      "expression": "`language`"
+                    },
+                    {
+                      "name": "neighbor_rank",
+                      "expression": "`neighbor_rank`"
+                    },
+                    {
+                      "name": "nearest_neighbor",
+                      "expression": "`nearest_neighbor`"
+                    },
+                    {
+                      "name": "similarity",
+                      "expression": "`similarity`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Nearest Neighbors per Language",
+                "showTitle": true
+              },
+              "rowsPerPage": 25,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "language",
+                    "displayName": "Language"
+                  },
+                  {
+                    "fieldName": "neighbor_rank",
+                    "displayName": "Rank"
+                  },
+                  {
+                    "fieldName": "nearest_neighbor",
+                    "displayName": "Nearest Neighbor"
+                  },
+                  {
+                    "fieldName": "similarity",
+                    "displayName": "Similarity"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 21,
+            "width": 6,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "total_pairs",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "all_pairs",
+                  "fields": [
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT(`*`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Total Pairs",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "count(*)",
+                  "displayName": "Pairs"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 0,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "avg_similarity",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "all_pairs",
+                  "fields": [
+                    {
+                      "name": "avg(cosine_similarity)",
+                      "expression": "AVG(`cosine_similarity`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Avg Similarity",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "avg(cosine_similarity)",
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 4
+                    },
+                    "abbreviation": "none"
+                  },
+                  "displayName": "Avg Sim"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 10,
+            "y": 0,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "script_pie",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "count(language)",
+                      "expression": "COUNT(`language`)"
+                    },
+                    {
+                      "name": "script",
+                      "expression": "`script`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Scripts Distribution",
+                "showTitle": true
+              },
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "count(language)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Count"
+                },
+                "color": {
+                  "fieldName": "script",
+                  "legend": {
+                    "position": "bottom"
+                  },
+                  "displayName": "Script",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "word_order_pie",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "count(language)",
+                      "expression": "COUNT(`language`)"
+                    },
+                    {
+                      "name": "word_order",
+                      "expression": "`word_order`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Word Order Distribution",
+                "showTitle": true
+              },
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "count(language)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Count"
+                },
+                "color": {
+                  "fieldName": "word_order",
+                  "legend": {
+                    "position": "bottom"
+                  },
+                  "displayName": "Word Order",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 8,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "rhythm_pie",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "count(language)",
+                      "expression": "COUNT(`language`)"
+                    },
+                    {
+                      "name": "rhythm",
+                      "expression": "`rhythm`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Rhythm Type Distribution",
+                "showTitle": true
+              },
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "count(language)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Count"
+                },
+                "color": {
+                  "fieldName": "rhythm",
+                  "legend": {
+                    "position": "bottom"
+                  },
+                  "displayName": "Rhythm",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 8,
+            "width": 4,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "similarity",
+      "displayName": "Similarity Analysis",
+      "layout": [
+        {
+          "widget": {
+            "name": "title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Similarity Analysis\n",
+                "Cosine similarity across 1,653 unique language pairs"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "max_sim",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "all_pairs",
+                  "fields": [
+                    {
+                      "name": "max(cosine_similarity)",
+                      "expression": "MAX(`cosine_similarity`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Max Similarity",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "max(cosine_similarity)",
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 4
+                    },
+                    "abbreviation": "none"
+                  },
+                  "displayName": "Max"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "min_sim",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "all_pairs",
+                  "fields": [
+                    {
+                      "name": "min(cosine_similarity)",
+                      "expression": "MIN(`cosine_similarity`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Min Similarity",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "min(cosine_similarity)",
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 4
+                    },
+                    "abbreviation": "none"
+                  },
+                  "displayName": "Min"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 0,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "std_sim",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "all_pairs",
+                  "fields": [
+                    {
+                      "name": "stddev(cosine_similarity)",
+                      "expression": "STDDEV(`cosine_similarity`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Std Deviation",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "stddev(cosine_similarity)",
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 4
+                    },
+                    "abbreviation": "none"
+                  },
+                  "displayName": "StdDev"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 10,
+            "y": 0,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "sim_histogram",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "all_pairs",
+                  "fields": [
+                    {
+                      "name": "cosine_similarity",
+                      "expression": "`cosine_similarity`"
+                    },
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT(`*`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Cosine Similarity Distribution",
+                "showTitle": true
+              },
+              "widgetType": "histogram",
+              "encodings": {
+                "x": {
+                  "fieldName": "cosine_similarity",
+                  "displayName": "Cosine Similarity",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "count(*)",
+                  "displayName": "Count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "rank_scatter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "all_pairs",
+                  "fields": [
+                    {
+                      "name": "rank",
+                      "expression": "`rank`"
+                    },
+                    {
+                      "name": "cosine_similarity",
+                      "expression": "`cosine_similarity`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Similarity by Rank Position",
+                "showTitle": true
+              },
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "rank",
+                  "displayName": "Rank",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "cosine_similarity",
+                  "displayName": "Cosine Similarity",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "bottom20_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "bottom20_pairs",
+                  "fields": [
+                    {
+                      "name": "language_pair",
+                      "expression": "`language_pair`"
+                    },
+                    {
+                      "name": "avg(cosine_similarity)",
+                      "expression": "AVG(`cosine_similarity`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Bottom 20 Least Similar Language Pairs",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "language_pair",
+                  "axis": {
+                    "hideTitle": true
+                  },
+                  "displayName": "Language Pair",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(cosine_similarity)",
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 4
+                    },
+                    "abbreviation": "none"
+                  },
+                  "displayName": "Cosine Similarity",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "sim_matrix_pivot",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "sim_matrix",
+                  "fields": [
+                    {
+                      "name": "language_a",
+                      "expression": "`language_a`"
+                    },
+                    {
+                      "name": "language_b",
+                      "expression": "`language_b`"
+                    },
+                    {
+                      "name": "avg(similarity)",
+                      "expression": "AVG(`similarity`)"
+                    }
+                  ],
+                  "cubeGroupingSets": {
+                    "sets": [
+                      {
+                        "fieldNames": [
+                          "language_a"
+                        ]
+                      },
+                      {
+                        "fieldNames": [
+                          "language_b"
+                        ]
+                      }
+                    ]
+                  },
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "ASC",
+                      "expression": "`language_a`"
+                    },
+                    {
+                      "direction": "ASC",
+                      "expression": "`language_b`"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Similarity Matrix (15 Key Languages)",
+                "showTitle": true
+              },
+              "widgetType": "pivot",
+              "encodings": {
+                "rows": [
+                  {
+                    "fieldName": "language_a",
+                    "displayTotal": false,
+                    "displayName": "Language A"
+                  }
+                ],
+                "columns": [
+                  {
+                    "fieldName": "language_b",
+                    "displayTotal": false,
+                    "displayName": "Language B"
+                  }
+                ],
+                "cell": {
+                  "type": "multi-cell",
+                  "fields": [
+                    {
+                      "fieldName": "avg(similarity)",
+                      "cellType": "text",
+                      "displayName": "Similarity",
+                      "style": {
+                        "type": "color-scale",
+                        "backgroundColor": {
+                          "scale": {
+                            "type": "quantitative",
+                            "colorRamp": {
+                              "mode": "scheme",
+                              "scheme": "viridis"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 14,
+            "width": 12,
+            "height": 9
+          }
+        },
+        {
+          "widget": {
+            "name": "nn_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "nearest_neighbors",
+                  "fields": [
+                    {
+                      "name": "language",
+                      "expression": "`language`"
+                    },
+                    {
+                      "name": "neighbor_rank",
+                      "expression": "`neighbor_rank`"
+                    },
+                    {
+                      "name": "nearest_neighbor",
+                      "expression": "`nearest_neighbor`"
+                    },
+                    {
+                      "name": "similarity",
+                      "expression": "`similarity`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Complete Nearest Neighbors (3 per Language)",
+                "showTitle": true
+              },
+              "rowsPerPage": 25,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "language",
+                    "displayName": "Language"
+                  },
+                  {
+                    "fieldName": "neighbor_rank",
+                    "displayName": "Rank"
+                  },
+                  {
+                    "fieldName": "nearest_neighbor",
+                    "displayName": "Nearest Neighbor"
+                  },
+                  {
+                    "fieldName": "similarity",
+                    "displayName": "Similarity"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 23,
+            "width": 12,
+            "height": 7
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "features",
+      "displayName": "Embedding Feature Space",
+      "layout": [
+        {
+          "widget": {
+            "name": "title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Embedding Feature Space\n",
+                "santok tokenization · threshold-onset phase 1/2/3 · 74-dimensional vectors"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "entropy_balance_scatter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "script",
+                      "expression": "`script`"
+                    },
+                    {
+                      "name": "language",
+                      "expression": "`language`"
+                    },
+                    {
+                      "name": "santok_entropy_index",
+                      "expression": "`santok_entropy_index`"
+                    },
+                    {
+                      "name": "santok_balance_index",
+                      "expression": "`santok_balance_index`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Entropy vs Balance Index",
+                "showTitle": true
+              },
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "santok_entropy_index",
+                  "displayName": "Entropy Index",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "santok_balance_index",
+                  "displayName": "Balance Index",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "script",
+                  "legend": {
+                    "position": "bottom"
+                  },
+                  "displayName": "Script",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "extra": [
+                  {
+                    "fieldName": "language",
+                    "displayName": "Language"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 1,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "stability_density_scatter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "word_order",
+                      "expression": "`word_order`"
+                    },
+                    {
+                      "name": "language",
+                      "expression": "`language`"
+                    },
+                    {
+                      "name": "phase2_stability_score",
+                      "expression": "`phase2_stability_score`"
+                    },
+                    {
+                      "name": "phase3_density",
+                      "expression": "`phase3_density`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Phase2 Stability vs Phase3 Density",
+                "showTitle": true
+              },
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "phase2_stability_score",
+                  "displayName": "Phase2 Stability",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "phase3_density",
+                  "displayName": "Phase3 Density",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "word_order",
+                  "legend": {
+                    "position": "bottom"
+                  },
+                  "displayName": "Word Order",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "extra": [
+                  {
+                    "fieldName": "language",
+                    "displayName": "Language"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 1,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "token_by_wordorder_box",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "word_order",
+                      "expression": "`word_order`"
+                    },
+                    {
+                      "name": "avg(token_count)",
+                      "expression": "AVG(`token_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Avg Token Count by Word Order",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "word_order",
+                  "displayName": "Word Order",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(token_count)",
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 1
+                    },
+                    "abbreviation": "none"
+                  },
+                  "displayName": "Avg Tokens",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "word_order",
+                  "legend": {
+                    "hide": true
+                  },
+                  "displayName": "Word Order",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "entropy_by_script_box",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "script",
+                      "expression": "`script`"
+                    },
+                    {
+                      "name": "avg(santok_entropy_index)",
+                      "expression": "AVG(`santok_entropy_index`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Avg Entropy by Script Type",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "script",
+                  "displayName": "Script",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(santok_entropy_index)",
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 4
+                    },
+                    "abbreviation": "none"
+                  },
+                  "displayName": "Avg Entropy",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "script",
+                  "legend": {
+                    "hide": true
+                  },
+                  "displayName": "Script",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 8,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "entropy_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "language",
+                      "expression": "`language`"
+                    },
+                    {
+                      "name": "sum(santok_entropy_index)",
+                      "expression": "SUM(`santok_entropy_index`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Santok Entropy by Language",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "language",
+                  "axis": {
+                    "hideTitle": true
+                  },
+                  "displayName": "Language",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(santok_entropy_index)",
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 3
+                    },
+                    "abbreviation": "none"
+                  },
+                  "displayName": "Entropy Index",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 14,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "variance_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "language",
+                      "expression": "`language`"
+                    },
+                    {
+                      "name": "sum(santok_variance)",
+                      "expression": "SUM(`santok_variance`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Santok Variance by Language",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "language",
+                  "axis": {
+                    "hideTitle": true
+                  },
+                  "displayName": "Language",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(santok_variance)",
+                  "format": {
+                    "type": "number-plain",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 3
+                    },
+                    "abbreviation": "none"
+                  },
+                  "displayName": "Variance",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 14,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "token_histogram",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "token_count",
+                      "expression": "`token_count`"
+                    },
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT(`*`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Token Count Distribution",
+                "showTitle": true
+              },
+              "widgetType": "histogram",
+              "encodings": {
+                "x": {
+                  "fieldName": "token_count",
+                  "displayName": "Token Count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "count(*)",
+                  "displayName": "Count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 21,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "entropy_histogram",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "santok_entropy_index",
+                      "expression": "`santok_entropy_index`"
+                    },
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT(`*`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Entropy Index Distribution",
+                "showTitle": true
+              },
+              "widgetType": "histogram",
+              "encodings": {
+                "x": {
+                  "fieldName": "santok_entropy_index",
+                  "displayName": "Entropy",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "count(*)",
+                  "displayName": "Count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 21,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "combo_chart",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "language",
+                      "expression": "`language`"
+                    },
+                    {
+                      "name": "sum(token_count)",
+                      "expression": "SUM(`token_count`)"
+                    },
+                    {
+                      "name": "avg(santok_entropy_index)",
+                      "expression": "AVG(`santok_entropy_index`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "frame": {
+                "title": "Token Count vs Entropy (Dual Axis)",
+                "showTitle": true
+              },
+              "widgetType": "combo",
+              "encodings": {
+                "x": {
+                  "fieldName": "language",
+                  "axis": {
+                    "hideTitle": true
+                  },
+                  "displayName": "Language",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "primary": {
+                    "fields": [
+                      {
+                        "fieldName": "sum(token_count)",
+                        "displayName": "Token Count"
+                      }
+                    ],
+                    "scale": {
+                      "type": "quantitative"
+                    }
+                  },
+                  "secondary": {
+                    "fields": [
+                      {
+                        "fieldName": "avg(santok_entropy_index)",
+                        "displayName": "Entropy Index"
+                      }
+                    ],
+                    "scale": {
+                      "type": "quantitative"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 26,
+            "width": 12,
+            "height": 7
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "typology",
+      "displayName": "Language Typology",
+      "layout": [
+        {
+          "widget": {
+            "name": "title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Language Typology\n",
+                "Morphological, phonological, and syntactic classification across 58 languages"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "case_pie",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "count(language)",
+                      "expression": "COUNT(`language`)"
+                    },
+                    {
+                      "name": "case_system",
+                      "expression": "`case_system`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Case System Distribution",
+                "showTitle": true
+              },
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "count(language)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Count"
+                },
+                "color": {
+                  "fieldName": "case_system",
+                  "legend": {
+                    "position": "bottom"
+                  },
+                  "displayName": "Case System",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 1,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "gender_pie",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "count(language)",
+                      "expression": "COUNT(`language`)"
+                    },
+                    {
+                      "name": "gender_system",
+                      "expression": "`gender_system`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Gender System Distribution",
+                "showTitle": true
+              },
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "count(language)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Count"
+                },
+                "color": {
+                  "fieldName": "gender_system",
+                  "legend": {
+                    "position": "bottom"
+                  },
+                  "displayName": "Gender",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 1,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "stress_pie",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "count(language)",
+                      "expression": "COUNT(`language`)"
+                    },
+                    {
+                      "name": "stress_pattern",
+                      "expression": "`stress_pattern`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Stress Pattern Distribution",
+                "showTitle": true
+              },
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "count(language)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Count"
+                },
+                "color": {
+                  "fieldName": "stress_pattern",
+                  "legend": {
+                    "position": "bottom"
+                  },
+                  "displayName": "Stress",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 1,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "langs_per_script_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "script",
+                      "expression": "`script`"
+                    },
+                    {
+                      "name": "count(language)",
+                      "expression": "COUNT(`language`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Languages per Script",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "script",
+                  "axis": {
+                    "hideTitle": true
+                  },
+                  "displayName": "Script",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "count(language)",
+                  "displayName": "Count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "langs_per_wordorder_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "word_order",
+                      "expression": "`word_order`"
+                    },
+                    {
+                      "name": "count(language)",
+                      "expression": "COUNT(`language`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Languages per Word Order",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "word_order",
+                  "axis": {
+                    "hideTitle": true
+                  },
+                  "displayName": "Word Order",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "count(language)",
+                  "displayName": "Count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 7,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "typology_sankey",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "script",
+                      "expression": "`script`"
+                    },
+                    {
+                      "name": "word_order",
+                      "expression": "`word_order`"
+                    },
+                    {
+                      "name": "rhythm",
+                      "expression": "`rhythm`"
+                    },
+                    {
+                      "name": "count(language)",
+                      "expression": "COUNT(`language`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "frame": {
+                "title": "Typological Flow: Script → Word Order → Rhythm",
+                "showTitle": true
+              },
+              "widgetType": "sankey",
+              "encodings": {
+                "value": {
+                  "fieldName": "count(language)",
+                  "displayName": "Languages"
+                },
+                "stages": [
+                  {
+                    "fieldName": "script",
+                    "displayName": "Script"
+                  },
+                  {
+                    "fieldName": "word_order",
+                    "displayName": "Word Order"
+                  },
+                  {
+                    "fieldName": "rhythm",
+                    "displayName": "Rhythm"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 13,
+            "width": 12,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "full_feature_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "language",
+                      "expression": "`language`"
+                    },
+                    {
+                      "name": "script",
+                      "expression": "`script`"
+                    },
+                    {
+                      "name": "word_order",
+                      "expression": "`word_order`"
+                    },
+                    {
+                      "name": "stress_pattern",
+                      "expression": "`stress_pattern`"
+                    },
+                    {
+                      "name": "case_system",
+                      "expression": "`case_system`"
+                    },
+                    {
+                      "name": "gender_system",
+                      "expression": "`gender_system`"
+                    },
+                    {
+                      "name": "rhythm",
+                      "expression": "`rhythm`"
+                    },
+                    {
+                      "name": "token_count",
+                      "expression": "`token_count`"
+                    },
+                    {
+                      "name": "santok_entropy_index",
+                      "expression": "`santok_entropy_index`"
+                    },
+                    {
+                      "name": "sentence_example",
+                      "expression": "`sentence_example`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Complete Language Feature Matrix",
+                "showTitle": true
+              },
+              "rowsPerPage": 25,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "language",
+                    "displayName": "Language"
+                  },
+                  {
+                    "fieldName": "script",
+                    "displayName": "Script"
+                  },
+                  {
+                    "fieldName": "word_order",
+                    "displayName": "Word Order"
+                  },
+                  {
+                    "fieldName": "stress_pattern",
+                    "displayName": "Stress"
+                  },
+                  {
+                    "fieldName": "case_system",
+                    "displayName": "Case"
+                  },
+                  {
+                    "fieldName": "gender_system",
+                    "displayName": "Gender"
+                  },
+                  {
+                    "fieldName": "rhythm",
+                    "displayName": "Rhythm"
+                  },
+                  {
+                    "fieldName": "token_count",
+                    "displayName": "Tokens"
+                  },
+                  {
+                    "fieldName": "santok_entropy_index",
+                    "displayName": "Entropy"
+                  },
+                  {
+                    "fieldName": "sentence_example",
+                    "displayName": "Sentence Example"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 21,
+            "width": 12,
+            "height": 8
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "global_filters",
+      "displayName": "Global Filters",
+      "layout": [
+        {
+          "widget": {
+            "name": "language_filter",
+            "queries": [
+              {
+                "name": "dashboards/01f13bcb22031e0fb86ef1ee26d38371/datasets/01f13bcb82571ba1b0a96b766b02751b_language",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "language",
+                      "expression": "`language`"
+                    },
+                    {
+                      "name": "language_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f13bcb22031e0fb86ef1ee26d38371/datasets/01f13bcba35d1a24b258c85c1fcfc324_language",
+                "query": {
+                  "datasetName": "nearest_neighbors",
+                  "fields": [
+                    {
+                      "name": "language",
+                      "expression": "`language`"
+                    },
+                    {
+                      "name": "language_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f13bcb22031e0fb86ef1ee26d38371/datasets/01f13bcb988c17859fdc7d04a4f8d644_language_a",
+                "query": {
+                  "datasetName": "top20_pairs",
+                  "fields": [
+                    {
+                      "name": "language_a",
+                      "expression": "`language_a`"
+                    },
+                    {
+                      "name": "language_a_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f13bcb22031e0fb86ef1ee26d38371/datasets/01f13bd15664174a992ba0e0dc7d3ebd_language_a",
+                "query": {
+                  "datasetName": "all_pairs",
+                  "fields": [
+                    {
+                      "name": "language_a",
+                      "expression": "`language_a`"
+                    },
+                    {
+                      "name": "language_a_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f13bcb22031e0fb86ef1ee26d38371/datasets/01f13bd15e551ae5877e1dec7b109797_language_a",
+                "query": {
+                  "datasetName": "bottom20_pairs",
+                  "fields": [
+                    {
+                      "name": "language_a",
+                      "expression": "`language_a`"
+                    },
+                    {
+                      "name": "language_a_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Language Filter",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "language",
+                    "queryName": "dashboards/01f13bcb22031e0fb86ef1ee26d38371/datasets/01f13bcb82571ba1b0a96b766b02751b_language"
+                  },
+                  {
+                    "fieldName": "language",
+                    "queryName": "dashboards/01f13bcb22031e0fb86ef1ee26d38371/datasets/01f13bcba35d1a24b258c85c1fcfc324_language"
+                  },
+                  {
+                    "fieldName": "language_a",
+                    "queryName": "dashboards/01f13bcb22031e0fb86ef1ee26d38371/datasets/01f13bcb988c17859fdc7d04a4f8d644_language_a"
+                  },
+                  {
+                    "fieldName": "language_a",
+                    "queryName": "dashboards/01f13bcb22031e0fb86ef1ee26d38371/datasets/01f13bd15664174a992ba0e0dc7d3ebd_language_a"
+                  },
+                  {
+                    "fieldName": "language_a",
+                    "queryName": "dashboards/01f13bcb22031e0fb86ef1ee26d38371/datasets/01f13bd15e551ae5877e1dec7b109797_language_a"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 4,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "script_filter",
+            "queries": [
+              {
+                "name": "dashboards/01f13bcb22031e0fb86ef1ee26d38371/datasets/01f13bcb82571ba1b0a96b766b02751b_script",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "script",
+                      "expression": "`script`"
+                    },
+                    {
+                      "name": "script_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Script Filter",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "script",
+                    "queryName": "dashboards/01f13bcb22031e0fb86ef1ee26d38371/datasets/01f13bcb82571ba1b0a96b766b02751b_script"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 4,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "word_order_filter",
+            "queries": [
+              {
+                "name": "dashboards/01f13bcb22031e0fb86ef1ee26d38371/datasets/01f13bcb82571ba1b0a96b766b02751b_word_order",
+                "query": {
+                  "datasetName": "language_embeddings",
+                  "fields": [
+                    {
+                      "name": "word_order",
+                      "expression": "`word_order`"
+                    },
+                    {
+                      "name": "word_order_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Word Order Filter",
+                "showTitle": true
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "word_order",
+                    "queryName": "dashboards/01f13bcb22031e0fb86ef1ee26d38371/datasets/01f13bcb82571ba1b0a96b766b02751b_word_order"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 0,
+            "width": 4,
+            "height": 1
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#F8FAFC",
+        "dark": "#0F172A"
+      },
+      "widgetBackgroundColor": {
+        "light": "#FFFFFF",
+        "dark": "#1E293B"
+      },
+      "widgetBorderColor": {
+        "light": "#E2E8F0",
+        "dark": "#334155"
+      },
+      "fontColor": {
+        "light": "#1E293B",
+        "dark": "#F1F5F9"
+      },
+      "selectionColor": {
+        "light": "#2563EB",
+        "dark": "#3B82F6"
+      },
+      "visualizationColors": [
+        "#2563EB",
+        "#DC2626",
+        "#059669",
+        "#D97706",
+        "#7C3AED",
+        "#DB2777",
+        "#0891B2",
+        "#65A30D",
+        "#EA580C",
+        "#4F46E5",
+        "#0D9488",
+        "#BE185D"
+      ],
+      "widgetHeaderAlignment": "LEFT",
+      "fontFamily": "Verdana"
+    },
+    "applyModeEnabled": false
+  }
+}

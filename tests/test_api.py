@@ -88,7 +88,7 @@ def test_api_process_return_model_state_optional():
 
 
 def test_cli_config():
-    """CLI config subcommand outputs valid JSON."""
+    """CLI config subcommand prints parseable compact line text."""
     out = subprocess.run(
         [sys.executable, "-m", "threshold_onset", "config"],
         cwd=str(ROOT),
@@ -97,12 +97,14 @@ def test_cli_config():
         check=False,
     )
     assert out.returncode == 0
-    data = json.loads(out.stdout)
+    from threshold_onset.line_codec import decode_document
+
+    data = decode_document(out.stdout)
     assert "pipeline" in data
 
 
 def test_cli_health():
-    """CLI health subcommand outputs valid JSON."""
+    """CLI health subcommand prints parseable compact line text."""
     out = subprocess.run(
         [sys.executable, "-m", "threshold_onset", "health"],
         cwd=str(ROOT),
@@ -111,22 +113,30 @@ def test_cli_health():
         check=False,
     )
     assert out.returncode == 0
-    data = json.loads(out.stdout)
+    from threshold_onset.line_codec import decode_document
+
+    data = decode_document(out.stdout)
     assert data.get("status") == "ok"
     assert "version" in data
 
 
 @pytest.mark.slow
 def test_rest_process():
-    """REST POST /process returns ProcessResult-like JSON (starts health server)."""
+    """REST POST /process returns ProcessResult-shaped body in compact line text."""
+    import socket
     import time
     import urllib.request
     import urllib.error
 
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+
+    base_url = f"http://127.0.0.1:{port}"
     proc = subprocess.Popen(
         [sys.executable, "scripts/health_server.py"],
         cwd=str(ROOT),
-        env={**os.environ, "HEALTH_PORT": "19999"},
+        env={**os.environ, "HEALTH_PORT": str(port)},
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
@@ -135,7 +145,7 @@ def test_rest_process():
     ready = False
     for _ in range(40):
         try:
-            with urllib.request.urlopen("http://127.0.0.1:19999/health", timeout=1.5) as resp:
+            with urllib.request.urlopen(f"{base_url}/health", timeout=1.5) as resp:
                 if resp.status == 200:
                     ready = True
                     break
@@ -144,19 +154,21 @@ def test_rest_process():
 
     assert ready, "health server did not become ready in time"
     try:
-        with urllib.request.urlopen("http://127.0.0.1:19999/ready", timeout=5) as resp:
-            ready_data = json.loads(resp.read().decode())
+        from threshold_onset.line_codec import decode_document
+
+        with urllib.request.urlopen(f"{base_url}/ready", timeout=5) as resp:
+            ready_data = decode_document(resp.read().decode())
         assert "ready" in ready_data
         assert "config_loaded" in ready_data
 
         req = urllib.request.Request(
-            "http://127.0.0.1:19999/process",
+            f"{base_url}/process",
             data=json.dumps({"text": "test"}).encode(),
             headers={"Content-Type": "application/json"},
             method="POST",
         )
         with urllib.request.urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read().decode())
+            data = decode_document(resp.read().decode())
             response_trace = resp.headers.get("X-Trace-Id")
         assert "success" in data
         assert "generated_outputs" in data

@@ -13,6 +13,7 @@ import subprocess
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 import argparse
+import os
 
 ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
@@ -151,15 +152,73 @@ def _interactive_menu() -> Optional[str]:
 
 def main() -> int:
     mode, text, runtime_flags = _parse_args()
+    valid_modes = {"full", "--check", "--user", "generate"}
+    if mode not in valid_modes:
+        print(f"Unknown mode: {mode}")
+        print("Allowed modes: --check, --user, generate")
+        return EXIT_FAILURE
     runtime_env = build_runtime_env(
         workers=runtime_flags.workers,
         method_workers=runtime_flags.method_workers,
         profile=runtime_flags.profile,
     )
 
+    # ── Integrated SanTok Generation mode ────────────────────────────────────
+    if mode == "generate":
+        from integration.santok_identity_bridge import ThresholdSantokBridge
+        
+        # Prompt for active Base Model JSON
+        corpus_prompt = prompt_text("Enter target corpus (e.g. mahabharata_ganguli_1 or absolute path)", prompt_line="corpus> ") if "prompt_text" in globals() else input("corpus> ")
+        
+        # Clean powershell artifacts
+        raw_input = (corpus_prompt or "mahabharata_ganguli_1").strip().replace("&", "").replace("'", "").replace('"', "").strip()
+        
+        # Extract the semantic name whether they passed a path or a token name
+        corpus_name = os.path.basename(raw_input).replace(".txt", "").replace(".jsonl", "").replace("_santok_unified.json", "")
+        
+        if raw_input.endswith("_santok_unified.json") and os.path.exists(raw_input):
+            _corpus = raw_input
+        else:
+            _corpus = os.path.join(str(ROOT), "output", f"{corpus_name}_santok_unified.json")
+        
+        if not os.path.exists(_corpus):
+            print(f"[!] Target {corpus_name} JSON not found. Build it first natively:")
+            print(f"    python santok_pipeline.py \"{raw_input}\"")
+            return EXIT_FAILURE
+            
+        print("\n" + "=" * 65)
+        print("THRESHOLD_ONSET + SantokEngine — Integrated Generation")
+        print("=" * 65)
+        
+        if not text:
+            _print_header("THRESHOLD_ONSET — Integrated Generation")
+            # Fallback to standard input if interactive prompt is missing
+            try:
+                from integration.interactive_prompt import prompt_text
+                text = prompt_text("Enter your real identity state text", prompt_line="> ")
+            except ImportError:
+                text = input("Enter Real Identity State Text > ").strip()
+                
+            if not text:
+                print("[!] No real textual context provided. Aborting.")
+                return EXIT_FAILURE
+        
+        bridge = ThresholdSantokBridge(_corpus)
+        output = bridge.generate(current_state_text=text, length=30)
+        
+        print("\n" + "=" * 65)
+        print("GENERATED SANTOK OUTPUT")
+        print("=" * 65)
+        print(output)
+        
+        return EXIT_SUCCESS
+
     if mode == "--check":
         if not text:
-            from integration.interactive_prompt import prompt_text, is_interactive
+            try:
+                from integration.interactive_prompt import is_interactive
+            except ImportError:
+                is_interactive = lambda: False  # type: ignore
             if is_interactive():
                 _print_header("THRESHOLD_ONSET — Quick check")
                 text = _prompt_user_input()

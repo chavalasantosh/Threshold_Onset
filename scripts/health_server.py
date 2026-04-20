@@ -2,7 +2,7 @@
 """
 Minimal HTTP server for THRESHOLD_ONSET.
 
-- GET /health, /ready — Health status (JSON)
+- GET /health, /ready — Health status (compact line text, ``text/plain``)
 - POST /process — Process text. Body: `{"text": "..."}` plus optional:
   `return_model_state` (bool), `include_phase10_metrics` (bool),
   `max_input_length`, `timeout_seconds`, `silent` (see `threshold_onset.api.process`).
@@ -36,22 +36,48 @@ from threshold_onset.api import (
     DEFAULT_TIMEOUT_SECONDS,
     process,
 )
+from threshold_onset.line_codec import encode as encode_compact
 
 LOG = logging.getLogger("health_server")
 STARTED_AT = time.time()
 DEFAULT_BODY_LIMIT = 2_000_000
 
 
+def _jsonable(obj):
+    """Recursively convert values to JSON-compatible types for encoding."""
+    if obj is None or isinstance(obj, (bool, int, float, str)):
+        return obj
+    if isinstance(obj, dict):
+        return {str(k): _jsonable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_jsonable(x) for x in obj]
+    return str(obj)
+
+
 def _new_trace_id() -> str:
     return uuid.uuid4().hex[:16]
 
 
-def _json_log(event: str, trace_id: str, **fields):
+def _compact_log(event: str, trace_id: str, **fields):
     payload = {"event": event, "trace_id": trace_id, **fields}
     try:
-        LOG.info(json.dumps(payload, ensure_ascii=True, sort_keys=True))
+        LOG.info(encode_compact(payload, sort_keys=True).rstrip("\n"))
     except Exception:
         pass
+
+
+def _parse_bool_field(payload, key: str, default: bool) -> bool:
+    """Parse booleans from JSON safely, including common string values."""
+    value = payload.get(key, default)
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"1", "true", "yes", "y", "on"}:
+            return True
+        if normalized in {"0", "false", "no", "n", "off"}:
+            return False
+    return bool(default)
 
 
 def get_health_status():
@@ -96,10 +122,10 @@ def get_readiness_status():
 class HealthHandler(BaseHTTPRequestHandler):
     """Handle /health, /ready, and POST /process."""
 
-    def _json_response(self, data, code=200, trace_id=""):
-        body = json.dumps(data, default=str).encode("utf-8")
+    def _compact_text_response(self, data, code=200, trace_id=""):
+        body = encode_compact(_jsonable(data), sort_keys=True).encode("utf-8")
         self.send_response(code)
-        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         if trace_id:
             self.send_header("X-Trace-Id", trace_id)
@@ -115,16 +141,16 @@ class HealthHandler(BaseHTTPRequestHandler):
         if parsed.path in ("/health", "/"):
             status = get_health_status()
             code = 200 if status.get("status") == "ok" else 503
-            _json_log("http_get_health", trace_id, status_code=code)
-            self._json_response(status, code, trace_id=trace_id)
+            _compact_log("http_get_health", trace_id, status_code=code)
+            self._compact_text_response(status, code, trace_id=trace_id)
         elif parsed.path == "/ready":
             status = get_readiness_status()
             code = 200 if status.get("ready") else 503
-            _json_log("http_get_ready", trace_id, status_code=code)
-            self._json_response(status, code, trace_id=trace_id)
+            _compact_log("http_get_ready", trace_id, status_code=code)
+            self._compact_text_response(status, code, trace_id=trace_id)
         else:
-            _json_log("http_get_not_found", trace_id, path=parsed.path, status_code=404)
-            self._json_response({"error": "not_found", "trace_id": trace_id}, 404, trace_id=trace_id)
+            _compact_log("http_get_not_found", trace_id, path=parsed.path, status_code=404)
+            self._compact_text_response({"error": "not_found", "trace_id": trace_id}, 404, trace_id=trace_id)
 
     def do_POST(self):
         trace_id = self._trace_id()
@@ -134,8 +160,8 @@ class HealthHandler(BaseHTTPRequestHandler):
                 content_len = int(self.headers.get("Content-Length", "0") or 0)
                 max_body_bytes = int(os.environ.get("HEALTH_MAX_BODY_BYTES", str(DEFAULT_BODY_LIMIT)))
                 if content_len > max_body_bytes:
-                    _json_log("http_post_rejected_body_too_large", trace_id, content_len=content_len)
-                    self._json_response(
+                    _compact_log("http_post_rejected_body_too_large", trace_id, content_len=content_len)
+                    self._compact_text_response(
                         {"error": "body_too_large", "trace_id": trace_id, "max_body_bytes": max_body_bytes},
                         413,
                         trace_id=trace_id,
@@ -144,13 +170,27 @@ class HealthHandler(BaseHTTPRequestHandler):
                 raw = self.rfile.read(content_len).decode("utf-8")
                 payload = json.loads(raw) if raw else {}
                 text = payload.get("text", "")
-                max_input_length = int(payload.get("max_input_length", DEFAULT_MAX_INPUT_LENGTH))
-                timeout_seconds = float(payload.get("timeout_seconds", os.environ.get("HEALTH_PROCESS_TIMEOUT", DEFAULT_TIMEOUT_SECONDS)))
-                silent = bool(payload.get("silent", True))
-                return_model_state = bool(payload.get("return_model_state", False))
-                include_phase10_metrics = bool(payload.get("include_phase10_metrics", False))
+                try:
+                    max_input_length = int(payload.get("max_input_length", DEFAULT_MAX_INPUT_LENGTH))
+                    timeout_seconds = float(
+                        payload.get(
+                            "timeout_seconds",
+                            os.environ.get("HEALTH_PROCESS_TIMEOUT", DEFAULT_TIMEOUT_SECONDS),
+                        )
+                    )
+                except (TypeError, ValueError) as e:
+                    _compact_log("http_post_invalid_input_field", trace_id, error=str(e))
+                    self._compact_text_response(
+                        {"error": f"input_validation: {e}", "trace_id": trace_id},
+                        400,
+                        trace_id=trace_id,
+                    )
+                    return
+                silent = _parse_bool_field(payload, "silent", True)
+                return_model_state = _parse_bool_field(payload, "return_model_state", False)
+                include_phase10_metrics = _parse_bool_field(payload, "include_phase10_metrics", False)
 
-                _json_log(
+                _compact_log(
                     "http_post_process_started",
                     trace_id,
                     input_chars=len(text or ""),
@@ -171,19 +211,19 @@ class HealthHandler(BaseHTTPRequestHandler):
                     code = 400
                 elif result.error_code in ("runtime_timeout",):
                     code = 504
-                _json_log("http_post_process_finished", trace_id, status_code=code, success=result.success)
-                self._json_response(result.to_dict(), code=code, trace_id=trace_id)
+                _compact_log("http_post_process_finished", trace_id, status_code=code, success=result.success)
+                self._compact_text_response(result.to_dict(), code=code, trace_id=trace_id)
             except json.JSONDecodeError as e:
-                _json_log("http_post_bad_json", trace_id, error=str(e))
-                self._json_response({"error": f"invalid_json: {e}", "trace_id": trace_id}, 400, trace_id=trace_id)
+                _compact_log("http_post_bad_json", trace_id, error=str(e))
+                self._compact_text_response({"error": f"invalid_json: {e}", "trace_id": trace_id}, 400, trace_id=trace_id)
             except Exception as e:
                 from threshold_onset.exceptions import ValidationError
                 code = 400 if isinstance(e, ValidationError) else 500
-                _json_log("http_post_process_exception", trace_id, status_code=code, error=str(e))
-                self._json_response({"error": str(e), "trace_id": trace_id}, code, trace_id=trace_id)
+                _compact_log("http_post_process_exception", trace_id, status_code=code, error=str(e))
+                self._compact_text_response({"error": str(e), "trace_id": trace_id}, code, trace_id=trace_id)
         else:
-            _json_log("http_post_not_found", trace_id, path=parsed.path, status_code=404)
-            self._json_response({"error": "not_found", "trace_id": trace_id}, 404, trace_id=trace_id)
+            _compact_log("http_post_not_found", trace_id, path=parsed.path, status_code=404)
+            self._compact_text_response({"error": "not_found", "trace_id": trace_id}, 404, trace_id=trace_id)
 
     def log_message(self, fmt, *args):
         pass  # Suppress access logs

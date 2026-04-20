@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import re
 import subprocess
@@ -17,8 +16,13 @@ from typing import Dict, List, Optional
 
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from threshold_onset.line_codec import encode as encode_compact
+
 LOG_DIR = ROOT / "logs" / "perf"
-LATEST_JSON = LOG_DIR / "baseline_latest.json"
+LATEST_REPORT = LOG_DIR / "baseline_latest.txt"
 LATEST_MD = LOG_DIR / "baseline_latest.md"
 
 
@@ -63,30 +67,39 @@ def _run_command(
     stderr_path = LOG_DIR / f"{stamp}_{cmd_key}.stderr.log"
 
     t0 = time.time()
+    timed_out = False
     with open(stdout_path, "w", encoding="utf-8", errors="replace") as out_f, open(
         stderr_path, "w", encoding="utf-8", errors="replace"
     ) as err_f:
-        proc = subprocess.run(
-            command,
-            cwd=str(ROOT),
-            stdout=out_f,
-            stderr=err_f,
-            text=True,
-            timeout=timeout_s,
-            check=False,
-        )
+        try:
+            proc = subprocess.run(
+                command,
+                cwd=str(ROOT),
+                stdout=out_f,
+                stderr=err_f,
+                text=True,
+                timeout=timeout_s,
+                check=False,
+            )
+            exit_code = proc.returncode
+        except subprocess.TimeoutExpired:
+            timed_out = True
+            exit_code = 124
+            err_f.write(f"\nCommand timed out after {timeout_s}s\n")
     elapsed_ms = (time.time() - t0) * 1000.0
 
     stdout_text = stdout_path.read_text(encoding="utf-8", errors="replace")
+    stderr_text = stderr_path.read_text(encoding="utf-8", errors="replace")
+    combined_text = f"{stdout_text}\n{stderr_text}"
     final_result_count = len(re.findall(r"FINAL RESULT", stdout_text))
     status_ok_count = len(re.findall(r"Status:\s+OK", stdout_text))
-    traceback_count = len(re.findall(r"Traceback \(most recent call last\):", stdout_text))
+    traceback_count = len(re.findall(r"Traceback \(most recent call last\):", combined_text))
     total_time_ms_values = [float(x) for x in re.findall(r"Total time:\s+([0-9]+(?:\.[0-9]+)?)ms", stdout_text)]
 
     return CommandMetrics(
         name=name,
         command=command,
-        exit_code=proc.returncode,
+        exit_code=exit_code,
         elapsed_ms=elapsed_ms,
         stdout_path=str(stdout_path),
         stderr_path=str(stderr_path),
@@ -94,6 +107,7 @@ def _run_command(
         status_ok_count=status_ok_count,
         traceback_count=traceback_count,
         total_time_ms_values=total_time_ms_values,
+        notes={"timed_out": str(timed_out).lower()} if timed_out else {},
     )
 
 
@@ -195,12 +209,9 @@ def main() -> int:
     )
 
     LOG_DIR.mkdir(parents=True, exist_ok=True)
-    LATEST_JSON.write_text(
-        json.dumps(asdict(report), indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
+    LATEST_REPORT.write_text(encode_compact(asdict(report), sort_keys=True), encoding="utf-8")
     _write_markdown(report)
-    print(f"[baseline] saved {LATEST_JSON}")
+    print(f"[baseline] saved {LATEST_REPORT}")
     print(f"[baseline] saved {LATEST_MD}")
     return 0
 

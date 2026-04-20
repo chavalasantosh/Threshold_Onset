@@ -137,11 +137,13 @@ def main():
         "=" * 70 + "\n\n",
     ]
 
+    had_failures = False
     for name, cmd, env in commands:
         lines.append("\n" + "=" * 70 + "\n")
         lines.append(f"COMMAND: {name}\n")
         lines.append("=" * 70 + "\n\n")
         code = run_one(cmd, lines, env)
+        had_failures = had_failures or (code != 0)
         lines.append("")
 
     lines.append("\n" + "=" * 70 + "\n")
@@ -161,7 +163,8 @@ def main():
     print(f"Timestamped: {timestamped}")
     print(f"Latest:      {latest}")
     print("Give FULL_CLEAN_LOG.txt (or the timestamped file) to the next assistant.")
+    return 1 if had_failures else 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

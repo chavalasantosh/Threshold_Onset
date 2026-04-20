@@ -178,5 +178,11 @@ def run_convergence_test():
     }
 
 
+def test_phase3_convergence():
+    """Pytest entrypoint so convergence validation is enforced in CI."""
+    result = run_convergence_test()
+    assert result["all_passed"], "Phase 3 convergence validation failed"
+
+
 if __name__ == "__main__":
     run_convergence_test()

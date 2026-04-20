@@ -74,7 +74,7 @@ def run_step(name: str, cmd: list, out_file: Path) -> int:
     return result.returncode
 
 
-def main() -> None:
+def main() -> int:
     argv = list(sys.argv[1:])
     full_suite = "--full" in argv
     if "--full" in argv:
@@ -101,6 +101,7 @@ def main() -> None:
         steps.append(("05_suite.txt", "Full 10-step suite", [sys.executable, "main.py"]))
 
     results = []
+    had_failures = False
     for filename, name, cmd in steps:
         out_file = run_dir / filename
         print(f"Running: {name} ...")
@@ -109,6 +110,7 @@ def main() -> None:
         else:
             code = run_step(name, cmd, out_file)
         results.append((filename, code))
+        had_failures = had_failures or (code != 0)
         print(f"  -> {out_file} (exit {code})")
 
     summary_path = run_dir / "summary.txt"
@@ -119,7 +121,8 @@ def main() -> None:
             f.write(f"  {filename}  exit={code}\n")
     print(f"\nAll output saved to: {run_dir}")
     print(f"Summary: {summary_path}")
+    return 1 if had_failures else 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

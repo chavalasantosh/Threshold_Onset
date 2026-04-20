@@ -62,11 +62,13 @@ def main():
 
     print(f"Output folder: {run_dir}\n")
     results = []
+    had_failures = False
     for filename, desc, cmd in COMMANDS:
         out_file = run_dir / filename
         print(f"Running: {desc} ...")
         code = run_one(cmd, out_file)
         results.append((filename, code))
+        had_failures = had_failures or (code != 0)
         print(f"  -> {filename} (exit {code})")
 
     summary = run_dir / "summary.txt"
@@ -76,7 +78,8 @@ def main():
             f.write(f"  {fn}  exit={c}\n")
     print(f"\nDone. All output in: {run_dir}")
     print(f"Summary: {summary}")
+    return 1 if had_failures else 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

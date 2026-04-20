@@ -1,0 +1,21 @@
+language_pair,language_a,language_b,cosine_similarity,rank
+Spanish ↔ Ukrainian,Spanish,Ukrainian,0.7182470560073853,1653
+Spanish ↔ Malay,Spanish,Malay,0.7182470560073853,1652
+German ↔ Kannada,German,Kannada,0.7214968204498291,1651
+French ↔ Kannada,French,Kannada,0.724784255027771,1650
+German ↔ Ukrainian,German,Ukrainian,0.72850501537323,1649
+German ↔ Malay,German,Malay,0.72850501537323,1648
+Japanese ↔ Kannada,Japanese,Kannada,0.7288029789924622,1647
+Spanish ↔ Danish,Spanish,Danish,0.7415335774421692,1646
+Spanish ↔ Swedish,Spanish,Swedish,0.7426013946533203,1645
+German ↔ Kannada,German,Kannada,0.7426161170005798,1644
+Spanish ↔ Kannada,Spanish,Kannada,0.7450946569442749,1643
+Spanish ↔ Hausa,Spanish,Hausa,0.745441734790802,1642
+Russian ↔ Kannada,Russian,Kannada,0.7454521656036377,1641
+German ↔ Hungarian,German,Hungarian,0.7458460330963135,1639
+German ↔ Hebrew,German,Hebrew,0.7458460330963135,1640
+Bengali ↔ Kannada,Bengali,Kannada,0.7471047639846802,1638
+Korean ↔ Kannada,Korean,Kannada,0.7475021481513977,1637
+French ↔ Ukrainian,French,Ukrainian,0.7475411295890808,1636
+French ↔ Malay,French,Malay,0.7475411295890808,1635
+French ↔ Hungarian,French,Hungarian,0.748822808265686,1633

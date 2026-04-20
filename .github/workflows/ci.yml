@@ -1,0 +1,76 @@
+# Full CI: runs on every push/PR, on a schedule, and manually — end-to-end test suite.
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Weekly health check (UTC)
+    - cron: "0 6 * * 1"
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }}, Py ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python-version: "3.12"
+          - os: ubuntu-latest
+            python-version: "3.11"
+          - os: windows-latest
+            python-version: "3.12"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install package + CI deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[ci]"
+
+      - name: Syntax check (compileall)
+        run: |
+          python -m compileall -q threshold_onset integration scripts santek_base_model.py build_hindu_corpus.py run_semantic_discovery.py
+
+      - name: Run tests (stdlib + semantic + integration)
+        run: |
+          python -m pytest tests threshold_onset integration -q --tb=short --ignore=integration/test_permuted.py
+
+      - name: IndicCorp trainer script smoke (import + --help)
+        run: |
+          python scripts/train_indiccorp_line_dir.py --help
+
+  package-smoke:
+    name: Package build smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build sdist/wheel
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build
+      - name: List artifacts
+        run: ls -la dist/
