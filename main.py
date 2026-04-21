@@ -170,16 +170,21 @@ def main() -> int:
         # Prompt for active Base Model JSON
         corpus_prompt = prompt_text("Enter target corpus (e.g. mahabharata_ganguli_1 or absolute path)", prompt_line="corpus> ") if "prompt_text" in globals() else input("corpus> ")
         
-        # Clean powershell artifacts
-        raw_input = (corpus_prompt or "mahabharata_ganguli_1").strip().replace("&", "").replace("'", "").replace('"', "").strip()
+        # Clean powershell artifacts and accidental console copy-pastes
+        raw_input = (corpus_prompt or "mahabharata_ganguli_1").strip()
+        raw_input = raw_input.replace("&", "").replace("'", "").replace('"', "").replace("corpus>", "").strip()
         
         # Extract the semantic name whether they passed a path or a token name
-        corpus_name = os.path.basename(raw_input).replace(".txt", "").replace(".jsonl", "").replace("_santok_unified.json", "")
+        corpus_name = os.path.basename(raw_input).replace(".txt", "").replace(".jsonl", "").replace("_santok_unified.jsonl", "").replace("_santok_unified.json", "")
         
-        if raw_input.endswith("_santok_unified.json") and os.path.exists(raw_input):
+        if raw_input.endswith("_santok_unified.jsonl") and os.path.exists(raw_input):
+            _corpus = raw_input
+        elif raw_input.endswith("_santok_unified.json") and os.path.exists(raw_input): # Fallback strictly for older generated runs
             _corpus = raw_input
         else:
-            _corpus = os.path.join(str(ROOT), "output", f"{corpus_name}_santok_unified.json")
+            _corpus = os.path.join(str(ROOT), "output", f"{corpus_name}_santok_unified.jsonl")
+            if not os.path.exists(_corpus): # Fallback
+                _corpus = os.path.join(str(ROOT), "output", f"{corpus_name}_santok_unified.json")
         
         if not os.path.exists(_corpus):
             print(f"[!] Target {corpus_name} JSON not found. Build it first natively:")

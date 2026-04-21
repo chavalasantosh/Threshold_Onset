@@ -10,11 +10,32 @@ Identity Hook:
   If the validator refuses (returns False), the engine tests the next
   lowest-friction candidate, until identity and physics align.
   If no validator is passed, the engine runs in pure physics mode.
+
+Law 8 — TERMINATION PHYSICS:
+  The engine stops when it reaches a sentence-ending token.
+  Sentence-ending cids are derived from our own Law 3 sovereign fingerprints:
+    1908   → '.'  (fe=7)
+    141521 → '!'  (fe=4)
+    101310 → '?'  (fe=4)
+  Generation halts naturally at sentence completion, not at a fixed token count.
+  This is how thought terminates: not by count, but by structural closure.
 """
 
 import json
 import os
 import random
+
+# ── Law 8: Termination Physics ──────────────────────────────────────────────
+# These are the sovereign content_id fingerprints of sentence-ending punctuation.
+# Derived from our own Law 3 (sentence boundary detection via cid identity).
+# Not borrowed from any grammar rule or external library.
+_SENTENCE_END_CIDS = {
+    1908,     # '.'  — standard sentence end
+    141521,   # '!'  — exclamation end
+    101310,   # '?'  — question end
+}
+# Sentence-start structural zones (Law 4: secondary boundary confirmation)
+_SENTENCE_START_FE = {1, 9}
 
 def _build_vocab(tokens, min_freq=2):
     vocab = {}
@@ -67,18 +88,23 @@ class SantokEngine:
     def load_from_path(self, json_path, min_freq=2):
         if not os.path.exists(json_path):
             raise FileNotFoundError(f"[!] Corpus missing: {json_path}")
-        with open(json_path, encoding="utf-8") as f:
-            data = json.load(f)
-        self._load(data, min_freq)
+            
+        if json_path.endswith(".jsonl"):
+            self._load_stream(json_path, min_freq)
+        else:
+            with open(json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            self._load(data, min_freq)
 
     def _load(self, data, min_freq=2):
-        self.tokens = data.get("tokens", [])
-        self.vocab = _build_vocab(self.tokens, min_freq)
+        self.seed_pool = data.get("tokens", [])[:5000] # Seed safety block
+        tokens = data.get("tokens", [])
+        self.vocab = _build_vocab(tokens, min_freq)
         
         # Build Matrix natively
         self.matrix = {}
         content = [
-            t for t in self.tokens
+            t for t in tokens
             if t.get("text", "").strip() 
             and not self._is_excluded(int(t.get("content_id", 0)))
         ]
@@ -106,15 +132,77 @@ class SantokEngine:
                 "transfer_d_bs": transfer_bs,
             })
 
+    def _load_stream(self, json_path, min_freq=2):
+        self.vocab = {}
+        self.matrix = {}
+        self.seed_pool = []
+        
+        t_minus_1 = None
+        t_minus_2 = None
+        
+        # ── Single-pass Linear Streaming ──
+        lines_read = 0
+        with open(json_path, "r", encoding="utf-8") as f:
+            for line in f:
+                if not line.strip(): continue
+                try:
+                    t0 = json.loads(line)
+                except: continue
+
+                cid = int(t0.get("content_id", 0))
+                if cid == 0: continue
+                
+                lines_read += 1
+                if lines_read % 500000 == 0:
+                    print(f"    [-] Bounding Matrix: {lines_read:,} nodes ingested natively...")
+                
+                # Capture seed fallback pool
+                if len(self.seed_pool) < 5000:
+                    self.seed_pool.append(t0)
+
+                # Vocab density mapping
+                if cid not in self.vocab:
+                    self.vocab[cid] = {
+                        "text": t0.get("text", "").strip(),
+                        "freq": 0, "fe": int(t0.get("frontend", 0)), 
+                        "saturation": 1.0
+                    }
+                self.vocab[cid]["freq"] += 1
+                
+                # Topological Binding Window
+                txt = t0.get("text", "").strip()
+                if txt and not self._is_excluded(cid):
+                    if t_minus_2 and t_minus_1:
+                        d_fe = int(t_minus_1.get("frontend", 0)) - int(t_minus_2.get("frontend", 0))
+                        d_bs = int(t_minus_1.get("backend_scaled", 0)) - int(t_minus_2.get("backend_scaled", 0))
+                        transfer_bs = int(t0.get("backend_scaled", 0)) - int(t_minus_1.get("backend_scaled", 0))
+                        
+                        if cid not in self.matrix:
+                            self.matrix[cid] = []
+                            
+                        self.matrix[cid].append({
+                            "lock_d_fe": d_fe,
+                            "lock_d_bs": d_bs,
+                            "transfer_d_bs": transfer_bs,
+                        })
+                    
+                    # Shift Geometry Window
+                    t_minus_2 = t_minus_1
+                    t_minus_1 = t0
+
+        # Post-process structural culling
+        self.vocab = {cid: v for cid, v in self.vocab.items() if v["freq"] >= min_freq}
+
     def get_random_seed(self):
-        """Pulls a random valid 2-word tuple natively from the corpus."""
-        if not self.tokens:
+        """Pulls a random valid 2-word tuple natively from the streaming pool."""
+        if not self.seed_pool:
             return []
         
         for attempt in range(100):
-            start = random.randint(1000, max(2000, len(self.tokens) - 100))
+            # Select safely within the bounds of the isolated 5000 length pool
+            start = random.randint(0, max(0, len(self.seed_pool) - 50))
             seed = []
-            for t in self.tokens[start:]:
+            for t in self.seed_pool[start:]:
                 cid = int(t.get("content_id", 0))
                 txt = t.get("text", "").strip()
                 if txt and not self._is_excluded(cid) and cid > 0:
@@ -123,7 +211,7 @@ class SantokEngine:
                         return seed
         return []
 
-    def _predict_next(self, sequence, active_matrix, bs_tolerance=5000, identity_validator=None):
+    def _predict_next(self, sequence, active_matrix, bs_tolerance=5000, identity_validator=None, force_discharge=False):
         if len(sequence) < 2:
             return None, 0
 
@@ -153,6 +241,12 @@ class SantokEngine:
 
         if not candidates:
             return None, 0
+            
+        # Topoglogical Wave Constraint (Law 6)
+        if force_discharge:
+            discharged = [c for c in candidates if abs(c[3]) > 7000]
+            if discharged:
+                candidates = discharged
 
         # Primary: Lowest Friction. Secondary: Highest Mass.
         candidates.sort(key=lambda x: (x[1], -x[2]))
@@ -171,6 +265,7 @@ class SantokEngine:
                     "fe":   v.get("fe", 0),
                     "freq": v.get("freq", 0),
                     "weight": weight,
+                    "transfer_energy": transfer_d_bs
                 }
                 if not identity_validator(token_dict):
                     continue  # Identity refused — test next lowest-friction candidate
@@ -178,17 +273,27 @@ class SantokEngine:
 
         return None, 0
 
-    def generate(self, seed_tokens=None, length=30, tolerance=5000, identity_validator=None):
+    def generate(self, seed_tokens=None, length=30, tolerance=5000,
+                 identity_validator=None, tension_threshold=4,
+                 until_sentence=False, max_length=80):
         """
-        Executes Generation via Native Law 5 Friction Matching.
+        Executes generation via native Laws 5, 6, and 8.
+
+        Law 5: Friction Matching — lowest-friction structural transition wins.
+        Law 6: Wave Coherence — kinetic pressure prevents static loops.
+        Law 8: Termination Physics — if until_sentence=True, stop when a
+               sentence-ending token is produced (cid in SENTENCE_END_CIDS).
+               This is how thought completes: not by token count, but by
+               structural closure. max_length is the hard cap in this mode.
 
         Args:
-            seed_tokens   : List of 2 token dicts from the corpus. Auto-selected if None.
-            length        : Number of tokens to generate beyond the seed.
-            tolerance     : BS friction tolerance window for constraint matching.
-            identity_validator : Optional callable from THRESHOLD_ONSET identity layer.
-                                 Receives full token dict {cid, text, fe, freq, weight}.
-                                 Returns True to allow, False to refuse the candidate.
+            seed_tokens       : List of 2 token dicts. Auto-selected if None.
+            length            : Fixed-length mode token count (used when until_sentence=False).
+            tolerance         : BS friction tolerance window.
+            identity_validator: Optional THRESHOLD_ONSET structural gate.
+            tension_threshold : Law 6 static pressure snap threshold.
+            until_sentence    : If True, run Law 8 — stop at sentence-end cid.
+            max_length        : Hard cap for until_sentence mode (default 80 tokens).
         """
         if not self.matrix:
             raise ValueError("[!] Matrix is uninitialized. Pass JSON on __init__")
@@ -197,27 +302,41 @@ class SantokEngine:
         if len(seed_tokens) < 2:
             raise ValueError("[!] Need exactly 2 seed tokens.")
 
-        sequence = list(seed_tokens)
-        gen_cids = []
-        recent = []
+        sequence  = list(seed_tokens)
+        gen_cids  = []
+        recent    = []
+        static_pressure = 0
 
-        for step in range(length):
+        # Law 8: in sentence mode, run until structural closure or max_length
+        effective_length = max_length if until_sentence else length
+
+        for step in range(effective_length):
             active_matrix = {
                 cid: entries for cid, entries in self.matrix.items()
                 if int(cid) not in recent
             }
 
+            force_discharge = (static_pressure >= tension_threshold)
+
             best_cid, transfer_bs = self._predict_next(
-                sequence, active_matrix, tolerance, identity_validator
+                sequence, active_matrix, tolerance, identity_validator,
+                force_discharge=force_discharge
             )
 
             if best_cid is None:
-                # Widen tolerance, pass identity filter through again
+                # Widen tolerance — structural fallback
                 best_cid, transfer_bs = self._predict_next(
-                    sequence, self.matrix, tolerance * 3, identity_validator
+                    sequence, self.matrix, tolerance * 3, identity_validator,
+                    force_discharge=False
                 )
                 if best_cid is None:
                     break
+
+            # Kinetic Pressure tracking (Law 6)
+            if abs(transfer_bs) < 3000:
+                static_pressure += 1
+            else:
+                static_pressure = 0
 
             gen_cids.append(best_cid)
 
@@ -226,19 +345,25 @@ class SantokEngine:
                 recent.pop(0)
 
             v = self.vocab.get(int(best_cid), {})
-            native_fe = v.get("fe", 1)
-            prev_bs = int(sequence[-1].get("backend_scaled", 0))
+            native_fe  = v.get("fe", 1)
+            prev_bs    = int(sequence[-1].get("backend_scaled", 0))
 
             sequence.append({
-                "content_id": best_cid,
-                "frontend": native_fe,
+                "content_id":     best_cid,
+                "frontend":       native_fe,
                 "backend_scaled": max(0, min(99999, prev_bs + transfer_bs)),
             })
 
+            # ── Law 8: Termination Physics ─────────────────────────────────
+            if until_sentence and int(best_cid) in _SENTENCE_END_CIDS:
+                # Sentence-ending cid reached — structural closure confirmed.
+                # The thought is complete. Stop generation.
+                break
+
         # Assemble string output
-        words = [seed_tokens[0]["text"], seed_tokens[1]["text"]]
+        words = [seed_tokens[0].get("text", ""), seed_tokens[1].get("text", "")]
         for cid in gen_cids:
             v = self.vocab.get(int(cid), {})
             words.append(v.get("text", f"<{cid}>"))
 
-        return " ".join(words)
+        return " ".join(w for w in words if w)

@@ -127,80 +127,95 @@ class SanTokAPI:
         }
 
 
+def process_target_file(file_path, api):
+    print("\n" + "=" * 72)
+    print(f"[*] INGESTING TARGET: {os.path.basename(file_path)}")
+    print("=" * 72)
+    
+    # We switch entirely to stream chunking to survive memory bounds.
+    CHUNK_MEM_BOUND = 500000  # 500k chars ~ 5MB RAM per flush
+
+    # 1. Open Target Output
+    base_name = os.path.basename(file_path)
+    for ext in [".txt", ".jsonl", ".csv", ".json"]:
+        base_name = base_name.replace(ext, "")
+        
+    output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
+    os.makedirs(output_dir, exist_ok=True)
+    out_file = os.path.join(output_dir, f"{base_name}_santok_unified.jsonl")
+    
+    total_tokens = 0
+    buffer_text = ""
+    chunk_index = 0
+    
+    # 2. Iterate Native Reads
+    with open(out_file, "w", encoding="utf-8") as f_out:
+        with open(file_path, "r", encoding="utf-8", errors="ignore") as f_in:
+            for line in f_in:
+                if not line.strip(): continue
+                # Decode JSONL or handle raw text natively
+                if file_path.endswith('.jsonl') or file_path.endswith('.json'):
+                    try:
+                        obj = json.loads(line)
+                        for field in ("text", "en", "hi", "source", "target", "sentence"):
+                            if field in obj and obj[field]:
+                                buffer_text += str(obj[field]) + " "
+                                break
+                    except: pass
+                elif file_path.endswith('.csv'):
+                    # Basic naive CSV column aggregation for strict physics texts
+                    buffer_text += line.replace(",", " ") + " "
+                else:
+                    buffer_text += line + " "
+
+                # 3. Process Chunk Bound
+                if len(buffer_text) >= CHUNK_MEM_BOUND:
+                    result = api.process(buffer_text)
+                    if result.get("tokens"):
+                        for t in result["tokens"]:
+                            if not t["text"].strip(): continue
+                            f_out.write(json.dumps(t, ensure_ascii=False) + "\n")
+                            total_tokens += 1
+                    buffer_text = ""
+                    chunk_index += 1
+                    if chunk_index % 1 == 0:
+                        print(f"    [-] Checkpoint: {total_tokens} tokens structured...")
+
+            # 4. Process Trailing Remnants
+            if buffer_text.strip():
+                result = api.process(buffer_text)
+                if result.get("tokens"):
+                    for t in result["tokens"]:
+                        if not t["text"].strip(): continue
+                        f_out.write(json.dumps(t, ensure_ascii=False) + "\n")
+                        total_tokens += 1
+
+    print("\n" + "-" * 72)
+    print(f"[✓] SUCCESS! Exported {total_tokens} topological bounds sequentially.")
+    print(f"[✓] Saved zero-memory JSONL structure to: {out_file}")
+    print("-" * 72)
+
+
 # ── Executable Demo ──────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import sys
     import json
-    
+    import os
+
     if len(sys.argv) > 1 and os.path.exists(sys.argv[1]):
-        file_path = sys.argv[1]
-
-        # Handle massive JSONL structures dynamically
-        if file_path.endswith('.jsonl'):
-            lines_text = []
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                for line in f:
-                    if not line.strip(): continue
-                    try:
-                        obj = json.loads(line)
-                        # Support multiple field names found in common translation datasets
-                        for field in ("text", "en", "hi", "source", "target", "sentence"):
-                            if field in obj and obj[field]:
-                                lines_text.append(str(obj[field]))
-                                break
-                    except:
-                        pass
-            sample_text = " ".join(lines_text)
-        else:
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                sample_text = f.read().strip()  # Full data, no truncation.
-
-        print(f"[*] Loaded REAL DATA from: {os.path.basename(file_path)} (Length: {len(sample_text)} chars)")
+        target_path = sys.argv[1]
     else:
-        sample_text = "Action before knowledge. The quick brown fox jumps over the lazy dog."
-        print(f"[*] NOTE: Using default sample text. To use REAL data, run: python santok_pipeline.py <filename.txt>")
-        file_path = "sample_text.txt"
-    
-    print("=" * 72)
-    print("SanTok INTEGRATED API")
-    print("One command. Full extended pipeline.")
-    print("=" * 72)
+        print("[!] No valid input path provided.")
+        sys.exit(1)
 
     api = SanTokAPI()
-    print(f"[*] Core Initialized.")
-    print(f"[*] Integrated Modules Attached: {api.modules_applied if hasattr(api, 'modules_applied') else list(api.modules.keys())}")
     
-    print(f"\n[*] Processing Text. This may take a moment for massive files...")
-    result = api.process(sample_text)
-    
-    # Clean console printout of the first 50 words just for visual confirmation
-    print("-" * 72)
-    print(f"{'TEXT':<12} | {'FE':>2} | {'BS':>6} | {'CID':>8} | ENRICHMENTS FROM MODULES")
-    print("-" * 72)
-    
-    tokens_to_print = result["tokens"][:50]
-    
-    for t in tokens_to_print:
-        if not t["text"].strip(): 
-            continue
-        enrichments = {k: v for k, v in t.items() if k not in ["index", "text", "frontend", "backend_scaled", "content_id", "uid", "prev_uid", "next_uid", "pos_signals"]}
-        enrich_str = " ".join([f"{k}={v}" for k, v in enrichments.items()])
-        # Prevent massive unprintable string blocks blowing up the console
-        safe_text = repr(t['text'])[:12]
-        print(f"{safe_text:<12} | {t['frontend']:>2} | {t['backend_scaled']:>6} | {t['content_id']:>8} | {enrich_str}")
-        
-    if len(result["tokens"]) > 50:
-        print(f"\n... and {len(result['tokens']) - 50} more tokens processed in memory.")
-    
-    # EXPORT THE FULL ENGINE RESULT
-    output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
-    os.makedirs(output_dir, exist_ok=True)
-    out_name = os.path.basename(file_path).replace('.txt', '_santok_unified.json')
-    out_path = os.path.join(output_dir, out_name)
-    
-    print(f"\n[*] WRITING FULL PIPELINE OUTPUT TO DISK...")
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(result, f, indent=2)
-    
-    print(f"[✓] SUCCESS! Saved massive JSON structure to: {out_path}")
-    print("=" * 72)
+    if os.path.isdir(target_path):
+        print(f"[*] Directory target detected. Initiating Bulk Pipeline...")
+        for root, dirs, files in os.walk(target_path):
+            for file in files:
+                if file.endswith(('.txt', '.jsonl', '.json', '.csv')):
+                    process_target_file(os.path.join(root, file), api)
+    else:
+        process_target_file(target_path, api)
+

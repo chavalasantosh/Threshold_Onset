@@ -2041,6 +2041,7 @@ def run(
             "path_scores": actual_path_scores,
             "tokens": tokens,
             "residue_sequences": residue_sequences,
+            "symbol_to_token": symbol_to_token,  # escape physics needs this
         }
         if cfg.include_phase10_metrics:
             from threshold_onset.phase10 import run_phase10_from_model_state
